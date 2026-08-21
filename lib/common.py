@@ -103,6 +103,36 @@ def copytree_filtered(src: Path, dest: Path) -> None:
             shutil.copy2(Path(root) / name, target / name)
 
 
+def claude_snapshot_path() -> Path:
+    return state_dir() / "pre-install-snapshot" / "claude.json"
+
+
+def snapshot_claude() -> dict:
+    root = home() / ".claude"
+    if not root.is_dir():
+        return {"exists": False, "files": {}}
+    files: dict[str, str] = {}
+    for path in root.rglob("*"):
+        if path.is_file():
+            files[str(path.relative_to(root))] = sha256_file(path)
+    return {"exists": True, "files": files}
+
+
+def compare_claude_snapshot(snap: dict) -> tuple[str, str, int]:
+    now = snapshot_claude()
+    if not snap:
+        return "NOT_BASELINED", "no snapshot", 0
+    old_files = snap.get("files") or {}
+    new_files = now.get("files") or {}
+    added = [k for k in new_files if k not in old_files]
+    removed = [k for k in old_files if k not in new_files]
+    changed = [k for k in old_files if k in new_files and old_files[k] != new_files[k]]
+    n = len(added) + len(removed) + len(changed)
+    if n == 0:
+        return "PASS", "0", 0
+    return "FAIL", f"{n} added={added[:5]} removed={removed[:5]} changed={changed[:5]}", n
+
+
 def load_policy(root: Path | None = None):
     root = root or repo_root()
     allow_path = root / "vendor" / "skill-allowlist.txt"

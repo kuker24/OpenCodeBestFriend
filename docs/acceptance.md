@@ -8,9 +8,9 @@ PASS opencode.jsonc
 PASS AGENTS.md
 PASS skills TOTAL 40/40 MODEL 24/24 MANUAL 16/16
 PASS rules 6 portable; 04-context-guard EXCLUDED_BY_DESIGN
-PASS mcp:codebase-memory-mcp
-PASS mcp:context7
-PASS mcp:shadcn
+CONFIGURED mcp:codebase-memory-mcp
+CONFIGURED mcp:context7
+CONFIGURED mcp:shadcn
 OPTIONAL_ABSENT mcp:serena
 OPTIONAL_ABSENT mcp:exa
 PASS Codebase Memory

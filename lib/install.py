@@ -15,6 +15,8 @@ from .common import (
     backups_dir,
     bf_dir,
     bin_dir,
+    claude_snapshot_path,
+    compare_claude_snapshot,
     config_dir,
     copytree_filtered,
     die,
@@ -27,6 +29,7 @@ from .common import (
     run,
     sha256_file,
     share_dir,
+    snapshot_claude,
     state_dir,
     warn,
     which,
@@ -49,6 +52,12 @@ CLAUDE_ACTIVE = (
     "CLAUDE_DESIGN_BANK",
     "grokbestfriend-claude",
     "claude mcp",
+)
+AGENTS_BEGIN = "<!-- OPENCODEBESTFRIEND:BEGIN -->"
+AGENTS_END = "<!-- OPENCODEBESTFRIEND:END -->"
+OWNED_COMMAND_MARKERS = (
+    "OpenCode-adapted manual specialist",
+    "OPENCODEBESTFRIEND:COMMAND",
 )
 
 
@@ -80,7 +89,7 @@ def detect_opencode() -> tuple[str, tuple[int, int, int], str]:
     if not m:
         die(f"OPENCODE_VERSION_UNPARSABLE: {text!r}")
     ver = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
-    if ver[0] != 1 or ver[1] < 18:
+    if ver[0] != 1 or ver[1] != 18:
         die(f"UNSUPPORTED_OPENCODE_VERSION {text} (need OpenCode stable 1.18.x)")
     schema = "mcp-name"
     return oc, ver, schema
@@ -103,6 +112,49 @@ def target_config_path() -> Path:
     if existing:
         return existing
     return config_dir() / "opencode.jsonc"
+
+
+def extract_agents_block(text: str) -> str:
+    if AGENTS_BEGIN in text and AGENTS_END in text:
+        start = text.index(AGENTS_BEGIN)
+        end = text.index(AGENTS_END) + len(AGENTS_END)
+        return text[start:end].strip() + "\n"
+    return text.strip() + "\n"
+
+
+def merge_agents_md(existing: str, block: str) -> str:
+    block = extract_agents_block(block).rstrip() + "\n"
+    if AGENTS_BEGIN in existing and AGENTS_END in existing:
+        return re.sub(
+            re.escape(AGENTS_BEGIN) + r".*?" + re.escape(AGENTS_END),
+            block.strip(),
+            existing,
+            count=1,
+            flags=re.DOTALL,
+        )
+    if not existing.strip():
+        return block
+    return existing.rstrip() + "\n\n" + block
+
+
+def strip_agents_block(existing: str) -> str:
+    if AGENTS_BEGIN not in existing:
+        return existing
+    out = re.sub(
+        re.escape(AGENTS_BEGIN) + r".*?" + re.escape(AGENTS_END) + r"\n?",
+        "",
+        existing,
+        count=1,
+        flags=re.DOTALL,
+    )
+    return out.strip() + ("\n" if out.strip() else "")
+
+
+def command_is_owned(path: Path) -> bool:
+    if not path.is_file():
+        return True
+    text = path.read_text(encoding="utf-8")
+    return any(m in text for m in OWNED_COMMAND_MARKERS)
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:
@@ -323,7 +375,16 @@ def merge_opencode_config(cbm_bin: Path, dry_run: bool = False) -> dict:
             info(f"preserving foreign mcp {name}")
     if not dry_run:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(jsonc.dumps(data), encoding="utf-8")
+        to_write = {name: owned[name] for name in (plan["add"] + plan["update"])}
+        if not path.is_file() or not jsonc.contains_comments(raw):
+            path.write_text(jsonc.dumps(data), encoding="utf-8")
+        else:
+            try:
+                merged = jsonc.upsert_mcp_servers(raw, to_write) if to_write else raw
+                jsonc.loads(merged)
+                path.write_text(merged if merged.endswith("\n") else merged + "\n", encoding="utf-8")
+            except Exception as exc:
+                die(f"OPENCODE_CONFIG_JSONC_SURGICAL_FAILED: {exc}")
         info(f"merged {path}")
     return plan
 
@@ -367,16 +428,61 @@ def strip_shell_isolation() -> None:
         info(f"removed isolation block {path}")
 
 
-def backup_relevant(stamp: str) -> Path:
+def _copy_if(src: Path, dest: Path) -> None:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if src.is_dir():
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(src, dest)
+    elif src.is_file():
+        shutil.copy2(src, dest)
+
+
+def backup_relevant(stamp: str, meta: dict | None = None) -> Path:
     dest = backups_dir() / stamp
     dest.mkdir(parents=True, exist_ok=True)
     cfg = existing_config_path()
+    copied = []
     if cfg and cfg.is_file():
         shutil.copy2(cfg, dest / cfg.name)
+        copied.append(cfg.name)
     agents = config_dir() / "AGENTS.md"
     if agents.is_file():
         shutil.copy2(agents, dest / "AGENTS.md")
-    write_json(dest / "meta.json", {"stamp": stamp, "config": str(cfg) if cfg else None})
+        copied.append("AGENTS.md")
+    commands = config_dir() / "commands"
+    if commands.is_dir():
+        _copy_if(commands, dest / "commands")
+        copied.append("commands")
+    if bf_dir().is_dir():
+        _copy_if(bf_dir(), dest / "bestfriend")
+        copied.append("bestfriend")
+    skills_root = config_dir() / "skills"
+    if skills_root.is_dir() and meta:
+        skill_bak = dest / "skills"
+        skill_bak.mkdir(exist_ok=True)
+        for name in meta.get("model") or []:
+            src = skills_root / name
+            if src.is_dir():
+                _copy_if(src, skill_bak / name)
+        copied.append("skills")
+    for helper in ("opencode-bf", "opencode-chromium-cdp"):
+        src = bin_dir() / helper
+        if src.is_file():
+            _copy_if(src, dest / "bin" / helper)
+            copied.append(f"bin/{helper}")
+    for rc in (".bashrc", ".zshrc"):
+        src = home() / rc
+        if src.is_file():
+            shutil.copy2(src, dest / rc.lstrip("."))
+            copied.append(rc)
+    claude = snapshot_claude()
+    write_json(claude_snapshot_path(), claude)
+    write_json(dest / "claude.json", claude)
+    write_json(
+        dest / "meta.json",
+        {"stamp": stamp, "config": str(cfg) if cfg else None, "copied": copied, "claude": claude},
+    )
     return dest
 
 
@@ -435,6 +541,7 @@ def stage(meta_only: bool = False) -> dict:
         "mcp-policy.json",
         "mcp-wanted.json",
         "rule-allowlist.txt",
+        "license-audit.json",
     ):
         src = root / "vendor" / extra
         if src.is_file():
@@ -579,12 +686,21 @@ def apply(meta: dict, cbm_bin: Path, bank: tuple[str | None, str, str]) -> list[
     commands_root = cfg / "commands"
     commands_root.mkdir(parents=True, exist_ok=True)
     for name in meta["manual"]:
-        take(stagep / "commands" / f"{name}.md", commands_root / f"{name}.md")
+        dest = commands_root / f"{name}.md"
+        if dest.exists() and not command_is_owned(dest):
+            die(f"FOREIGN command collision {dest}")
+        take(stagep / "commands" / f"{name}.md", dest)
     for child in commands_root.glob("*.md"):
-        text = child.read_text(encoding="utf-8")
-        if "OpenCode-adapted manual specialist" in text and child.stem not in meta["manual"]:
+        if not command_is_owned(child):
+            continue
+        if child.stem not in meta["manual"]:
             child.unlink()
-    take(stagep / "AGENTS.md", cfg / "AGENTS.md")
+    agents_dest = cfg / "AGENTS.md"
+    existing_agents = agents_dest.read_text(encoding="utf-8") if agents_dest.is_file() else ""
+    block = (stagep / "AGENTS.md").read_text(encoding="utf-8")
+    agents_dest.parent.mkdir(parents=True, exist_ok=True)
+    agents_dest.write_text(merge_agents_md(existing_agents, block), encoding="utf-8")
+    owned.append(str(agents_dest))
     take(stagep / "bestfriend" / "rules", bf / "rules")
     take(stagep / "bestfriend" / "design-intelligence", bf / "design-intelligence")
     take(stagep / "bestfriend" / "docs", bf / "docs")
@@ -655,7 +771,7 @@ def apply(meta: dict, cbm_bin: Path, bank: tuple[str | None, str, str]) -> list[
         },
     }
     write_json(bf / "manifests" / "ownership.json", man)
-    write_json(state_dir() / "install.json", {"status": "COMMITTED", "manifest": str(bf / "manifests" / "ownership.json")})
+    write_json(state_dir() / "install.json", {"status": "APPLIED", "manifest": str(bf / "manifests" / "ownership.json")})
     return owned
 
 
@@ -672,6 +788,44 @@ def plan_text(meta: dict, mcp_plan: dict, bank: tuple, cbm: str) -> str:
         "never: provider/model/auth/compaction, ~/.claude, Exa, foreign MCP",
     ]
     return "\n".join(lines)
+
+
+def verify_install() -> int:
+    from .doctor import cmd_design_intelligence, cmd_skills_verify, isolation_check
+
+    failed = 0
+    if cmd_skills_verify() != 0:
+        failed += 1
+        warn("skills verify failed")
+    path = existing_config_path()
+    if not path:
+        warn("opencode config missing after apply")
+        failed += 1
+    else:
+        try:
+            data = jsonc.load_path(path)
+        except Exception as exc:
+            warn(f"config parse failed: {exc}")
+            failed += 1
+            data = {}
+        mcp = data.get("mcp") or {}
+        for name in OWNED_MCP:
+            if name not in mcp:
+                warn(f"mcp {name} missing")
+                failed += 1
+    agents = config_dir() / "AGENTS.md"
+    if not agents.is_file() or AGENTS_BEGIN not in agents.read_text(encoding="utf-8"):
+        warn("AGENTS.md missing owned marker block")
+        failed += 1
+    failed += cmd_design_intelligence()
+    failed += isolation_check()
+    snap_path = claude_snapshot_path()
+    snap = load_json(snap_path) if snap_path.is_file() else {}
+    status, evidence, _n = compare_claude_snapshot(snap)
+    if status == "FAIL":
+        warn(f"claude mutations {evidence}")
+        failed += 1
+    return 1 if failed else 0
 
 
 def cmd_install(dry_run: bool = False, skip_design_bank: bool = False, offline: bool = False, recover: bool = False) -> int:
@@ -708,12 +862,17 @@ def cmd_install(dry_run: bool = False, skip_design_bank: bool = False, offline: 
     validate_stage(meta)
     set_transaction("VALIDATED")
     stamp = time.strftime("%Y%m%dT%H%M%SZ")
-    backup_relevant(stamp)
+    backup_relevant(stamp, meta)
     set_transaction("BACKED_UP", {"stamp": stamp})
     cbm = download_codebase_memory(offline=offline)
     bank = resolve_design_bank(skip=skip_design_bank, offline=offline)
     apply(meta, cbm, bank)
-    set_transaction("APPLIED")
+    set_transaction("APPLIED", {"stamp": stamp})
+    if verify_install() != 0:
+        warn("VERIFY_FAILED — transaction stays APPLIED. Run ./install.sh --recover")
+        return 1
+    set_transaction("VERIFIED", {"stamp": stamp})
+    write_json(state_dir() / "install.json", {"status": "COMMITTED", "manifest": str(bf_dir() / "manifests" / "ownership.json")})
     set_transaction("COMMITTED", {"stamp": stamp})
     info("APPLY_DONE")
     if bank[2] == "DEGRADED_DESIGN_BANK":
@@ -748,12 +907,22 @@ def cmd_uninstall(purge_owned_bank: bool = False, yes: bool = False) -> int:
     man = load_json(man_path)
     cfg_path = existing_config_path()
     if cfg_path and cfg_path.is_file():
-        data = jsonc.load_path(cfg_path)
-        mcp = data.get("mcp") or {}
-        for name in man.get("ownedMcp") or OWNED_MCP:
-            mcp.pop(name, None)
-        data["mcp"] = mcp
-        cfg_path.write_text(jsonc.dumps(data), encoding="utf-8")
+        raw = cfg_path.read_text(encoding="utf-8")
+        names = list(man.get("ownedMcp") or OWNED_MCP)
+        if jsonc.contains_comments(raw):
+            try:
+                merged = jsonc.remove_mcp_servers(raw, names)
+                jsonc.loads(merged)
+                cfg_path.write_text(merged if merged.endswith("\n") else merged + "\n", encoding="utf-8")
+            except Exception as exc:
+                die(f"OPENCODE_CONFIG_JSONC_SURGICAL_FAILED: {exc}")
+        else:
+            data = jsonc.loads(raw)
+            mcp = data.get("mcp") or {}
+            for name in names:
+                mcp.pop(name, None)
+            data["mcp"] = mcp
+            cfg_path.write_text(jsonc.dumps(data), encoding="utf-8")
     cfg = config_dir()
     for name in man.get("modelInvokedSkills") or []:
         d = cfg / "skills" / name
@@ -764,11 +933,15 @@ def cmd_uninstall(purge_owned_bank: bool = False, yes: bool = False) -> int:
         if d.is_dir():
             shutil.rmtree(d)
         c = cfg / "commands" / f"{name}.md"
-        if c.is_file():
+        if c.is_file() and command_is_owned(c):
             c.unlink()
     agents = cfg / "AGENTS.md"
-    if agents.is_file() and "OPENCODEBESTFRIEND:BEGIN" in agents.read_text(encoding="utf-8"):
-        agents.unlink()
+    if agents.is_file() and AGENTS_BEGIN in agents.read_text(encoding="utf-8"):
+        leftover = strip_agents_block(agents.read_text(encoding="utf-8"))
+        if leftover.strip():
+            agents.write_text(leftover, encoding="utf-8")
+        else:
+            agents.unlink()
     if bf_dir().is_dir():
         shutil.rmtree(bf_dir())
     for helper in ("opencode-bf", "opencode-chromium-cdp"):
@@ -815,6 +988,48 @@ def cmd_restore(stamp: str) -> int:
         if s.is_file():
             shutil.copy2(s, cfg / name)
             info(f"restored {name}")
+    if (src / "commands").is_dir():
+        dest = cfg / "commands"
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(src / "commands", dest)
+        info("restored commands")
+    if (src / "bestfriend").is_dir():
+        dest = bf_dir()
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(src / "bestfriend", dest)
+        info("restored bestfriend")
+    elif bf_dir().is_dir():
+        shutil.rmtree(bf_dir())
+    bak_skills = src / "skills"
+    live_skills = cfg / "skills"
+    if live_skills.is_dir():
+        for child in list(live_skills.iterdir()):
+            if child.is_dir() and (child / ".opencode-bestfriend.json").is_file():
+                if bak_skills.is_dir() and (bak_skills / child.name).is_dir():
+                    if child.exists():
+                        shutil.rmtree(child)
+                    shutil.copytree(bak_skills / child.name, child)
+                else:
+                    shutil.rmtree(child)
+    if bak_skills.is_dir():
+        for child in bak_skills.iterdir():
+            if child.is_dir() and not (live_skills / child.name).exists():
+                shutil.copytree(child, live_skills / child.name)
+    for helper in ("opencode-bf", "opencode-chromium-cdp"):
+        s = src / "bin" / helper
+        dest = bin_dir() / helper
+        if s.is_file():
+            shutil.copy2(s, dest)
+            dest.chmod(dest.stat().st_mode | stat.S_IXUSR)
+        elif dest.is_file() and dest.read_text(encoding="utf-8", errors="ignore").find("opencode-bestfriend") != -1:
+            dest.unlink()
+    for rc in ("bashrc", "zshrc"):
+        s = src / rc
+        if s.is_file():
+            shutil.copy2(s, home() / f".{rc}")
+            info(f"restored .{rc}")
     info(f"RESTORE_DONE {stamp}")
     return 0
 

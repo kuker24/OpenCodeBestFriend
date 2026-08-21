@@ -15,4 +15,6 @@ Optional:
 - `serena` — `opencode-bf serena enable` if the binary is on PATH
 - `exa` — foreign; never add/remove/overwrite
 
-Merge is parse-aware (JSON or JSONC comments stripped on parse). Provider, model, `small_model`, compaction, permissions, plugins, and foreign MCP keys are preserved.
+Merge is parse-aware. Comment-free JSON is rewritten with `json.dumps`. JSONC with comments is patched surgically (owned MCP keys only). If surgical merge cannot be verified, install fails closed instead of destroying comments.
+
+Doctor reports `CONFIGURED` for owned MCP entries present in config. That is not a live connection. `opencode-bf doctor --deep` may probe `opencode mcp list` and report `CONNECTED` / `LISTED` / `NOT_CHECKED` / `SKIPPED_MOCK`.

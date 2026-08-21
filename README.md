@@ -154,6 +154,10 @@ User-local, no sudo:
 
 Transactional states: `PREPARING` → `STAGED` → `VALIDATED` → `BACKED_UP` → `APPLIED` → `VERIFIED` → `COMMITTED`.
 
+`AGENTS.md` is marker-merged (`<!-- OPENCODEBESTFRIEND:BEGIN -->` … `END`). Foreign text outside the markers is preserved. Foreign `commands/<name>.md` files fail closed instead of being overwritten.
+
+Official OpenCode gate is **1.18.x** (not 1.19+). JSONC comments are preserved when MCP keys can be patched surgically.
+
 ```bash
 ./install.sh --dry-run
 ./install.sh --recover

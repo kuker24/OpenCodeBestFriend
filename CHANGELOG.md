@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.1 — 2026-08-21
+
+Hardening release. No new skills or MCP.
+
+- Merge `AGENTS.md` via `OPENCODEBESTFRIEND` markers; preserve foreign text
+- Fail closed on foreign command collisions (`/architect`, `/why`, …)
+- Installer lifecycle includes `VERIFIED` before `COMMITTED`
+- Broader pre-apply backup and restore (config, AGENTS, commands, skills, bestfriend, helpers, shell rc)
+- Doctor `~/.claude mutations` uses a real file-hash baseline (`NOT_BASELINED` if missing)
+- MCP doctor reports `CONFIGURED` (not live CONNECTED); `--deep` may probe `opencode mcp list`
+- OpenCode gate is exact `1.18.x`
+- JSONC comments preserved via surgical MCP merge (fail closed if surgical merge cannot parse)
+- Complete 40-skill license audit (`vendor/license-audit.json`); unknown licenses are not grants
+
 ## 1.0.0 — 2026-08-21
 
 Initial public OpenCodeBestFriend release.

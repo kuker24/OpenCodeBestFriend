@@ -7,6 +7,8 @@ from pathlib import Path
 from .common import (
     bf_dir,
     bin_dir,
+    claude_snapshot_path,
+    compare_claude_snapshot,
     config_dir,
     home,
     load_json,
@@ -113,13 +115,41 @@ def mcp_status_map() -> dict[str, str]:
         if name not in owned:
             out[name] = "FOREIGN"
             continue
-        out[name] = "PASS"
+        out[name] = "CONFIGURED"
     return out
 
 
-def cmd_mcp_status() -> int:
-    for name, status in mcp_status_map().items():
+def probe_mcp_connected() -> dict[str, str]:
+    """Best-effort live probe. Never pretends CONNECTED without evidence."""
+    if os.environ.get("OPENCODE_BF_MOCK_OPENCODE"):
+        return {k: "SKIPPED_MOCK" for k in ("codebase-memory-mcp", "context7", "shadcn")}
+    oc = which("opencode")
+    if not oc:
+        return {k: "NOT_CHECKED" for k in ("codebase-memory-mcp", "context7", "shadcn")}
+    r = run([oc, "mcp", "list"])
+    text = (r.stdout or "") + (r.stderr or "")
+    if r.returncode != 0 or not text.strip():
+        return {k: "NOT_CHECKED" for k in ("codebase-memory-mcp", "context7", "shadcn")}
+    out = {}
+    lower = text.lower()
+    for name in ("codebase-memory-mcp", "context7", "shadcn"):
+        if name in lower and ("connected" in lower or "enabled" in lower or name in text):
+            if "connected" in lower:
+                out[name] = "CONNECTED"
+            else:
+                out[name] = "LISTED"
+        else:
+            out[name] = "NOT_CHECKED"
+    return out
+
+
+def cmd_mcp_status(deep: bool = False) -> int:
+    cfg_map = mcp_status_map()
+    live = probe_mcp_connected() if deep else {}
+    for name, status in cfg_map.items():
         extra = "binary-on-PATH" if name == "serena" and which("serena") else ""
+        if name in live:
+            extra = (extra + " " + live[name]).strip()
         print(f"{status:<22} {name:<28} {extra}")
     return 0
 
@@ -187,12 +217,12 @@ def isolation_check(deep: bool = False) -> int:
         report("FAIL", "OPENCODE_DISABLE_CLAUDE_CODE", "not set")
         failed += 1
 
-    claude = home() / ".claude"
-    extra = 0
-    if claude.is_dir():
-        # installer must not add files; presence of a pre-existing tree is FOREIGN
-        extra = 0
-    report("PASS" if extra == 0 else "FAIL", "~/.claude mutations", str(extra))
+    snap_path = claude_snapshot_path()
+    snap = load_json(snap_path) if snap_path.is_file() else {}
+    status, evidence, n = compare_claude_snapshot(snap)
+    report(status, "~/.claude mutations", evidence)
+    if status == "FAIL":
+        failed += 1
 
     hits = []
     skip_parts = {
@@ -337,8 +367,10 @@ def cmd_doctor(deep: bool = False) -> int:
         report("FAIL", "rules", f"got {sorted(names)}")
         failed += 1
 
+    live = probe_mcp_connected() if deep else {}
     for name, status in mcp_status_map().items():
-        report(status, f"mcp:{name}", "")
+        extra = live.get(name, "")
+        report(status, f"mcp:{name}", extra)
         if name in {"codebase-memory-mcp", "context7", "shadcn"} and status == "FAIL":
             failed += 1
 

@@ -115,6 +115,57 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(sha256(self.sentinel), self.sentinel_hash)
         self.assertNotIn("OPENCODEBESTFRIEND:BEGIN", (self.tmp / ".bashrc").read_text(encoding="utf-8"))
 
+    def test_agents_marker_merge_and_uninstall(self):
+        agents = self.tmp / ".config" / "opencode" / "AGENTS.md"
+        agents.write_text("USER RULES stay here\n", encoding="utf-8")
+        self.assertEqual(cmd_install(), 0)
+        text = agents.read_text(encoding="utf-8")
+        self.assertIn("USER RULES stay here", text)
+        self.assertIn("OPENCODEBESTFRIEND:BEGIN", text)
+        self.assertEqual(cmd_uninstall(), 0)
+        leftover = agents.read_text(encoding="utf-8")
+        self.assertIn("USER RULES stay here", leftover)
+        self.assertNotIn("OPENCODEBESTFRIEND:BEGIN", leftover)
+
+    def test_foreign_command_collision(self):
+        dest = self.tmp / ".config" / "opencode" / "commands"
+        dest.mkdir(parents=True, exist_ok=True)
+        (dest / "architect.md").write_text("# my architect\n", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            cmd_install()
+        self.assertEqual((dest / "architect.md").read_text(encoding="utf-8"), "# my architect\n")
+
+    def test_jsonc_comments_survive_install(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.write_text(
+            """{
+  // keep this comment
+  "model": "keep-me-model",
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    }
+  }
+}
+""",
+            encoding="utf-8",
+        )
+        self.assertEqual(cmd_install(), 0)
+        text = cfg.read_text(encoding="utf-8")
+        self.assertIn("keep this comment", text)
+        self.assertIn("foreign-weather", text)
+        self.assertIn("codebase-memory-mcp", text)
+
+    def test_rejects_opencode_1_19(self):
+        mock = self.tmp / "mock-opencode"
+        mock.write_text("#!/bin/sh\necho 1.19.0\n", encoding="utf-8")
+        mock.chmod(mock.stat().st_mode | stat.S_IXUSR)
+        with self.assertRaises(SystemExit):
+            cmd_install(dry_run=True)
+
 
 if __name__ == "__main__":
     unittest.main()
+

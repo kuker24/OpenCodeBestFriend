@@ -49,6 +49,37 @@ class JsoncMergeTests(unittest.TestCase):
             self.assertIn("shadcn", data["mcp"])
             self.assertNotIn("compaction", data)
 
+    def test_comment_preserving_mcp_upsert(self):
+        raw = """{
+  // keep this comment
+  "model": "keep-me-model",
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    }
+  }
+}
+"""
+        self.assertTrue(jsonc.contains_comments(raw))
+        merged = jsonc.upsert_mcp_servers(
+            raw,
+            {
+                "context7": {
+                    "type": "remote",
+                    "url": "https://mcp.context7.com/mcp",
+                    "enabled": True,
+                }
+            },
+        )
+        self.assertIn("keep this comment", merged)
+        self.assertIn("foreign-weather", merged)
+        data = jsonc.loads(merged)
+        self.assertEqual(data["model"], "keep-me-model")
+        self.assertIn("context7", data["mcp"])
+        self.assertIn("foreign-weather", data["mcp"])
+
 
 if __name__ == "__main__":
     unittest.main()
