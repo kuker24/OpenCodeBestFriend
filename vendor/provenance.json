@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.0.0",
+  "productVersion": "1.0.2",
   "upstreamProduct": "GrokBestFriend",
   "upstreamVersion": "1.3.1",
   "firstPartyLicense": "MIT",
@@ -25,10 +25,147 @@
       "redistribution": "apache-2.0"
     },
     {
-      "component": "other-user-skills",
-      "path": "vendor/skills",
-      "upstream": "live ~/.grok/skills snapshot",
-      "version": null,
+      "component": "ask-matt",
+      "path": "skills/ask-matt",
+      "upstream": "https://github.com/mattpocock/skills",
+      "originalPath": "skills/engineering/ask-matt",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "OpenCode overlay. MIT via mattpocock/skills LICENSE."
+    },
+    {
+      "component": "grill-with-docs",
+      "path": "skills/grill-with-docs",
+      "upstream": "https://github.com/mattpocock/skills",
+      "originalPath": "skills/engineering/grill-with-docs",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "OpenCode overlay. MIT via mattpocock/skills LICENSE."
+    },
+    {
+      "component": "to-spec",
+      "path": "skills/to-spec",
+      "upstream": "https://github.com/mattpocock/skills",
+      "originalPath": "skills/engineering/to-spec",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "modified": true,
+      "redistribution": "mit"
+    },
+    {
+      "component": "to-tickets",
+      "path": "skills/to-tickets",
+      "upstream": "https://github.com/mattpocock/skills",
+      "originalPath": "skills/engineering/to-tickets",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "modified": true,
+      "redistribution": "mit"
+    },
+    {
+      "component": "tdd",
+      "path": "skills/tdd",
+      "upstream": "https://github.com/mattpocock/skills",
+      "originalPath": "skills/engineering/tdd",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "modified": true,
+      "redistribution": "mit"
+    },
+    {
+      "component": "matt-code-review",
+      "path": "skills/matt-code-review",
+      "upstream": "https://github.com/mattpocock/skills",
+      "originalPath": "skills/engineering/code-review",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Renamed to avoid OpenCode/Grok /review collision."
+    },
+    {
+      "component": "matt-implement",
+      "path": "manual-skills/matt-implement",
+      "upstream": "https://github.com/mattpocock/skills",
+      "originalPath": "skills/engineering/implement",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Renamed to avoid OpenCode/Grok /implement collision."
+    },
+    {
+      "component": "browser-act",
+      "path": "skills/browser-act",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot; CLI is a separate host package",
+      "license": "not-stated-in-frontmatter",
+      "modified": true,
+      "redistribution": "unknown"
+    },
+    {
+      "component": "chrome-devtools-axi",
+      "path": "skills/chrome-devtools-axi",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot",
+      "license": "not-stated-in-frontmatter",
+      "modified": true,
+      "redistribution": "unknown"
+    },
+    {
+      "component": "emil-design-eng",
+      "path": "skills/emil-design-eng",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot",
+      "license": "not-stated-in-frontmatter",
+      "modified": true,
+      "redistribution": "unknown"
+    },
+    {
+      "component": "found-this-design",
+      "path": "skills/found-this-design",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot",
+      "license": "not-stated-in-frontmatter",
+      "modified": true,
+      "redistribution": "unknown"
+    },
+    {
+      "component": "full-audit-keamanan",
+      "path": "skills/full-audit-keamanan",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot",
+      "license": "not-stated-in-frontmatter",
+      "modified": true,
+      "redistribution": "unknown"
+    },
+    {
+      "component": "full-performance-audit",
+      "path": "skills/full-performance-audit",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot",
+      "license": "not-stated-in-frontmatter",
+      "modified": true,
+      "redistribution": "unknown"
+    },
+    {
+      "component": "gh-axi",
+      "path": "skills/gh-axi",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot; gh-axi CLI is a separate npm package",
+      "license": "not-stated-in-frontmatter",
+      "modified": true,
+      "redistribution": "unknown"
+    },
+    {
+      "component": "scroll-world",
+      "path": "skills/scroll-world",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot",
+      "license": "not-stated-in-frontmatter",
+      "modified": true,
+      "redistribution": "unknown"
+    },
+    {
+      "component": "visual-studio",
+      "path": "skills/visual-studio",
+      "upstream": "GrokBestFriend 1.3.1 skill snapshot",
       "license": "not-stated-in-frontmatter",
       "modified": true,
       "redistribution": "unknown"

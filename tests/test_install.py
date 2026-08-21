@@ -14,7 +14,7 @@ import sys
 
 sys.path.insert(0, str(ROOT))
 from lib import jsonc  # noqa: E402
-from lib.install import cmd_install, cmd_uninstall  # noqa: E402
+from lib.install import backup_relevant, cmd_install, cmd_restore, cmd_uninstall  # noqa: E402
 from lib.doctor import cmd_doctor, cmd_skills_verify, isolation_check  # noqa: E402
 
 
@@ -165,7 +165,33 @@ class InstallTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cmd_install(dry_run=True)
 
+    def test_restore_deletes_absent_preinstall(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.unlink()
+        stamp = "testrb"
+        backup_relevant(stamp, {"model": []})
+        cfg.write_text("{}\n", encoding="utf-8")
+        agents = self.tmp / ".config" / "opencode" / "AGENTS.md"
+        agents.write_text("created by installer\n", encoding="utf-8")
+        commands = self.tmp / ".config" / "opencode" / "commands"
+        commands.mkdir()
+        (commands / "architect.md").write_text("x\n", encoding="utf-8")
+        bashrc = self.tmp / ".bashrc"
+        bashrc.write_text("# OPENCODEBESTFRIEND:BEGIN\n", encoding="utf-8")
+        self.assertEqual(cmd_restore(stamp), 0)
+        self.assertFalse(cfg.exists())
+        self.assertFalse(agents.exists())
+        self.assertFalse(commands.exists())
+        self.assertFalse(bashrc.exists())
+
+    def test_doctor_counts_owned_agents_block(self):
+        agents = self.tmp / ".config" / "opencode" / "AGENTS.md"
+        agents.write_text(("USER RULE line\n" * 180), encoding="utf-8")
+        self.assertEqual(cmd_install(), 0)
+        self.assertEqual(cmd_doctor(), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

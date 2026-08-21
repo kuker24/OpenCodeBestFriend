@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.2 — 2026-08-21
+
+Installer polish. No new skills or MCP.
+
+- Absence-aware rollback: `preInstall` records absent vs present; recover deletes installer-created files that did not exist before apply
+- MCP `--deep` parser is per-line / per-server (`disconnected` is not `connected`)
+- Doctor `AGENTS.md` thickness counts only the `OPENCODEBESTFRIEND` block
+- `vendor/provenance.json` `productVersion` matches the product
+- License audit: 7 more skills pinned to mattpocock/skills MIT (`ask-matt`, `grill-with-docs`, `to-spec`, `to-tickets`, `tdd`, `matt-code-review`, `matt-implement`). 9 skills remain unknown — not a grant.
+
 ## 1.0.1 — 2026-08-21
 
 Hardening release. No new skills or MCP.

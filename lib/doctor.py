@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 from .common import (
@@ -13,6 +14,7 @@ from .common import (
     home,
     load_json,
     load_policy,
+    product_version,
     repo_root,
     run,
     share_dir,
@@ -119,28 +121,56 @@ def mcp_status_map() -> dict[str, str]:
     return out
 
 
+OWNED_MCP_PROBE = ("codebase-memory-mcp", "context7", "shadcn")
+AGENTS_BEGIN = "<!-- OPENCODEBESTFRIEND:BEGIN -->"
+AGENTS_END = "<!-- OPENCODEBESTFRIEND:END -->"
+
+
+def owned_agents_block(text: str) -> str | None:
+    if AGENTS_BEGIN not in text or AGENTS_END not in text:
+        return None
+    start = text.index(AGENTS_BEGIN)
+    end = text.index(AGENTS_END) + len(AGENTS_END)
+    if end <= start:
+        return None
+    return text[start:end]
+
+
+def parse_mcp_list(text: str, names: tuple[str, ...] = OWNED_MCP_PROBE) -> dict[str, str]:
+    """Per-line, per-server status. Never treat 'disconnected' as 'connected'."""
+    out = {n: "NOT_CHECKED" for n in names}
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        lower = line.lower()
+        hits = [n for n in names if n in lower]
+        if len(hits) != 1:
+            continue
+        name = hits[0]
+        rest = re.sub(re.escape(name), " ", lower, count=1)
+        words = set(re.findall(r"[a-z0-9_-]+", rest))
+        if "disconnected" in words or "disabled" in words:
+            out[name] = "DISCONNECTED"
+        elif "connected" in words:
+            out[name] = "CONNECTED"
+        else:
+            out[name] = "LISTED"
+    return out
+
+
 def probe_mcp_connected() -> dict[str, str]:
-    """Best-effort live probe. Never pretends CONNECTED without evidence."""
+    """Best-effort live probe. Never pretends CONNECTED without per-server evidence."""
     if os.environ.get("OPENCODE_BF_MOCK_OPENCODE"):
-        return {k: "SKIPPED_MOCK" for k in ("codebase-memory-mcp", "context7", "shadcn")}
+        return {k: "SKIPPED_MOCK" for k in OWNED_MCP_PROBE}
     oc = which("opencode")
     if not oc:
-        return {k: "NOT_CHECKED" for k in ("codebase-memory-mcp", "context7", "shadcn")}
+        return {k: "NOT_CHECKED" for k in OWNED_MCP_PROBE}
     r = run([oc, "mcp", "list"])
     text = (r.stdout or "") + (r.stderr or "")
     if r.returncode != 0 or not text.strip():
-        return {k: "NOT_CHECKED" for k in ("codebase-memory-mcp", "context7", "shadcn")}
-    out = {}
-    lower = text.lower()
-    for name in ("codebase-memory-mcp", "context7", "shadcn"):
-        if name in lower and ("connected" in lower or "enabled" in lower or name in text):
-            if "connected" in lower:
-                out[name] = "CONNECTED"
-            else:
-                out[name] = "LISTED"
-        else:
-            out[name] = "NOT_CHECKED"
-    return out
+        return {k: "NOT_CHECKED" for k in OWNED_MCP_PROBE}
+    return parse_mcp_list(text)
 
 
 def cmd_mcp_status(deep: bool = False) -> int:
@@ -328,12 +358,18 @@ def cmd_doctor(deep: bool = False) -> int:
     agents = config_dir() / "AGENTS.md"
     if agents.is_file():
         text = agents.read_text(encoding="utf-8")
-        lines = text.count("\n")
-        if "OPENCODEBESTFRIEND:BEGIN" in text and "@~/" not in text and "Context Guard" not in text and lines <= 120:
-            report("PASS", "AGENTS.md", f"thin lines={lines}")
-        else:
-            report("FAIL", "AGENTS.md", f"lines={lines}")
+        block = owned_agents_block(text)
+        if block is None:
+            report("FAIL", "AGENTS.md", "missing owned marker block")
             failed += 1
+        else:
+            owned_lines = block.count("\n")
+            total_lines = text.count("\n")
+            if "@~/" in block or "Context Guard" in block or owned_lines > 120:
+                report("FAIL", "AGENTS.md", f"owned-lines={owned_lines} total-lines={total_lines}")
+                failed += 1
+            else:
+                report("PASS", "AGENTS.md", f"thin owned-lines={owned_lines} total-lines={total_lines}")
     else:
         report("FAIL", "AGENTS.md", "missing")
         failed += 1
@@ -391,7 +427,7 @@ def cmd_doctor(deep: bool = False) -> int:
     if ver_file.is_file():
         report("PASS", "source", f"OpenCodeBestFriend {ver_file.read_text(encoding='utf-8').strip()}")
     else:
-        report("PASS", "source", "OpenCodeBestFriend 1.0.0 (repo)")
+        report("PASS", "source", f"OpenCodeBestFriend {product_version()} (repo)")
 
     man = bf_dir() / "manifests" / "ownership.json"
     if man.is_file():

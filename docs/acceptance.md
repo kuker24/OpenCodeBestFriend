@@ -5,7 +5,7 @@ A successful 1.0.0 install should report approximately:
 ```text
 PASS OpenCode
 PASS opencode.jsonc
-PASS AGENTS.md
+PASS AGENTS.md thin owned-lines=…
 PASS skills TOTAL 40/40 MODEL 24/24 MANUAL 16/16
 PASS rules 6 portable; 04-context-guard EXCLUDED_BY_DESIGN
 CONFIGURED mcp:codebase-memory-mcp

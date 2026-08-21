@@ -438,9 +438,36 @@ def _copy_if(src: Path, dest: Path) -> None:
         shutil.copy2(src, dest)
 
 
+def capture_preinstall(meta: dict | None = None) -> dict:
+    cfg = existing_config_path()
+    helpers = {
+        name: ("present" if (bin_dir() / name).is_file() else "absent")
+        for name in ("opencode-bf", "opencode-chromium-cdp")
+    }
+    skills: dict[str, str] = {}
+    if meta:
+        root = config_dir() / "skills"
+        for name in meta.get("model") or []:
+            skills[name] = "present" if (root / name).is_dir() else "absent"
+    return {
+        "config": "present" if cfg else "absent",
+        "configName": cfg.name if cfg else None,
+        "agents": "present" if (config_dir() / "AGENTS.md").is_file() else "absent",
+        "commands": "present" if (config_dir() / "commands").is_dir() else "absent",
+        "bestfriend": "present" if bf_dir().is_dir() else "absent",
+        "bashrc": "present" if (home() / ".bashrc").is_file() else "absent",
+        "zshrc": "present" if (home() / ".zshrc").is_file() else "absent",
+        "shareProduct": "present" if (share_dir() / "product").is_dir() else "absent",
+        "shareComponents": "present" if (share_dir() / "components").is_dir() else "absent",
+        "helpers": helpers,
+        "skills": skills,
+    }
+
+
 def backup_relevant(stamp: str, meta: dict | None = None) -> Path:
     dest = backups_dir() / stamp
     dest.mkdir(parents=True, exist_ok=True)
+    pre = capture_preinstall(meta)
     cfg = existing_config_path()
     copied = []
     if cfg and cfg.is_file():
@@ -481,7 +508,13 @@ def backup_relevant(stamp: str, meta: dict | None = None) -> Path:
     write_json(dest / "claude.json", claude)
     write_json(
         dest / "meta.json",
-        {"stamp": stamp, "config": str(cfg) if cfg else None, "copied": copied, "claude": claude},
+        {
+            "stamp": stamp,
+            "config": str(cfg) if cfg else None,
+            "copied": copied,
+            "claude": claude,
+            "preInstall": pre,
+        },
     )
     return dest
 
@@ -977,10 +1010,22 @@ def cmd_restore_list() -> int:
     return 0
 
 
+def _remove_created(live: Path, backup: Path, is_dir: bool = False) -> None:
+    if backup.exists() or not live.exists():
+        return
+    if is_dir:
+        shutil.rmtree(live)
+    else:
+        live.unlink()
+    info(f"removed installer-created {live}")
+
+
 def cmd_restore(stamp: str) -> int:
     src = backups_dir() / stamp
     if not src.is_dir():
         die(f"backup not found {stamp}")
+    meta_path = src / "meta.json"
+    pre = load_json(meta_path).get("preInstall") or {} if meta_path.is_file() else {}
     cfg = config_dir()
     cfg.mkdir(parents=True, exist_ok=True)
     for name in ("opencode.jsonc", "opencode.json", "AGENTS.md"):
@@ -1014,6 +1059,7 @@ def cmd_restore(stamp: str) -> int:
                 else:
                     shutil.rmtree(child)
     if bak_skills.is_dir():
+        live_skills.mkdir(parents=True, exist_ok=True)
         for child in bak_skills.iterdir():
             if child.is_dir() and not (live_skills / child.name).exists():
                 shutil.copytree(child, live_skills / child.name)
@@ -1030,6 +1076,33 @@ def cmd_restore(stamp: str) -> int:
         if s.is_file():
             shutil.copy2(s, home() / f".{rc}")
             info(f"restored .{rc}")
+    if pre.get("config") == "absent":
+        for name in ("opencode.jsonc", "opencode.json"):
+            _remove_created(cfg / name, src / name)
+    if pre.get("agents") == "absent":
+        _remove_created(cfg / "AGENTS.md", src / "AGENTS.md")
+    if pre.get("commands") == "absent":
+        _remove_created(cfg / "commands", src / "commands", is_dir=True)
+    if pre.get("bestfriend") == "absent":
+        _remove_created(bf_dir(), src / "bestfriend", is_dir=True)
+    if pre.get("bashrc") == "absent":
+        _remove_created(home() / ".bashrc", src / "bashrc")
+    if pre.get("zshrc") == "absent":
+        _remove_created(home() / ".zshrc", src / "zshrc")
+    helpers_pre = pre.get("helpers") or {}
+    for helper in ("opencode-bf", "opencode-chromium-cdp"):
+        if helpers_pre.get(helper) == "absent":
+            _remove_created(bin_dir() / helper, src / "bin" / helper)
+    if pre.get("shareProduct") == "absent":
+        product = share_dir() / "product"
+        if product.is_dir():
+            shutil.rmtree(product)
+            info(f"removed installer-created {product}")
+    if pre.get("shareComponents") == "absent":
+        components = share_dir() / "components"
+        if components.is_dir():
+            shutil.rmtree(components)
+            info(f"removed installer-created {components}")
     info(f"RESTORE_DONE {stamp}")
     return 0
 
