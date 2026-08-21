@@ -156,7 +156,9 @@ Transactional states: `PREPARING` → `STAGED` → `VALIDATED` → `BACKED_UP` �
 
 Backup `preInstall` records whether config, `AGENTS.md`, commands, helpers, shell rc, and share trees existed. Recover restores present files and **deletes** installer-created files that were previously absent.
 
-`AGENTS.md` is marker-merged (`<!-- OPENCODEBESTFRIEND:BEGIN -->` … `END`). Foreign text outside the markers is preserved. Foreign `commands/<name>.md` files fail closed instead of being overwritten.
+`AGENTS.md` is marker-merged (`<!-- OPENCODEBESTFRIEND:BEGIN -->` … `END`). Foreign text outside the markers is preserved. Foreign `commands/<name>.md` and foreign `~/.local/bin/opencode-bf` / `opencode-chromium-cdp` fail closed instead of being overwritten.
+
+Upgrade recover restores prior `~/.local/share/opencode-bestfriend/product` and `components` when those trees existed before apply.
 
 Official OpenCode gate is **1.18.x** (not 1.19+). JSONC comments are preserved when MCP keys can be patched surgically.
 

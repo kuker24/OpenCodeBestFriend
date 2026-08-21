@@ -2,6 +2,8 @@
 
 - No secrets in the repository
 - Checksums fail closed for Codebase Memory and Design Bank archives
+- Archive extract rejects `..`, absolute paths, and outbound links (`filter="data"` on Python 3.12+)
+- Foreign helpers at `~/.local/bin/opencode-bf` and `opencode-chromium-cdp` fail closed
 - Installer does not read or write `~/.claude/`
 - Uninstall uses the ownership manifest; foreign config is preserved
 - Optional scanners are detected, not bundled

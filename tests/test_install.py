@@ -190,8 +190,29 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(cmd_install(), 0)
         self.assertEqual(cmd_doctor(), 0)
 
+    def test_foreign_helper_collision(self):
+        dest = self.tmp / ".local" / "bin"
+        dest.mkdir(parents=True, exist_ok=True)
+        helper = dest / "opencode-bf"
+        helper.write_text("#!/bin/sh\necho foreign\n", encoding="utf-8")
+        helper.chmod(helper.stat().st_mode | stat.S_IXUSR)
+        with self.assertRaises(SystemExit):
+            cmd_install()
+        self.assertEqual(helper.read_text(encoding="utf-8"), "#!/bin/sh\necho foreign\n")
+
+    def test_restore_prior_product_tree(self):
+        product = self.tmp / ".local" / "share" / "opencode-bestfriend" / "product"
+        product.mkdir(parents=True)
+        (product / "VERSION").write_text("1.0.1\n", encoding="utf-8")
+        stamp = "upg"
+        backup_relevant(stamp, {"model": []})
+        (product / "VERSION").write_text("1.0.2\n", encoding="utf-8")
+        self.assertEqual(cmd_restore(stamp), 0)
+        self.assertEqual((product / "VERSION").read_text(encoding="utf-8"), "1.0.1\n")
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

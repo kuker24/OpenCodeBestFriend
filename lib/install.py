@@ -203,6 +203,35 @@ def discover_design_bank() -> tuple[str, str] | None:
     return None
 
 
+def _tar_target_ok(dest: Path, name: str) -> bool:
+    dest = dest.resolve()
+    cleaned = name.replace("\\", "/")
+    if cleaned.startswith("/") or cleaned.startswith("~"):
+        return False
+    parts = Path(cleaned).parts
+    if ".." in parts:
+        return False
+    target = (dest / cleaned).resolve()
+    dest_s = str(dest)
+    return target == dest or str(target).startswith(dest_s + os.sep)
+
+
+def safe_extract(tf: tarfile.TarFile, dest: Path) -> None:
+    dest.mkdir(parents=True, exist_ok=True)
+    dest = dest.resolve()
+    for member in tf.getmembers():
+        if not _tar_target_ok(dest, member.name):
+            die(f"ARCHIVE_PATH_TRAVERSAL {member.name}")
+        if member.issym() or member.islnk():
+            link = member.linkname or ""
+            if not _tar_target_ok(dest, link) and not _tar_target_ok(dest, str(Path(member.name).parent / link)):
+                die(f"ARCHIVE_PATH_TRAVERSAL {member.name} -> {link}")
+    kwargs: dict = {"path": str(dest)}
+    if "filter" in tarfile.TarFile.extractall.__code__.co_varnames:
+        kwargs["filter"] = "data"
+    tf.extractall(**kwargs)
+
+
 def download_design_bank() -> tuple[str, str]:
     sources = load_json(repo_root() / "vendor" / "sources.json")["sources"]["design-bank"]
     url = sources["artifactUrl"]
@@ -225,7 +254,7 @@ def download_design_bank() -> tuple[str, str]:
         shutil.rmtree(tmp)
     tmp.mkdir(parents=True)
     with tarfile.open(archive, "r:*") as tf:
-        tf.extractall(tmp)
+        safe_extract(tf, tmp)
     root = tmp
     if not catalogs_ok(root):
         found = None
@@ -300,7 +329,7 @@ def download_codebase_memory(offline: bool = False) -> Path:
     with tempfile.TemporaryDirectory() as td:
         tdir = Path(td)
         with tarfile.open(archive, "r:gz") as tf:
-            tf.extractall(tdir)
+            safe_extract(tf, tdir)
         bin_path = tdir / "codebase-memory-mcp"
         if not bin_path.is_file():
             found = list(tdir.rglob("codebase-memory-mcp"))
@@ -498,6 +527,14 @@ def backup_relevant(stamp: str, meta: dict | None = None) -> Path:
         if src.is_file():
             _copy_if(src, dest / "bin" / helper)
             copied.append(f"bin/{helper}")
+    product = share_dir() / "product"
+    if product.is_dir():
+        _copy_if(product, dest / "product")
+        copied.append("product")
+    components = share_dir() / "components"
+    if components.is_dir():
+        _copy_if(components, dest / "components")
+        copied.append("components")
     for rc in (".bashrc", ".zshrc"):
         src = home() / rc
         if src.is_file():
@@ -661,10 +698,27 @@ def owned_ok(path: Path) -> bool:
     return False
 
 
+def helper_is_owned(path: Path) -> bool:
+    if not path.is_file():
+        return True
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    name = path.name
+    if name == "opencode-bf":
+        return "opencode-bestfriend/product" in text and "lib/cli.py" in text
+    if name == "opencode-chromium-cdp":
+        return "OpenCodeBestFriend" in text
+    return False
+
+
 def install_helpers() -> dict[str, str]:
     bdir = bin_dir()
     bdir.mkdir(parents=True, exist_ok=True)
     dest_cdp = bdir / "opencode-chromium-cdp"
+    if dest_cdp.exists() and not helper_is_owned(dest_cdp):
+        die(f"FOREIGN helper collision {dest_cdp}")
     shutil.copy2(repo_root() / "bin" / "opencode-chromium-cdp", dest_cdp)
     dest_cdp.chmod(dest_cdp.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     product = share_dir() / "product"
@@ -676,6 +730,8 @@ def install_helpers() -> dict[str, str]:
     (product / "bin").mkdir(parents=True, exist_ok=True)
     shutil.copy2(repo_root() / "bin" / "opencode-chromium-cdp", product / "bin" / "opencode-chromium-cdp")
     wrapper = bdir / "opencode-bf"
+    if wrapper.exists() and not helper_is_owned(wrapper):
+        die(f"FOREIGN helper collision {wrapper}")
     wrapper.write_text(
         "#!/usr/bin/env bash\n"
         "set -euo pipefail\n"
@@ -979,7 +1035,7 @@ def cmd_uninstall(purge_owned_bank: bool = False, yes: bool = False) -> int:
         shutil.rmtree(bf_dir())
     for helper in ("opencode-bf", "opencode-chromium-cdp"):
         p = bin_dir() / helper
-        if p.is_file():
+        if p.is_file() and helper_is_owned(p):
             p.unlink()
     product = share_dir() / "product"
     if product.is_dir():
@@ -1093,12 +1149,24 @@ def cmd_restore(stamp: str) -> int:
     for helper in ("opencode-bf", "opencode-chromium-cdp"):
         if helpers_pre.get(helper) == "absent":
             _remove_created(bin_dir() / helper, src / "bin" / helper)
-    if pre.get("shareProduct") == "absent":
+    if (src / "product").is_dir():
+        dest_p = share_dir() / "product"
+        if dest_p.exists():
+            shutil.rmtree(dest_p)
+        shutil.copytree(src / "product", dest_p)
+        info("restored product")
+    elif pre.get("shareProduct") == "absent":
         product = share_dir() / "product"
         if product.is_dir():
             shutil.rmtree(product)
             info(f"removed installer-created {product}")
-    if pre.get("shareComponents") == "absent":
+    if (src / "components").is_dir():
+        dest_c = share_dir() / "components"
+        if dest_c.exists():
+            shutil.rmtree(dest_c)
+        shutil.copytree(src / "components", dest_c)
+        info("restored components")
+    elif pre.get("shareComponents") == "absent":
         components = share_dir() / "components"
         if components.is_dir():
             shutil.rmtree(components)

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.3 — 2026-08-21
+
+Installer hardening. No new skills or MCP. Nine snapshot skills remain unknown — not a grant.
+
+- Foreign `~/.local/bin/opencode-bf` and `opencode-chromium-cdp` fail closed; uninstall removes owned helpers only
+- Upgrade rollback copies `share/product` and `share/components` when they already existed
+- Design Bank and Codebase Memory archives reject path traversal (`..`, absolute, outbound links)
+
 ## 1.0.2 — 2026-08-21
 
 Installer polish. No new skills or MCP.
