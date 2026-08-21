@@ -1,0 +1,1 @@
+"""OpenCodeBestFriend installer library."""

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "keep-me-model",
+  "small_model": "keep-me-small",
+  "provider": {
+    "example": {
+      "npm": "@ai-sdk/openai",
+      "options": { "note": "user-owned-provider" }
+    }
+  },
+  "permission": {
+    "bash": "ask"
+  },
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    }
+  }
+}

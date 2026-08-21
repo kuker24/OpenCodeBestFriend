@@ -1,0 +1,16 @@
+# Changelog
+
+## 1.0.0 — 2026-08-21
+
+Initial public OpenCodeBestFriend release.
+
+- 40 skills (24 model-invoked, 16 manual commands)
+- Thin `AGENTS.md` router with `USED` / `CONSIDERED_NOT_USED` / `MANUAL_NOT_INVOKED` reporting
+- Core MCP: Codebase Memory 0.9.0, Context7, shadcn@4.18.0
+- Design Bank discover-or-download (media not in git)
+- Design Intelligence portable runtime
+- Transactional installer, doctor, uninstall, restore
+- Claude Code isolation; Context Guard not ported
+- Tested against OpenCode stable 1.18.x on Linux x86_64
+
+Adapted from ClaudeBestFriend 1.4.2-claude.1 (`05e6fdcdb70fe7f4420827e4df1a360f2152700c`).

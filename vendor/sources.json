@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "product": "OpenCodeBestFriend",
+  "productVersion": "1.0.0",
+  "adaptedFrom": {
+    "product": "ClaudeBestFriend",
+    "version": "1.4.2-claude.1",
+    "commit": "05e6fdcdb70fe7f4420827e4df1a360f2152700c",
+    "repository": "https://github.com/kuker24/ClaudeBestFriend"
+  },
+  "sources": {
+    "codebase-memory": {
+      "repository": "https://github.com/DeusData/codebase-memory-mcp",
+      "version": "0.9.0",
+      "platform": "linux-x86_64",
+      "artifactUrl": "https://github.com/DeusData/codebase-memory-mcp/releases/download/v0.9.0/codebase-memory-mcp-linux-amd64-portable.tar.gz",
+      "artifactSha256": "8459d5c9d1457f2c82de3de307ffc7641ecbba2dde893427be1e62eca8ef9b25"
+    },
+    "shadcn": {
+      "repository": "https://github.com/shadcn-ui/ui",
+      "package": "shadcn",
+      "version": "4.18.0",
+      "via": "npx",
+      "engines": {
+        "node": ">=20.18.1"
+      },
+      "note": "Pinned CLI version for MCP stdio. npx downloads the package; there is no artifactSha256."
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "transport": "http",
+      "note": "Remote MCP. No auth secret is stored by this installer."
+    },
+    "design-bank": {
+      "version": "1.0.0",
+      "artifactUrl": "https://github.com/kuker24/GrokBestFriend/releases/download/v1.0.0/Design-bank.tgz",
+      "artifactSha256": "9866f5a82f57f84c45f4f82af8092f9bd3a6838b5c12d6b097e3eb4fda5b634c",
+      "ownedDest": "~/.local/share/opencode-bestfriend/design-bank",
+      "redistribution": "not-cleared",
+      "note": "Not vendored in git. Installer discovers a valid bank or downloads this existing upstream release asset."
+    },
+    "serena": {
+      "repository": "https://github.com/oraios/serena",
+      "version": "1.6.1",
+      "package": "serena-agent",
+      "status": "optional-on-demand"
+    },
+    "browser-act": {
+      "repository": "https://github.com/browser-act/skills",
+      "version": "1.3.0",
+      "package": "browser-act-cli",
+      "status": "optional-host"
+    },
+    "semgrep": {
+      "package": "semgrep",
+      "version": "1.171.0",
+      "status": "optional-host"
+    },
+    "gitleaks": {
+      "repository": "https://github.com/gitleaks/gitleaks",
+      "version": "8.30.1",
+      "status": "optional-host"
+    },
+    "osv-scanner": {
+      "repository": "https://github.com/google/osv-scanner",
+      "version": "2.4.0",
+      "status": "optional-host"
+    },
+    "matt-pocock-skills": {
+      "repository": "https://github.com/mattpocock/skills",
+      "commit": "9c9f36ccd3995266cd675468af71639c8dde1ec5",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Matt Pocock",
+      "licenseFile": "vendor/licenses/MATT-POCOCK-MIT.txt"
+    },
+    "pstack": {
+      "repository": "https://github.com/cursor/plugins",
+      "commit": "60c641e4fad674784b30abcf9f8915dea39df38d",
+      "subdir": "pstack",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Lauren Tan",
+      "licenseFile": "vendor/licenses/PSTACK-MIT.txt"
+    }
+  }
+}

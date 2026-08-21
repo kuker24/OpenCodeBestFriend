@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "servers": {
+    "codebase-memory-mcp": {
+      "wanted": true,
+      "ownedIfAdded": true,
+      "scope": "user",
+      "transport": "stdio",
+      "commandKind": "owned-binary",
+      "binaryKey": "codebase-memory"
+    },
+    "context7": {
+      "wanted": true,
+      "ownedIfAdded": true,
+      "scope": "user",
+      "transport": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "shadcn": {
+      "wanted": true,
+      "ownedIfAdded": true,
+      "scope": "user",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "shadcn@4.18.0", "mcp"]
+    },
+    "exa": {
+      "wanted": false,
+      "ownedIfAdded": false,
+      "scope": "user",
+      "transport": "http",
+      "url": "https://mcp.exa.ai/mcp",
+      "status": "FOREIGN_ON_DEMAND"
+    },
+    "serena": {
+      "wanted": false,
+      "ownedIfAdded": false,
+      "scope": "user",
+      "transport": "stdio",
+      "status": "ON_DEMAND_ABSENT"
+    }
+  }
+}

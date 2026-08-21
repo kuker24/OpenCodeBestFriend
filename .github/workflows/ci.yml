@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      OPENCODE_DISABLE_CLAUDE_CODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Shell syntax
+        run: |
+          bash -n install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp
+      - name: Unit and installer tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Product isolation scan
+        run: python3 tests/test_isolation.py

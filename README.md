@@ -1,0 +1,197 @@
+# OpenCodeBestFriend
+
+Production-ready capability layer for OpenCode:
+40 routed skills, MCP, Codebase Memory,
+Design Bank, Design Intelligence, browser and verification tooling.
+
+OpenCodeBestFriend is an installer and runtime overlay for [OpenCode](https://opencode.ai). It is **not** Claude Code, **not** a model provider, and **not** a dump of a developer home directory.
+
+## What it is
+
+- 40 skills: 24 model-invoked, 16 manual slash commands
+- A thin `AGENTS.md` router (lazy, one primary specialist)
+- Core MCP: Codebase Memory, Context7, shadcn
+- Design Bank discovery or download (media is **not** in git)
+- Design Intelligence (lazy, inside Impeccable)
+- `opencode-bf doctor`, transactional install, uninstall, restore
+- Claude Code isolation: `OPENCODE_DISABLE_CLAUDE_CODE=1`
+
+## What it is not
+
+- Not Claude Code configuration
+- Not Context Guard / Claude hooks / Claude autocompact
+- Not your provider keys, models, or auth state
+- Not a Design Bank media repository
+- Not claimed as macOS/Windows-tested (Linux x86_64 only for this release)
+
+## Quickstart
+
+```bash
+git clone https://github.com/kuker24/OpenCodeBestFriend.git
+cd OpenCodeBestFriend
+
+./install.sh --dry-run
+./install.sh
+
+# pick up OPENCODE_DISABLE_CLAUDE_CODE=1
+exec "$SHELL"
+# or: source ~/.bashrc   (bash)
+# or: source ~/.zshrc    (zsh)
+
+opencode-bf doctor --deep
+opencode
+```
+
+Restart OpenCode after install. Config is not hot-reloaded.
+
+## Architecture
+
+```text
+                         OpenCode
+                            │
+                       AGENTS.md
+                            │
+                     Thin Lazy Router
+                            │
+        ┌───────────────────┼────────────────────┐
+        ▼                   ▼                    ▼
+      Skills               MCP                 Rules
+   24 automatic       Codebase Memory        Verification
+   16 manual          Context7              Engineering
+                      shadcn
+        │
+        ▼
+     Design
+     ├─ Design Bank
+     │  ├─ Refero
+     │  └─ Motionsites
+     └─ Design Intelligence
+```
+
+Availability is not a reason to activate a tool. One primary specialist. At most one risk specialist.
+
+## Skill routing
+
+Default: repository evidence first. Then at most one specialist.
+
+| Intent | Route |
+| --- | --- |
+| Repo understanding | Codebase Memory MCP |
+| Hard unknown bug | `diagnosing-bugs` |
+| Security-sensitive work | `full-audit-keamanan` |
+| Measured performance regression | `full-performance-audit` |
+| Current library docs | Context7 |
+| UI registry | shadcn MCP |
+| Visual direction | `found-this-design` |
+| UI implementation after a direction | `impeccable` |
+| Motion | `emil-design-eng` |
+| Photoreal / media | `visual-studio` |
+| Scroll-driven 3D | `scroll-world` |
+| Architecture bake-off | `/architect` (manual) |
+| Repo rationale | `/why` (manual) |
+
+Manual skills are OpenCode commands. They are not auto-discovered.
+
+When an agent names tools, it should report `USED` / `CONSIDERED_NOT_USED` / `MANUAL_NOT_INVOKED`.
+
+## MCP
+
+Core (installed):
+
+- `codebase-memory-mcp` — downloaded, SHA-256 verified, Linux x86_64
+- `context7` — `https://mcp.context7.com/mcp` (no secret stored)
+- `shadcn` — `npx -y shadcn@4.18.0 mcp`
+
+Optional:
+
+- `serena` — host binary may exist; MCP is **not** registered unless you run `opencode-bf serena enable`
+- `exa` — `FOREIGN_ON_DEMAND`; installer never adds, removes, or overwrites it
+
+The installer merges only owned MCP keys. Provider, model, permissions, plugins, and foreign MCP stay yours.
+
+## Design Bank
+
+Design Bank content is **not** vendored in this repository. Redistribution of the media archive is not cleared as first-party content.
+
+Installer order:
+
+1. `OPENCODE_DESIGN_BANK`
+2. existing valid pointer
+3. `~/Design` if catalogs exist
+4. owned cache `~/.local/share/opencode-bestfriend/design-bank/`
+5. otherwise download the existing GrokBestFriend `Design-bank.tgz` release asset, verify SHA-256, extract to the owned cache
+
+Skip the large download:
+
+```bash
+./install.sh --skip-design-bank
+```
+
+That finishes as `DEGRADED_DESIGN_BANK` without breaking core install.
+
+## Design Intelligence
+
+Portable policy, taxonomy, schemas, and Python runtime ship in git. The installer copies them into OpenCode-owned paths. Retrieval stays lazy inside Impeccable `new-work`.
+
+## Claude isolation
+
+OpenCodeBestFriend does not write `~/.claude/`, does not run `claude`, and does not import Claude hooks or Context Guard.
+
+```text
+Context Guard: NOT_PORTED_BY_DESIGN
+OpenCode autocompact: NATIVE
+```
+
+## Installer
+
+User-local, no sudo:
+
+```text
+~/.config/opencode/
+~/.local/share/opencode-bestfriend/
+~/.local/bin/
+```
+
+Transactional states: `PREPARING` → `STAGED` → `VALIDATED` → `BACKED_UP` → `APPLIED` → `VERIFIED` → `COMMITTED`.
+
+```bash
+./install.sh --dry-run
+./install.sh --recover
+opencode-bf uninstall
+opencode-bf restore --list
+opencode-bf doctor --deep
+```
+
+Update:
+
+```bash
+git pull
+./install.sh
+```
+
+## Compatibility
+
+Officially tested:
+
+- Linux x86_64
+- OpenCode stable 1.18.x
+- Python 3, Node + npx, git, curl, tar
+
+Optional host tools: Chromium, `gh`, browser-act, serena, semgrep, osv-scanner, gitleaks.
+
+## Security model
+
+- Fail-closed checksums for Codebase Memory and Design Bank downloads
+- No API keys, tokens, or provider maps in git
+- Ownership manifest: only claimed files are uninstalled
+- Optional scanners are detected, never bundled
+
+See [docs/security.md](docs/security.md).
+
+## Provenance
+
+Adapted from [ClaudeBestFriend](https://github.com/kuker24/ClaudeBestFriend) `1.4.2-claude.1` (`05e6fdc`), itself adapted from GrokBestFriend. Adapted ≠ first-party. Licenses: [LICENSE](LICENSE), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## License
+
+MIT for first-party installer, docs, overlays, and tests. Vendored skills keep their upstream licenses.
