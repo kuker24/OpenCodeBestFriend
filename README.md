@@ -160,6 +160,8 @@ Backup `preInstall` records whether config, `AGENTS.md`, commands, helpers, shel
 
 Upgrade recover restores prior `~/.local/share/opencode-bestfriend/product` and `components` when those trees existed before apply.
 
+Collision preflight (foreign skills/commands/helpers, parseable config, writable targets) runs before backup and apply. `opencode-bf serena enable` does not strip JSONC comments.
+
 Official OpenCode gate is **1.18.x** (not 1.19+). JSONC comments are preserved when MCP keys can be patched surgically.
 
 ```bash

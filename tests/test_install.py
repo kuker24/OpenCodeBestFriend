@@ -14,7 +14,7 @@ import sys
 
 sys.path.insert(0, str(ROOT))
 from lib import jsonc  # noqa: E402
-from lib.install import backup_relevant, cmd_install, cmd_restore, cmd_uninstall  # noqa: E402
+from lib.install import backup_relevant, cmd_install, cmd_restore, cmd_serena_enable, cmd_uninstall  # noqa: E402
 from lib.doctor import cmd_doctor, cmd_skills_verify, isolation_check  # noqa: E402
 
 
@@ -31,6 +31,7 @@ class InstallTests(unittest.TestCase):
             "OPENCODE_BF_TEST_CBM",
             "OPENCODE_DESIGN_BANK",
             "OPENCODE_DISABLE_CLAUDE_CODE",
+            "PATH",
         )}
         self.tmp = Path(tempfile.mkdtemp(prefix="ocbf-"))
         os.environ["HOME"] = str(self.tmp)
@@ -196,9 +197,53 @@ class InstallTests(unittest.TestCase):
         helper = dest / "opencode-bf"
         helper.write_text("#!/bin/sh\necho foreign\n", encoding="utf-8")
         helper.chmod(helper.stat().st_mode | stat.S_IXUSR)
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        before = cfg.read_text(encoding="utf-8")
         with self.assertRaises(SystemExit):
             cmd_install()
         self.assertEqual(helper.read_text(encoding="utf-8"), "#!/bin/sh\necho foreign\n")
+        self.assertEqual(cfg.read_text(encoding="utf-8"), before)
+        self.assertFalse((self.tmp / ".config" / "opencode" / "skills").exists())
+        self.assertFalse((self.tmp / ".config" / "opencode" / "commands").exists())
+        self.assertFalse((self.tmp / ".config" / "opencode" / "AGENTS.md").exists())
+
+    def _fake_serena(self) -> None:
+        bindir = self.tmp / "pathbin"
+        bindir.mkdir(parents=True, exist_ok=True)
+        serena = bindir / "serena"
+        serena.write_text("#!/bin/sh\necho serena\n", encoding="utf-8")
+        serena.chmod(serena.stat().st_mode | stat.S_IXUSR)
+        os.environ["PATH"] = f"{bindir}:{os.environ.get('PATH', '')}"
+
+    def test_serena_enable_preserves_jsonc_comments(self):
+        self._fake_serena()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.write_text(
+            """{
+  // provider utama saya
+  "model": "keep-me-model",
+  "provider": {"example": {"options": {"note": "user-owned-provider"}}},
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    }
+  }
+}
+""",
+            encoding="utf-8",
+        )
+        self.assertEqual(cmd_serena_enable(), 0)
+        text = cfg.read_text(encoding="utf-8")
+        self.assertIn("provider utama saya", text)
+        data = jsonc.loads(text)
+        self.assertEqual(data["model"], "keep-me-model")
+        self.assertEqual(data["provider"]["example"]["options"]["note"], "user-owned-provider")
+        self.assertIn("foreign-weather", data["mcp"])
+        self.assertIn("serena", data["mcp"])
+        self.assertEqual(cmd_serena_enable(), 0)
+        self.assertEqual(cfg.read_text(encoding="utf-8"), text)
 
     def test_restore_prior_product_tree(self):
         product = self.tmp / ".local" / "share" / "opencode-bestfriend" / "product"

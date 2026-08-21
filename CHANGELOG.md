@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.4 — 2026-08-21
+
+Installer freeze-prep. No new skills or MCP. Nine snapshot skills remain unknown — not a grant.
+
+- `opencode-bf serena enable` uses surgical MCP merge; JSONC comments, provider, and foreign MCP are preserved; existing `serena` is not overwritten
+- Collision preflight runs after `VALIDATED` and before backup/apply (skills, commands, helpers, parseable config, AGENTS type, writable targets)
+
 ## 1.0.3 — 2026-08-21
 
 Installer hardening. No new skills or MCP. Nine snapshot skills remain unknown — not a grant.

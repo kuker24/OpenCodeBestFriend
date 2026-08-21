@@ -698,6 +698,42 @@ def owned_ok(path: Path) -> bool:
     return False
 
 
+def preflight_install(meta: dict) -> None:
+    cfg = config_dir()
+    for name in meta["model"]:
+        dest = cfg / "skills" / name
+        if dest.exists() and not owned_ok(dest):
+            die(f"FOREIGN skill collision {dest}")
+        if dest.exists() and dest.is_file():
+            die(f"TARGET_NOT_DIRECTORY {dest}")
+    for name in meta["manual"]:
+        dest = cfg / "commands" / f"{name}.md"
+        if dest.exists() and not command_is_owned(dest):
+            die(f"FOREIGN command collision {dest}")
+        if dest.exists() and dest.is_dir():
+            die(f"TARGET_NOT_FILE {dest}")
+    for helper in ("opencode-bf", "opencode-chromium-cdp"):
+        dest = bin_dir() / helper
+        if dest.exists() and not helper_is_owned(dest):
+            die(f"FOREIGN helper collision {dest}")
+    path = existing_config_path()
+    if path:
+        try:
+            data = jsonc.load_path(path)
+        except Exception as exc:
+            die(f"OPENCODE_CONFIG_INVALID: {exc}")
+        if not isinstance(data, dict):
+            die("OPENCODE_CONFIG_INVALID: root is not an object")
+    agents = cfg / "AGENTS.md"
+    if agents.exists() and not agents.is_file():
+        die(f"AGENTS_TARGET_INVALID {agents}")
+    for d in (cfg, bin_dir(), share_dir()):
+        probe = d if d.exists() else d.parent
+        if probe.exists() and not os.access(probe, os.W_OK):
+            die(f"TARGET_NOT_WRITABLE {probe}")
+    info("preflight PASS")
+
+
 def helper_is_owned(path: Path) -> bool:
     if not path.is_file():
         return True
@@ -950,6 +986,7 @@ def cmd_install(dry_run: bool = False, skip_design_bank: bool = False, offline: 
     set_transaction("STAGED", {"skills": len(meta["allow"])})
     validate_stage(meta)
     set_transaction("VALIDATED")
+    preflight_install(meta)
     stamp = time.strftime("%Y%m%dT%H%M%SZ")
     backup_relevant(stamp, meta)
     set_transaction("BACKED_UP", {"stamp": stamp})
@@ -1179,18 +1216,42 @@ def cmd_serena_enable() -> int:
     serena = which("serena")
     if not serena:
         die("serena not on PATH")
-    path = target_config_path()
-    data = jsonc.load_path(path) if path.is_file() else {"$schema": "https://opencode.ai/config.json"}
-    mcp = data.setdefault("mcp", {})
-    if "serena" in mcp:
-        info("serena MCP already present; not overwriting")
-        return 0
-    mcp["serena"] = {
+    spec = {
         "type": "local",
         "command": [serena, "start-mcp-server", "--context", "agent", "--project-from-cwd"],
         "enabled": True,
     }
+    path = target_config_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(jsonc.dumps(data), encoding="utf-8")
+    if not path.is_file():
+        path.write_text(
+            jsonc.dumps({"$schema": "https://opencode.ai/config.json", "mcp": {"serena": spec}}),
+            encoding="utf-8",
+        )
+        info(f"enabled serena MCP in {path}")
+        return 0
+    raw = path.read_text(encoding="utf-8")
+    try:
+        data = jsonc.loads(raw)
+    except Exception as exc:
+        die(f"OPENCODE_CONFIG_INVALID: {exc}")
+    if not isinstance(data, dict):
+        die("OPENCODE_CONFIG_INVALID: root is not an object")
+    mcp = data.get("mcp") or {}
+    if not isinstance(mcp, dict):
+        die("OPENCODE_CONFIG_INVALID mcp")
+    if "serena" in mcp:
+        info("serena MCP already present; not overwriting")
+        return 0
+    if jsonc.contains_comments(raw):
+        try:
+            merged = jsonc.upsert_mcp_servers(raw, {"serena": spec})
+            jsonc.loads(merged)
+            path.write_text(merged if merged.endswith("\n") else merged + "\n", encoding="utf-8")
+        except Exception as exc:
+            die(f"OPENCODE_CONFIG_JSONC_SURGICAL_FAILED: {exc}")
+    else:
+        data.setdefault("mcp", {})["serena"] = spec
+        path.write_text(jsonc.dumps(data), encoding="utf-8")
     info(f"enabled serena MCP in {path}")
     return 0
