@@ -8,12 +8,14 @@ from pathlib import Path
 # Allow `python3 lib/cli.py` from a clone.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from lib.cbm import cmd_cbm_index, cmd_cbm_status  # noqa: E402
 from lib.doctor import (  # noqa: E402
     cmd_chromium,
     cmd_design_bank,
     cmd_design_intelligence,
     cmd_doctor,
     cmd_mcp_status,
+    cmd_security_profile,
     cmd_skills_list,
     cmd_skills_verify,
     isolation_check,
@@ -25,6 +27,7 @@ from lib.install import (  # noqa: E402
     cmd_serena_enable,
     cmd_uninstall,
 )
+from lib.integrity import cmd_verify  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -47,8 +50,17 @@ def build_parser() -> argparse.ArgumentParser:
     rst.add_argument("stamp", nargs="?")
     rst.add_argument("--list", action="store_true")
 
-    doc = sub.add_parser("doctor", help="verify installation")
-    doc.add_argument("--deep", action="store_true")
+    doc = sub.add_parser("doctor", help="installation/config health")
+    doc.add_argument("--deep", action="store_true", help="require live core MCP CONNECTED")
+    doc.add_argument("--strict", action="store_true", help="treat DEGRADED/WARN as failure")
+
+    sub.add_parser("verify", help="check installed owned files are canonical")
+
+    cbm = sub.add_parser("cbm", help="Codebase Memory project helpers")
+    cbm.add_argument("action", choices=["status", "index"])
+    cbm.add_argument("path", nargs="?", default=".")
+
+    sub.add_parser("security-profile", help="print permission recommendation (does not mutate)")
 
     sk = sub.add_parser("skills")
     sk.add_argument("action", choices=["list", "verify"])
@@ -93,7 +105,15 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_restore_list()
         return cmd_restore(args.stamp)
     if cmd == "doctor":
-        return cmd_doctor(deep=args.deep)
+        return cmd_doctor(deep=args.deep, strict=args.strict)
+    if cmd == "verify":
+        return cmd_verify()
+    if cmd == "cbm":
+        if args.action == "status":
+            return cmd_cbm_status()
+        return cmd_cbm_index(args.path)
+    if cmd == "security-profile":
+        return cmd_security_profile()
     if cmd == "skills":
         return cmd_skills_list() if args.action == "list" else cmd_skills_verify()
     if cmd == "mcp":

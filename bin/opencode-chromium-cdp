@@ -47,7 +47,7 @@ is_chromium_path() {
   local path="$1"
   is_google_chrome "$path" && return 1
   case "$path" in
-    *chromium*|*chromium-browser*) return 0 ;;
+    *chromium*) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -187,12 +187,13 @@ cmd_start() {
     about:blank \
     >"$LOG_FILE" 2>&1 &
   printf '%s\n' "$!" >"$PID_FILE"
-  local i
-  for i in $(seq 1 60); do
+  local n=0
+  while [ "$n" -lt 60 ]; do
     if our_cdp_ok; then
       printf 'started url=http://%s:%s binary=%s profile=%s\n' "$CDP_HOST" "$CDP_PORT" "$bin" "$profile"
       return 0
     fi
+    n=$((n + 1))
     sleep 0.2
   done
   printf 'NOT_CONFIGURED: Chromium CDP did not become ready on %s:%s\n' "$CDP_HOST" "$CDP_PORT" >&2

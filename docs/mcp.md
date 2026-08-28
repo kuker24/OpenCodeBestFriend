@@ -17,6 +17,6 @@ Optional:
 
 Merge is parse-aware. Comment-free JSON is rewritten with `json.dumps`. JSONC with comments is patched surgically (owned MCP keys only). If surgical merge cannot be verified, install fails closed instead of destroying comments.
 
-Doctor reports `CONFIGURED` for owned MCP entries present in config. That is not a live connection. `opencode-bf doctor --deep` may probe `opencode mcp list` per server/per line and report `CONNECTED` / `DISCONNECTED` / `LISTED` / `NOT_CHECKED` / `SKIPPED_MOCK`. The substring `connected` inside `disconnected` is not treated as connected.
+Doctor reports `CONFIGURED` for owned MCP entries present in config. That is not a live connection. `opencode-bf doctor --deep` probes `opencode mcp list` per server/per line and **exits 1** unless every core server is `CONNECTED`. `DISCONNECTED`, `NOT_CHECKED`, `LISTED`, empty output, and command failure are not healthy. The substring `connected` inside `disconnected` is not treated as connected. ANSI codes are stripped before parse.
 
 `opencode-bf serena enable` adds Serena only if absent. JSONC comments, provider keys, and foreign MCP are preserved via the same surgical merge as core MCP. Invalid config fails closed.

@@ -38,6 +38,8 @@ exec "$SHELL"
 # or: source ~/.bashrc   (bash)
 # or: source ~/.zshrc    (zsh)
 
+opencode-bf verify
+opencode-bf doctor
 opencode-bf doctor --deep
 opencode
 ```
@@ -169,8 +171,13 @@ Official OpenCode gate is **1.18.x** (not 1.19+). JSONC comments are preserved w
 ./install.sh --recover
 opencode-bf uninstall
 opencode-bf restore --list
+opencode-bf verify
+opencode-bf doctor
 opencode-bf doctor --deep
+opencode-bf doctor --strict
 ```
+
+`verify` checks owned files are canonical. `doctor` checks install/config health (MCP `CONFIGURED` is not live). `doctor --deep` requires core MCP `CONNECTED`. `doctor --strict` fails on `DEGRADED`/`WARN`. ClaudeBestFriend 1.4.2 overlays are migrated on install (foreign MCP/provider kept).
 
 Update:
 

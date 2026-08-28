@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.5 — 2026-08-28
+
+Runtime integrity, migration, and supply-chain hardening. No new skills or MCP. Nine snapshot skills remain unknown — not a grant.
+
+- `opencode-bf verify` checks product identity and SHA-256 of owned runtime files
+- `doctor --deep` fails unless core MCP is live `CONNECTED` (no false-green)
+- `doctor --strict` treats `DEGRADED`/`WARN` as failure; Serena stays optional
+- Product identity: `product`, `productVersion`, `sourceRepository` must match this release
+- Detects stale AGENTS.md (missing USED/CONSIDERED_NOT_USED/MANUAL_NOT_INVOKED) and stale routing title
+- Migrates ClaudeBestFriend 1.4.2-claude.1 overlays (legacy helpers replaceable; foreign MCP/provider preserved)
+- Host gate: `node`/`npx` required when shadcn MCP is enabled; wildcard `"*": "allow"` is `DEGRADED_SECURITY` (not mutated)
+- Uninstall/restore fail-closed on path/stamp traversal; archive extract rejects absolute/symlink/hardlink/Windows traversal
+- Context Guard reported as `NOT_APPLICABLE` / `NOT_PORTED_BY_DESIGN`
+- `opencode-bf cbm status|index` and `security-profile` (recommendation only)
+
 ## 1.0.4 — 2026-08-21
 
 Installer freeze-prep. No new skills or MCP. Nine snapshot skills remain unknown — not a grant.

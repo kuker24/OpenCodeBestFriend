@@ -341,7 +341,8 @@ def _find_key_in_object(text: str, brace_start: int, key: str) -> tuple[int, int
     return None
 
 
-def remove_mcp_servers(text: str, names: list[str]) -> str:
+def remove_mcp_servers(text: str, names: list[str] | tuple[str, ...]) -> str:
+    names = list(names)
     current = text
     for name in names:
         mcp = _find_root_key(current, "mcp")

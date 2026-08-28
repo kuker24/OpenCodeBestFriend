@@ -1,0 +1,11 @@
+rules:
+  - id: ocbf-no-shell-true
+    patterns:
+      - pattern: subprocess.$F(..., shell=True, ...)
+    message: subprocess shell=True is forbidden in OpenCodeBestFriend
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - lib
+        - tests

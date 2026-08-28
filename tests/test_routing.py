@@ -20,6 +20,7 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("USED", self.agents)
         self.assertIn("CONSIDERED_NOT_USED", self.agents)
         self.assertIn("MANUAL_NOT_INVOKED", self.agents)
+        self.assertTrue(self.routing.startswith("# OpenCode specialist routing (opencode-bestfriend)"))
 
     def test_mappings(self):
         blob = self.agents + "\n" + self.routing

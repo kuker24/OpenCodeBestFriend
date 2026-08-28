@@ -1,2 +1,9 @@
 #!/bin/sh
+if [ "$1" = "mcp" ] && [ "$2" = "list" ]; then
+  if [ -n "${OPENCODE_BF_MOCK_MCP_LIST:-}" ] && [ -f "$OPENCODE_BF_MOCK_MCP_LIST" ]; then
+    cat "$OPENCODE_BF_MOCK_MCP_LIST"
+    exit "${OPENCODE_BF_MOCK_MCP_LIST_RC:-0}"
+  fi
+  exit "${OPENCODE_BF_MOCK_MCP_LIST_RC:-0}"
+fi
 echo "1.18.20"

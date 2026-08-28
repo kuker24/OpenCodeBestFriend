@@ -12,6 +12,14 @@
 
 `STALE_TRANSACTION` — `./install.sh --recover`
 
-Doctor `OPTIONAL_ABSENT` is not a core failure.
+`INVALID_BACKUP_STAMP` / `BACKUP_PATH_ESCAPE` — restore stamps are `[A-Za-z0-9][A-Za-z0-9._-]{0,63}` only.
+
+`FAIL INSTALLED_VERSION` / `FAIL SOURCE_REPOSITORY` — runtime is not this OpenCodeBestFriend release. Re-run `./install.sh` from the matching clone (ClaudeBestFriend overlays migrate automatically).
+
+`STALE AGENTS.md` — owned block missing USED / CONSIDERED_NOT_USED / MANUAL_NOT_INVOKED. Reinstall.
+
+Doctor `OPTIONAL_ABSENT` is not a core failure. `DEGRADED` is non-fatal unless `doctor --strict`.
+
+`doctor --deep` exit 1 with `NOT_CHECKED` — `opencode mcp list` failed or was empty; core MCP is not proven live.
 
 Restart OpenCode after install.

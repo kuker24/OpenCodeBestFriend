@@ -45,6 +45,45 @@ class SafeExtractTests(unittest.TestCase):
             safe_extract(tf, dest)
         self.assertEqual((dest / "hello.txt").read_bytes(), b"ok\n")
 
+    def _reject(self, name: str, linkname: str | None = None, typ=None):
+        tmp = Path(tempfile.mkdtemp(prefix="ocbf-tar-"))
+        self.addCleanup(lambda: __import__("shutil").rmtree(tmp, ignore_errors=True))
+        tarpath = tmp / "evil.tar"
+        with tarfile.open(tarpath, "w") as tf:
+            info = tarfile.TarInfo(name=name)
+            if typ is not None:
+                info.type = typ
+            if linkname is not None:
+                info.linkname = linkname
+            if typ in {tarfile.SYMTYPE, tarfile.LNKTYPE}:
+                tf.addfile(info)
+            else:
+                payload = b"nope"
+                info.size = len(payload)
+                tf.addfile(info, io.BytesIO(payload))
+        dest = tmp / "out"
+        dest.mkdir()
+        with tarfile.open(tarpath, "r") as tf:
+            with self.assertRaises(SystemExit):
+                safe_extract(tf, dest)
+        self.assertEqual(list(dest.iterdir()), [])
+
+    def test_rejects_absolute(self):
+        self._reject("/etc/passwd")
+
+    def test_rejects_symlink_outbound(self):
+        self._reject("link", "/etc/passwd", tarfile.SYMTYPE)
+
+    def test_rejects_hardlink_outbound(self):
+        self._reject("link", "/etc/passwd", tarfile.LNKTYPE)
+
+    def test_rejects_nested_traversal(self):
+        self._reject("foo/../../etc/passwd")
+
+    def test_rejects_windows_style_traversal(self):
+        self._reject("..\\..\\evil")
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -37,7 +37,6 @@ class LicenseAuditTests(unittest.TestCase):
     def test_provenance_version_matches_product(self):
         prov = json.loads((ROOT / "vendor" / "provenance.json").read_text(encoding="utf-8"))
         self.assertEqual(prov["productVersion"], product_version())
-        self.assertEqual(product_version(), "1.0.4")
         names = {c["component"] for c in prov["components"]}
         self.assertNotIn("other-user-skills", names)
         self.assertTrue(UNKNOWN <= names)

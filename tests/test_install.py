@@ -215,6 +215,14 @@ class InstallTests(unittest.TestCase):
         serena.chmod(serena.stat().st_mode | stat.S_IXUSR)
         os.environ["PATH"] = f"{bindir}:{os.environ.get('PATH', '')}"
 
+    def test_serena_enable_invalid_config_fail_closed(self):
+        self._fake_serena()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.write_text("{ not json", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            cmd_serena_enable()
+        self.assertEqual(cfg.read_text(encoding="utf-8"), "{ not json")
+
     def test_serena_enable_preserves_jsonc_comments(self):
         self._fake_serena()
         cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"

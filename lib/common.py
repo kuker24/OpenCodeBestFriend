@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 
 def home() -> Path:
@@ -48,7 +49,7 @@ def product_version() -> str:
     return (repo_root() / "VERSION").read_text(encoding="utf-8").strip()
 
 
-def die(msg: str) -> None:
+def die(msg: str) -> NoReturn:
     print(f"FAIL {msg}", file=sys.stderr)
     raise SystemExit(1)
 

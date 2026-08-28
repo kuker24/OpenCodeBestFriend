@@ -5,20 +5,69 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     env:
       OPENCODE_DISABLE_CLAUDE_CODE: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
       - name: Shell syntax
         run: |
           bash -n install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp
+      - name: Compileall
+        run: python3 -m compileall -q lib tests
       - name: Unit and installer tests
         run: python3 -m unittest discover -s tests -v
       - name: Product isolation scan
         run: python3 tests/test_isolation.py
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Install shellcheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+      - name: Shellcheck
+        run: shellcheck -x install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  semgrep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: "3.12"
+      - name: semgrep
+        run: |
+          python3 -m pip install --quiet semgrep
+          semgrep --config .semgrep.yml --error lib tests

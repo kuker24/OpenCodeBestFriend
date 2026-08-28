@@ -11,6 +11,9 @@ import urllib.request
 from pathlib import Path
 
 from . import jsonc
+from .identity import EXPECTED_PRODUCT, EXPECTED_REPO, detect_legacy_overlay
+from .integrity import build_integrity_manifest, verify_owned_runtime
+from .paths import NAME_RE, assert_skill_name, resolve_backup_stamp, tar_member_ok
 from .common import (
     backups_dir,
     bf_dir,
@@ -204,16 +207,7 @@ def discover_design_bank() -> tuple[str, str] | None:
 
 
 def _tar_target_ok(dest: Path, name: str) -> bool:
-    dest = dest.resolve()
-    cleaned = name.replace("\\", "/")
-    if cleaned.startswith("/") or cleaned.startswith("~"):
-        return False
-    parts = Path(cleaned).parts
-    if ".." in parts:
-        return False
-    target = (dest / cleaned).resolve()
-    dest_s = str(dest)
-    return target == dest or str(target).startswith(dest_s + os.sep)
+    return tar_member_ok(dest, name)
 
 
 def safe_extract(tf: tarfile.TarFile, dest: Path) -> None:
@@ -229,7 +223,12 @@ def safe_extract(tf: tarfile.TarFile, dest: Path) -> None:
     kwargs: dict = {"path": str(dest)}
     if "filter" in tarfile.TarFile.extractall.__code__.co_varnames:
         kwargs["filter"] = "data"
-    tf.extractall(**kwargs)
+    try:
+        tf.extractall(**kwargs)
+    except SystemExit:
+        raise
+    except Exception as exc:
+        die(f"ARCHIVE_PATH_TRAVERSAL {exc}")
 
 
 def download_design_bank() -> tuple[str, str]:
@@ -714,7 +713,7 @@ def preflight_install(meta: dict) -> None:
             die(f"TARGET_NOT_FILE {dest}")
     for helper in ("opencode-bf", "opencode-chromium-cdp"):
         dest = bin_dir() / helper
-        if dest.exists() and not helper_is_owned(dest):
+        if dest.exists() and not helper_replaceable(dest):
             die(f"FOREIGN helper collision {dest}")
     path = existing_config_path()
     if path:
@@ -749,11 +748,40 @@ def helper_is_owned(path: Path) -> bool:
     return False
 
 
+def helper_is_legacy_owned(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    return any(
+        needle in text
+        for needle in (
+            "opencode_bf.py",
+            "OPENCODE_BF_INSTALLER",
+            "ClaudeBestFriend",
+            "source/ClaudeBestFriend",
+        )
+    )
+
+
+def helper_replaceable(path: Path) -> bool:
+    return helper_is_owned(path) or helper_is_legacy_owned(path) or not path.exists()
+
+
+def git_head() -> str | None:
+    r = run(["git", "rev-parse", "HEAD"], cwd=repo_root())
+    if r.returncode == 0:
+        return (r.stdout or "").strip() or None
+    return None
+
+
 def install_helpers() -> dict[str, str]:
     bdir = bin_dir()
     bdir.mkdir(parents=True, exist_ok=True)
     dest_cdp = bdir / "opencode-chromium-cdp"
-    if dest_cdp.exists() and not helper_is_owned(dest_cdp):
+    if dest_cdp.exists() and not helper_replaceable(dest_cdp):
         die(f"FOREIGN helper collision {dest_cdp}")
     shutil.copy2(repo_root() / "bin" / "opencode-chromium-cdp", dest_cdp)
     dest_cdp.chmod(dest_cdp.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
@@ -766,7 +794,7 @@ def install_helpers() -> dict[str, str]:
     (product / "bin").mkdir(parents=True, exist_ok=True)
     shutil.copy2(repo_root() / "bin" / "opencode-chromium-cdp", product / "bin" / "opencode-chromium-cdp")
     wrapper = bdir / "opencode-bf"
-    if wrapper.exists() and not helper_is_owned(wrapper):
+    if wrapper.exists() and not helper_replaceable(wrapper):
         die(f"FOREIGN helper collision {wrapper}")
     wrapper.write_text(
         "#!/usr/bin/env bash\n"
@@ -863,16 +891,19 @@ def apply(meta: dict, cbm_bin: Path, bank: tuple[str | None, str, str]) -> list[
     ensure_shell_isolation()
     oc = which("opencode") or os.environ.get("OPENCODE_BF_MOCK_OPENCODE") or "opencode"
     ver = run([oc, "--version"]).stdout.strip()
+    legacy = meta.get("legacy")
     man = {
-        "product": "opencode-bestfriend",
+        "schemaVersion": 1,
+        "product": EXPECTED_PRODUCT,
         "productVersion": meta["productVersion"],
-        "sourceRepository": "https://github.com/kuker24/OpenCodeBestFriend",
+        "sourceRepository": EXPECTED_REPO,
         "adaptedFrom": {
             "product": "ClaudeBestFriend",
             "version": "1.4.2-claude.1",
             "commit": "05e6fdcdb70fe7f4420827e4df1a360f2152700c",
         },
         "installedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "sourceCommit": git_head(),
         "opencodeVersion": ver,
         "schema": "opencode-1.18 mcp.<name>",
         "ownedFiles": owned,
@@ -886,6 +917,7 @@ def apply(meta: dict, cbm_bin: Path, bank: tuple[str | None, str, str]) -> list[
             "root": bank_root,
             "source": bank_source,
             "mode": bank_mode,
+            "ownership": "owned-download" if bank_mode == "owned-download" else "foreign-read-only",
         },
         "helpers": helpers | {"codebase-memory-mcp": str(cbm_bin)},
         "exclusions": {
@@ -895,7 +927,13 @@ def apply(meta: dict, cbm_bin: Path, bank: tuple[str | None, str, str]) -> list[
             "opencodeCompaction": "UNCHANGED",
         },
     }
+    if legacy:
+        man["migration"] = {
+            "fromProduct": legacy.get("fromProduct"),
+            "fromVersion": legacy.get("fromVersion"),
+        }
     write_json(bf / "manifests" / "ownership.json", man)
+    build_integrity_manifest()
     write_json(state_dir() / "install.json", {"status": "APPLIED", "manifest": str(bf / "manifests" / "ownership.json")})
     return owned
 
@@ -918,7 +956,13 @@ def plan_text(meta: dict, mcp_plan: dict, bank: tuple, cbm: str) -> str:
 def verify_install() -> int:
     from .doctor import cmd_design_intelligence, cmd_skills_verify, isolation_check
 
+    if os.environ.get("OPENCODE_BF_FORCE_VERIFY_FAIL") == "1":
+        warn("VERIFY_FAILED forced")
+        return 1
     failed = 0
+    if verify_owned_runtime() != 0:
+        failed += 1
+        warn("owned runtime identity/integrity failed")
     if cmd_skills_verify() != 0:
         failed += 1
         warn("skills verify failed")
@@ -982,7 +1026,14 @@ def cmd_install(dry_run: bool = False, skip_design_bank: bool = False, offline: 
         print("DRY_RUN_NO_MUTATION")
         return 0
     set_transaction("PREPARING")
+    legacy = detect_legacy_overlay()
+    if legacy:
+        info(
+            f"MIGRATION_DETECTED {legacy.get('fromProduct')} {legacy.get('fromVersion')} "
+            f"→ OpenCodeBestFriend {product_version()}"
+        )
     meta = stage()
+    meta["legacy"] = legacy
     set_transaction("STAGED", {"skills": len(meta["allow"])})
     validate_stage(meta)
     set_transaction("VALIDATED")
@@ -1034,7 +1085,7 @@ def cmd_uninstall(purge_owned_bank: bool = False, yes: bool = False) -> int:
     cfg_path = existing_config_path()
     if cfg_path and cfg_path.is_file():
         raw = cfg_path.read_text(encoding="utf-8")
-        names = list(man.get("ownedMcp") or OWNED_MCP)
+        names: list[str] = list(man.get("ownedMcp") or list(OWNED_MCP))
         if jsonc.contains_comments(raw):
             try:
                 merged = jsonc.remove_mcp_servers(raw, names)
@@ -1051,10 +1102,16 @@ def cmd_uninstall(purge_owned_bank: bool = False, yes: bool = False) -> int:
             cfg_path.write_text(jsonc.dumps(data), encoding="utf-8")
     cfg = config_dir()
     for name in man.get("modelInvokedSkills") or []:
+        if not NAME_RE.fullmatch(str(name)):
+            warn(f"skipping invalid owned skill name {name!r}")
+            continue
         d = cfg / "skills" / name
         if d.is_dir() and (d / ".opencode-bestfriend.json").is_file():
             shutil.rmtree(d)
     for name in man.get("manualSkills") or []:
+        if not NAME_RE.fullmatch(str(name)):
+            warn(f"skipping invalid owned skill name {name!r}")
+            continue
         d = bf_dir() / "skills" / name
         if d.is_dir():
             shutil.rmtree(d)
@@ -1114,9 +1171,7 @@ def _remove_created(live: Path, backup: Path, is_dir: bool = False) -> None:
 
 
 def cmd_restore(stamp: str) -> int:
-    src = backups_dir() / stamp
-    if not src.is_dir():
-        die(f"backup not found {stamp}")
+    src = resolve_backup_stamp(stamp, backups_dir())
     meta_path = src / "meta.json"
     pre = load_json(meta_path).get("preInstall") or {} if meta_path.is_file() else {}
     cfg = config_dir()
