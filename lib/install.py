@@ -770,6 +770,13 @@ def helper_replaceable(path: Path) -> bool:
     return helper_is_owned(path) or helper_is_legacy_owned(path) or not path.exists()
 
 
+def remove_legacy_installer() -> None:
+    inst = share_dir() / "components" / "installer"
+    if (inst / "opencode_bf.py").is_file():
+        shutil.rmtree(inst)
+        info(f"removed leftover ClaudeBestFriend installer {inst}")
+
+
 def git_head() -> str | None:
     r = run(["git", "rev-parse", "HEAD"], cwd=repo_root())
     if r.returncode == 0:
@@ -887,6 +894,7 @@ def apply(meta: dict, cbm_bin: Path, bank: tuple[str | None, str, str]) -> list[
     )
     helpers = install_helpers()
     owned.extend(helpers.values())
+    remove_legacy_installer()
     merge_opencode_config(cbm_bin)
     ensure_shell_isolation()
     oc = which("opencode") or os.environ.get("OPENCODE_BF_MOCK_OPENCODE") or "opencode"

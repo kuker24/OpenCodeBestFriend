@@ -37,18 +37,17 @@ def looks_like_project(cwd: Path) -> bool:
 
 
 def _last_json(text: str):
+    dec = json.JSONDecoder()
     blob = text.strip()
-    start_obj = blob.rfind("\n{")
-    start_arr = blob.rfind("\n[")
-    start = max(start_obj, start_arr)
-    if start < 0:
-        if blob.startswith("{") or blob.startswith("["):
-            return json.loads(blob)
-        idx = blob.find("{")
-        if idx >= 0:
-            return json.loads(blob[idx:])
-        raise ValueError("no json")
-    return json.loads(blob[start + 1 :])
+    for i, ch in enumerate(blob):
+        if ch not in "{[":
+            continue
+        try:
+            obj, _end = dec.raw_decode(blob, i)
+        except json.JSONDecodeError:
+            continue
+        return obj
+    raise ValueError("no json")
 
 
 def cbm_cli(args: list[str]) -> tuple[int, object | None, str]:

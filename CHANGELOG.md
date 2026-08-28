@@ -11,6 +11,9 @@ Runtime integrity, migration, and supply-chain hardening. No new skills or MCP. 
 - Detects stale AGENTS.md (missing USED/CONSIDERED_NOT_USED/MANUAL_NOT_INVOKED) and stale routing title
 - Migrates ClaudeBestFriend 1.4.2-claude.1 overlays (legacy helpers replaceable; foreign MCP/provider preserved)
 - Host gate: `node`/`npx` required when shadcn MCP is enabled; wildcard `"*": "allow"` is `DEGRADED_SECURITY` (not mutated)
+- Isolation scan skips `state/` (pre-install Claude snapshot is not an active dependency); migrate removes leftover `components/installer`
+- `doctor --deep` keeps MCP `CONNECTED` when a later path line repeats the server name
+- CBM CLI parser ignores `level=info` log lines mixed with JSON
 - Uninstall/restore fail-closed on path/stamp traversal; archive extract rejects absolute/symlink/hardlink/Windows traversal
 - Context Guard reported as `NOT_APPLICABLE` / `NOT_PORTED_BY_DESIGN`
 - `opencode-bf cbm status|index` and `security-profile` (recommendation only)

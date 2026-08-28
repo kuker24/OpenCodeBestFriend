@@ -49,6 +49,20 @@ shadcn connected
         out = parse_mcp_list(text)
         self.assertEqual(out["codebase-memory-mcp"], "CONNECTED")
 
+    def test_path_line_does_not_downgrade_connected(self):
+        text = """
+●  ✓ codebase-memory-mcp connected
+│      /home/u/.local/share/opencode-bestfriend/components/codebase-memory/bin/codebase-memory-mcp
+●  ✓ context7 connected
+│      https://mcp.context7.com/mcp
+●  ✓ shadcn connected
+│      npx -y shadcn@4.18.0 mcp
+"""
+        out = parse_mcp_list(text)
+        self.assertEqual(out["codebase-memory-mcp"], "CONNECTED")
+        self.assertEqual(out["context7"], "CONNECTED")
+        self.assertEqual(out["shadcn"], "CONNECTED")
+
 
 class AgentsBlockTests(unittest.TestCase):
     def test_owned_block_ignores_foreign_text(self):

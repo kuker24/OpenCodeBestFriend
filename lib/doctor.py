@@ -35,6 +35,17 @@ CLAUDE_ACTIVE_PATTERNS = (
     "grokbestfriend-claude",
     "claude mcp",
 )
+CLAUDE_SCAN_SKIP_PARTS = {
+    "source",
+    "cache",
+    "node_modules",
+    ".git",
+    "docs",
+    "licenses",
+    "product",
+    "backups",
+    "state",
+}
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 OWNED_MCP_PROBE = ("codebase-memory-mcp", "context7", "shadcn")
@@ -140,11 +151,14 @@ def parse_mcp_list(text: str, names: tuple[str, ...] = OWNED_MCP_PROBE) -> dict[
         rest = re.sub(re.escape(name), " ", lower, count=1)
         words = set(re.findall(r"[a-z0-9_-]+", rest))
         if "disconnected" in words or "disabled" in words:
-            out[name] = "DISCONNECTED"
+            status = "DISCONNECTED"
         elif "connected" in words:
-            out[name] = "CONNECTED"
+            status = "CONNECTED"
         else:
-            out[name] = "LISTED"
+            status = "LISTED"
+        rank = {"NOT_CHECKED": 0, "LISTED": 1, "CONNECTED": 2, "DISCONNECTED": 3}
+        if rank[status] > rank[out[name]]:
+            out[name] = status
     return out
 
 
@@ -235,6 +249,32 @@ def cmd_chromium() -> int:
     return 0
 
 
+def claude_dependency_hits() -> list[str]:
+    hits: list[str] = []
+    for root in (config_dir(), share_dir()):
+        if not root.is_dir():
+            continue
+        for path in root.rglob("*"):
+            if not path.is_file():
+                continue
+            if any(p in CLAUDE_SCAN_SKIP_PARTS for p in path.parts):
+                continue
+            if path.suffix not in {".md", ".json", ".jsonc", ".mjs", ".js", ".py", ".sh", ""}:
+                continue
+            rel = str(path)
+            if "THIRD_PARTY_NOTICES" in rel or rel.endswith("provenance.json") or rel.endswith("sources.json"):
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            for pat in CLAUDE_ACTIVE_PATTERNS:
+                if pat in text:
+                    hits.append(f"{path}: {pat}")
+                    break
+    return [h for h in hits if "/bestfriend/docs/" not in h and "/manifests/" not in h]
+
+
 def isolation_check(deep: bool = False) -> int:
     failed = 0
     env = os.environ.get("OPENCODE_DISABLE_CLAUDE_CODE", "")
@@ -256,39 +296,7 @@ def isolation_check(deep: bool = False) -> int:
     if status == "FAIL":
         failed += 1
 
-    hits = []
-    skip_parts = {
-        "source",
-        "cache",
-        "node_modules",
-        ".git",
-        "docs",
-        "licenses",
-        "product",
-        "backups",
-    }
-    for root in (config_dir(), share_dir()):
-        if not root.is_dir():
-            continue
-        for path in root.rglob("*"):
-            if not path.is_file():
-                continue
-            if any(p in skip_parts for p in path.parts):
-                continue
-            if path.suffix not in {".md", ".json", ".jsonc", ".mjs", ".js", ".py", ".sh", ""}:
-                continue
-            rel = str(path)
-            if "THIRD_PARTY_NOTICES" in rel or rel.endswith("provenance.json") or rel.endswith("sources.json"):
-                continue
-            try:
-                text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
-                continue
-            for pat in CLAUDE_ACTIVE_PATTERNS:
-                if pat in text:
-                    hits.append(f"{path}: {pat}")
-                    break
-    hits = [h for h in hits if "/bestfriend/docs/" not in h and "/manifests/" not in h]
+    hits = claude_dependency_hits()
     if hits:
         report("FAIL", "Active Claude dependencies", str(len(hits)))
         if deep:
@@ -539,30 +547,7 @@ def cmd_doctor(deep: bool = False, strict: bool = False) -> int:
     status, evidence, _n = compare_claude_snapshot(snap)
     f.add(status, "~/.claude mutations", evidence)
 
-    hits = []
-    skip_parts = {"source", "cache", "node_modules", ".git", "docs", "licenses", "product", "backups"}
-    for root in (config_dir(), share_dir()):
-        if not root.is_dir():
-            continue
-        for path in root.rglob("*"):
-            if not path.is_file():
-                continue
-            if any(p in skip_parts for p in path.parts):
-                continue
-            if path.suffix not in {".md", ".json", ".jsonc", ".mjs", ".js", ".py", ".sh", ""}:
-                continue
-            rel = str(path)
-            if "THIRD_PARTY_NOTICES" in rel or rel.endswith("provenance.json") or rel.endswith("sources.json"):
-                continue
-            try:
-                text = path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
-                continue
-            for pat in CLAUDE_ACTIVE_PATTERNS:
-                if pat in text:
-                    hits.append(f"{path}: {pat}")
-                    break
-    hits = [h for h in hits if "/bestfriend/docs/" not in h and "/manifests/" not in h]
+    hits = claude_dependency_hits()
     if hits:
         f.add("FAIL", "Active Claude dependencies", str(len(hits)))
         if deep:

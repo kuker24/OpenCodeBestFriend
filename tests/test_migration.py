@@ -60,7 +60,12 @@ class MigrationTests(IsolatedHome):
             encoding="utf-8",
         )
         helper.chmod(helper.stat().st_mode | stat.S_IXUSR)
-        (self.tmp / ".local" / "share" / "opencode-bestfriend" / "source" / "ClaudeBestFriend").mkdir(parents=True)
+        share = self.tmp / ".local" / "share" / "opencode-bestfriend"
+        (share / "source" / "ClaudeBestFriend").mkdir(parents=True)
+        inst = share / "components" / "installer"
+        inst.mkdir(parents=True)
+        (inst / "opencode_bf.py").write_text("# leftover ~/.claude/\n", encoding="utf-8")
+        (inst / "install.py").write_text("# leftover ~/.claude/\n", encoding="utf-8")
         cfgj = cfg / "opencode.jsonc"
         return {
             "config": _sha(cfgj),
@@ -97,6 +102,9 @@ class MigrationTests(IsolatedHome):
         helper = (self.tmp / ".local" / "bin" / "opencode-bf").read_text(encoding="utf-8")
         self.assertIn("lib/cli.py", helper)
         self.assertNotIn("opencode_bf.py", helper)
+        self.assertFalse(
+            (self.tmp / ".local" / "share" / "opencode-bestfriend" / "components" / "installer").exists()
+        )
         skills = list((self.tmp / ".config" / "opencode" / "skills").iterdir())
         self.assertEqual(len([p for p in skills if p.is_dir()]), 24)
         with redirect_stdout(io.StringIO()):
