@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.1.0",
+  "productVersion": "1.2.0",
   "upstreamProduct": "GrokBestFriend",
   "upstreamVersion": "1.3.1",
   "firstPartyLicense": "MIT",

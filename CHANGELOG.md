@@ -1,8 +1,14 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 — 2026-08-30
 
-- Post-1.1.0 DesignV2 population workflow, metadata evidence, expanded lexical DNA, contextual anti-slop, framework-aware dedupe, bounded health reporting, idempotent import `source_id`, FTS schema-3 rebuild without catalog rewrite, and offline/security smoke coverage
+Design Engine V2 population workflow. No new skills or MCP.
+
+- Lifecycle: `import` → `sources` → `ingest --source-id` → `dedupe` → `rebuild` → `doctor` → `search`/`shortlist`/`inspect`
+- Idempotent import: same payload returns `already_staged` with the original `source_id`, including v1.1.0 UUID folders
+- FTS schema 3 rebuild in place; item IDs, `alias_of`, and `duplicate_of` stay stable. Users do not delete `~/DesignV2`
+- Metadata evidence prefixes, 15-D lexical DNA, contextual anti-slop, framework-aware dedupe
+- Bounded doctor health report; Impeccable shim read-only; URL inputs rejected with `REMOTE_URL_REJECTED`
 
 ## 1.1.0 — 2026-08-30
 
