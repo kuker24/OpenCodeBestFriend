@@ -38,6 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     inst = sub.add_parser("install", help="install or update OpenCodeBestFriend")
     inst.add_argument("--dry-run", action="store_true")
     inst.add_argument("--skip-design-bank", action="store_true")
+    inst.add_argument("--with-design-bank", action="store_true", help="bootstrap the full user Design Bank after install")
     inst.add_argument("--offline", action="store_true")
     inst.add_argument("--recover", action="store_true")
 
@@ -101,6 +102,7 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_install(
             dry_run=args.dry_run,
             skip_design_bank=args.skip_design_bank,
+            with_design_bank=args.with_design_bank,
             offline=args.offline,
             recover=args.recover,
         )

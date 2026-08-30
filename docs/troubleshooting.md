@@ -6,7 +6,9 @@
 
 `CODEBASE_MEMORY_CHECKSUM_FAILED` — delete `~/.local/share/opencode-bestfriend/cache/downloads/` and retry. Do not ignore a mismatch.
 
-`DESIGN_BANK_CORRUPT_OR_MISSING` — set `OPENCODE_DESIGN_BANK` to a tree with both catalogs, or omit `--skip-design-bank` so the installer can download.
+`DESIGN_BANK_INVALID` — bootstrap requires parseable 21st, Aura, Refero, and Motionsites catalogs. Fix the configured target or choose a new empty `--target`.
+
+`DOWNLOAD_FAILED` / `CHECKSUM_MISMATCH` — core installation remains valid. Retry `opencode-bf design bootstrap`; an unverified archive is never extracted.
 
 `FOREIGN skill collision` — an unowned skill already occupies that name. Move or rename it.
 

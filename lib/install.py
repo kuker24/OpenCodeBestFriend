@@ -231,60 +231,12 @@ def safe_extract(tf: tarfile.TarFile, dest: Path) -> None:
         die(f"ARCHIVE_PATH_TRAVERSAL {exc}")
 
 
-def download_design_bank() -> tuple[str, str]:
-    sources = load_json(repo_root() / "vendor" / "sources.json")["sources"]["design-bank"]
-    url = sources["artifactUrl"]
-    expected = sources["artifactSha256"]
-    dest = share_dir() / "design-bank"
-    cache = share_dir() / "cache" / "downloads"
-    cache.mkdir(parents=True, exist_ok=True)
-    archive = cache / "Design-bank.tgz"
-    info(f"downloading Design Bank {url}")
-    try:
-        urllib.request.urlretrieve(url, archive)
-    except Exception as exc:
-        die(f"DESIGN_BANK_DOWNLOAD_FAILED: {exc}")
-    got = sha256_file(archive)
-    if got != expected:
-        archive.unlink(missing_ok=True)
-        die(f"DESIGN_BANK_CHECKSUM_FAILED expected={expected} got={got}")
-    tmp = share_dir() / "cache" / "design-bank-extract"
-    if tmp.exists():
-        shutil.rmtree(tmp)
-    tmp.mkdir(parents=True)
-    with tarfile.open(archive, "r:*") as tf:
-        safe_extract(tf, tmp)
-    root = tmp
-    if not catalogs_ok(root):
-        found = None
-        for cand in tmp.rglob("Refero"):
-            parent = cand.parent
-            if catalogs_ok(parent):
-                found = parent
-                break
-        if not found:
-            die("DESIGN_BANK_CORRUPT_OR_MISSING after extract")
-        root = found
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    if dest.exists():
-        shutil.rmtree(dest)
-    shutil.copytree(root, dest)
-    shutil.rmtree(tmp, ignore_errors=True)
-    if not catalogs_ok(dest):
-        die("DESIGN_BANK_CORRUPT_OR_MISSING after commit")
-    return str(dest), "download"
-
-
 def resolve_design_bank(skip: bool, offline: bool) -> tuple[str | None, str, str]:
     found = discover_design_bank()
     if found:
         return found[0], found[1], "reuse-read-only"
-    if skip:
-        return None, "skipped", "DEGRADED_DESIGN_BANK"
-    if offline:
-        return None, "offline", "DEGRADED_DESIGN_BANK"
-    root, source = download_design_bank()
-    return root, source, "owned-download"
+    source = "skipped" if skip else ("offline" if offline else "not-requested")
+    return None, source, "DEGRADED_DESIGN_BANK"
 
 
 def download_codebase_memory(offline: bool = False) -> Path:
@@ -1005,7 +957,13 @@ def verify_install() -> int:
     return 1 if failed else 0
 
 
-def cmd_install(dry_run: bool = False, skip_design_bank: bool = False, offline: bool = False, recover: bool = False) -> int:
+def cmd_install(
+    dry_run: bool = False,
+    skip_design_bank: bool = False,
+    with_design_bank: bool = False,
+    offline: bool = False,
+    recover: bool = False,
+) -> int:
     if recover:
         return cmd_recover()
     oc, ver, schema = detect_opencode()
@@ -1020,6 +978,7 @@ def cmd_install(dry_run: bool = False, skip_design_bank: bool = False, offline: 
             "portableRules": [p.name for p in (repo_root() / "rules").glob("*.md")],
         }
         found = discover_design_bank()
+        bank: tuple[str | None, str, str]
         if found:
             bank = (found[0], found[1], "reuse-read-only")
         elif skip_design_bank:
@@ -1027,10 +986,12 @@ def cmd_install(dry_run: bool = False, skip_design_bank: bool = False, offline: 
         elif offline:
             bank = (None, "offline", "DEGRADED_DESIGN_BANK")
         else:
-            bank = ("(would download upstream Design-bank.tgz)", "download", "owned-download")
+            bank = (None, "not-requested", "DEGRADED_DESIGN_BANK")
         cbm = Path(os.environ.get("OPENCODE_BF_TEST_CBM") or "/nonexistent/codebase-memory-mcp")
         mcp_plan = merge_opencode_config(cbm, dry_run=True)
         print(plan_text(meta, mcp_plan, bank, "download-or-reuse 0.9.0"))
+        if with_design_bank:
+            print("DESIGN_BOOTSTRAP would run after core install")
         print("DRY_RUN_NO_MUTATION")
         return 0
     set_transaction("PREPARING")
@@ -1062,6 +1023,18 @@ def cmd_install(dry_run: bool = False, skip_design_bank: bool = False, offline: 
     info("APPLY_DONE")
     if bank[2] == "DEGRADED_DESIGN_BANK":
         warn("DEGRADED_DESIGN_BANK — core install complete; Design Bank catalogs missing")
+    if with_design_bank:
+        from .design_v2.bootstrap import BootstrapError, bootstrap_design_bank
+
+        try:
+            bootstrap_design_bank(report=lambda stage, evidence: info(f"{stage} {evidence}".rstrip()))
+        except BootstrapError as exc:
+            info("CORE_INSTALL_PASS")
+            warn(f"DESIGN_BOOTSTRAP_FAILED {exc}")
+            warn("Retry with: opencode-bf design bootstrap")
+            return 1
+        info("CORE_INSTALL_PASS")
+        info("DESIGN_BOOTSTRAP_PASS")
     info("Restart OpenCode (config is not hot-reloaded). New shells pick up OPENCODE_DISABLE_CLAUDE_CODE=1.")
     return 0
 

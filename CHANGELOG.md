@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add optional `design bootstrap` and `./install.sh --with-design-bank` acquisition for the full user-owned Design Bank. Public artifacts are checksum-verified, safely extracted, then pointer-ingested and rebuilt locally; normal install remains lightweight.
+
 ## 1.3.0 — 2026-08-30
 
 Offline visual catalog expansion and retrieval refinement.

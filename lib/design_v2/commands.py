@@ -103,6 +103,13 @@ def add_design_cli(parser: ArgumentParser, *, read_only: bool = False) -> None:
     ingest_parser.add_argument("--provider", choices=INGEST_PROVIDERS)
     ingest_parser.add_argument("--source-id", help="16-character ID returned by design import/sources")
 
+    bootstrap_parser = common("bootstrap", "acquire and populate the full local Design Bank")
+    bootstrap_parser.add_argument("--source", help="bootstrap source name")
+    bootstrap_parser.add_argument("--target", help="local Design Bank root (default: configured root or ~/Design)")
+    bootstrap_parser.add_argument("--dry-run", action="store_true", help="show the plan without network or writes")
+    bootstrap_parser.add_argument("--download-only", action="store_true", help="verify and cache the archive only")
+    bootstrap_parser.add_argument("--skip-rebuild", action="store_true", help="ingest and dedupe without rebuild")
+
 
 def _local_input(raw: str) -> Path:
     if REMOTE_INPUT_RE.match(raw.strip()):
@@ -631,6 +638,20 @@ def dispatch(args: Namespace) -> int:
             )
         if action == "dedupe":
             return _emit(dedupe(root))
+        if action == "bootstrap":
+            from .bootstrap import bootstrap_design_bank
+
+            reporter = None if json_output else lambda stage, evidence: _line("INFO", stage, evidence)
+            payload = bootstrap_design_bank(
+                source_name=getattr(args, "source", None),
+                target=Path(args.target).expanduser() if getattr(args, "target", None) else None,
+                design_v2_root=root,
+                dry_run=bool(getattr(args, "dry_run", False)),
+                download_only=bool(getattr(args, "download_only", False)),
+                skip_rebuild=bool(getattr(args, "skip_rebuild", False)),
+                report=reporter,
+            )
+            return _emit(payload)
     except DesignV2Error as exc:
         return _fail(str(action or "unknown"), exc.code, str(exc), json_output=json_output)
     return _fail("unknown", "UNKNOWN_ACTION", "unknown design action", json_output=json_output, exit_code=2)

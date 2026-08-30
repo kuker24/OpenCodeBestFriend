@@ -33,6 +33,9 @@ cd OpenCodeBestFriend
 ./install.sh --dry-run
 ./install.sh
 
+# optional: acquire the full user-owned Design Bank and build DesignV2
+./install.sh --with-design-bank
+
 # pick up OPENCODE_DISABLE_CLAUDE_CODE=1
 exec "$SHELL"
 # or: source ~/.bashrc   (bash)
@@ -65,6 +68,8 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ▼
      Design
       ├─ Design Bank
+      │  ├─ 21st
+      │  ├─ Aura
       │  ├─ Refero
       │  └─ Motionsites
       ├─ Design Intelligence
@@ -116,21 +121,15 @@ The installer merges only owned MCP keys. Provider, model, permissions, plugins,
 
 Design Bank content is **not** vendored in this repository. Redistribution of the media archive is not cleared as first-party content.
 
-Installer order:
-
-1. `OPENCODE_DESIGN_BANK`
-2. existing valid pointer
-3. `~/Design` if catalogs exist
-4. owned cache `~/.local/share/opencode-bestfriend/design-bank/`
-5. otherwise download the existing GrokBestFriend `Design-bank.tgz` release asset, verify SHA-256, extract to the owned cache
-
-Skip the large download:
+Normal `./install.sh` installs the engine only and never starts the multi-gigabyte download. Full setup is explicit:
 
 ```bash
-./install.sh --skip-design-bank
+./install.sh --with-design-bank
+# or after installation
+opencode-bf design bootstrap
 ```
 
-That finishes as `DEGRADED_DESIGN_BANK` without breaking core install.
+Bootstrap resolves `OPENCODE_DESIGN_BANK` → existing pointer → deprecated `GROK_DESIGN_BANK` → `~/Design`. It downloads the declared public artifact with curl, verifies SHA-256, safely extracts into a temporary directory, validates all four catalogs, and commits the bank without merging into an existing directory. `~/Design` and `~/DesignV2` are user data and uninstall never removes them. Google Drive is contacted only by bootstrap; retrieval remains offline.
 
 ## Design Intelligence
 

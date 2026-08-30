@@ -8,6 +8,7 @@ import stat
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 import sys
@@ -16,6 +17,7 @@ sys.path.insert(0, str(ROOT))
 from lib import jsonc  # noqa: E402
 from lib.install import backup_relevant, cmd_install, cmd_restore, cmd_serena_enable, cmd_uninstall  # noqa: E402
 from lib.doctor import cmd_doctor, cmd_skills_verify, isolation_check  # noqa: E402
+from lib.design_v2.bootstrap import BootstrapError  # noqa: E402
 
 
 def sha256(path: Path) -> str:
@@ -77,6 +79,27 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(sha256(self.sentinel), self.sentinel_hash)
         self.assertEqual(list((self.tmp / ".claude").iterdir()), [self.sentinel])
 
+    def test_normal_install_never_downloads_design_bank(self):
+        os.environ.pop("OPENCODE_DESIGN_BANK", None)
+        with patch("lib.install.urllib.request.urlretrieve", side_effect=AssertionError("unexpected network download")):
+            self.assertEqual(cmd_install(), 0)
+        self.assertTrue((self.tmp / ".local" / "bin" / "opencode-bf").is_file())
+        self.assertFalse((self.tmp / "Design").exists())
+
+    def test_with_design_bank_runs_optional_post_install_bootstrap(self):
+        payload = {"status": "ok", "target": str(self.tmp / "Design")}
+        with patch("lib.design_v2.bootstrap.bootstrap_design_bank", return_value=payload) as mocked:
+            self.assertEqual(cmd_install(with_design_bank=True), 0)
+        mocked.assert_called_once()
+        self.assertTrue((self.tmp / ".local" / "bin" / "opencode-bf").is_file())
+
+    def test_bootstrap_failure_preserves_successful_core_install(self):
+        failure = BootstrapError("ARCHIVE_DOWNLOADED", "network unavailable", code="DOWNLOAD_FAILED")
+        with patch("lib.design_v2.bootstrap.bootstrap_design_bank", side_effect=failure):
+            self.assertEqual(cmd_install(with_design_bank=True), 1)
+        self.assertTrue((self.tmp / ".local" / "bin" / "opencode-bf").is_file())
+        self.assertTrue((self.tmp / ".local" / "share" / "opencode-bestfriend" / "product").is_dir())
+
     def test_fresh_install_idempotent_uninstall(self):
         rc = cmd_install()
         self.assertEqual(rc, 0)
@@ -115,6 +138,18 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(data3["model"], "keep-me-model")
         self.assertEqual(sha256(self.sentinel), self.sentinel_hash)
         self.assertNotIn("OPENCODEBESTFRIEND:BEGIN", (self.tmp / ".bashrc").read_text(encoding="utf-8"))
+
+    def test_uninstall_preserves_user_design_and_design_v2(self):
+        self.assertEqual(cmd_install(), 0)
+        design = self.tmp / "Design"
+        design_v2 = self.tmp / "DesignV2"
+        design.mkdir()
+        design_v2.mkdir()
+        (design / "sentinel.txt").write_text("keep\n", encoding="utf-8")
+        (design_v2 / "sentinel.txt").write_text("keep\n", encoding="utf-8")
+        self.assertEqual(cmd_uninstall(), 0)
+        self.assertEqual((design / "sentinel.txt").read_text(encoding="utf-8"), "keep\n")
+        self.assertEqual((design_v2 / "sentinel.txt").read_text(encoding="utf-8"), "keep\n")
 
     def test_agents_marker_merge_and_uninstall(self):
         agents = self.tmp / ".config" / "opencode" / "AGENTS.md"
@@ -266,6 +301,4 @@ class InstallTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
 

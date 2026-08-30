@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "default": "personal-google-drive-v1",
+  "sources": {
+    "personal-google-drive-v1": {
+      "type": "google-drive-public",
+      "bankVersion": "v1",
+      "archiveName": "OpenCodeBestFriend-DesignBank-v1.zip",
+      "archiveFileId": "1QCqajqPkSl95Y2PDsyC5o-SkyGD7FyRw",
+      "checksumFileId": "1et1hQHKnkW7wvYYdJGAPeY3IB6jsSw5r",
+      "archiveSha256": "1341c8480d16a579e7d35009287ea5b269ec22da35f9f4f34be6a4571cd6771f"
+    }
+  }
+}
