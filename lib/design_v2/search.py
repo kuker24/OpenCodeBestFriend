@@ -360,6 +360,14 @@ def search(
         points, item, matched = pending.pop(best_index)
         adj = points - diversity_penalty(picked, item, penalty)
         picked.append(item)
+        raw_source = item.get("source")
+        source: dict[str, Any] = raw_source if isinstance(raw_source, dict) else {}
+        local = source.get("local_path")
+        pointer_preview = (
+            source.get("path")
+            if isinstance(source.get("path"), str) and source.get("path") and not local
+            else None
+        )
         results.append(
             {
                 "id": item["id"],
@@ -372,11 +380,9 @@ def search(
                 "license": item.get("license"),
                 "trust": item.get("trust"),
                 "provider": item.get("provider"),
-                "source_id": (
-                    (item.get("source") or {}).get("upstream_id")
-                    if isinstance(item.get("source"), dict)
-                    else None
-                ),
+                "source_id": source.get("upstream_id"),
+                "catalog_item_id": source.get("upstream_id") if not local else None,
+                "preview_relative_path": pointer_preview,
                 "frameworks": item.get("frameworks") or [],
                 "product_fit": item.get("product_fit") or [],
                 "anti_slop": item.get("anti_slop") or [],

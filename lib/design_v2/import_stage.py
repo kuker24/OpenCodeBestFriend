@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from .bank import SOURCE_PROVIDERS, DesignV2Error, assert_under_v2, ensure_layout, load_policy
-from .importers.bank_pointer import CATALOG_PROVIDERS, is_catalog_bank
+from .importers.bank_pointer import CATALOG_PROVIDERS, has_catalog_json
 from .provenance import SOURCE_ID_RE, ProvenanceError, default_provenance, load_provenance
 from .security import (
     allowed_extension,
@@ -186,7 +186,7 @@ def import_stage(input_path: Path, root: Path, *, provider: str = "manual") -> d
     src = input_path.expanduser()
     if not src.exists():
         raise ImportRejected("missing")
-    if provider in CATALOG_PROVIDERS and is_catalog_bank(src):
+    if provider in CATALOG_PROVIDERS and has_catalog_json(src):
         raise ImportRejected("CATALOG_POINTER_ONLY")
     issues = inspect_path(src, policy)
     st = src.lstat()

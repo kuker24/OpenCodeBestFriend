@@ -58,13 +58,13 @@ opencode-bf design inspect <id>
 opencode-bf design ingest --provider aura ~/Downloads/my-design
 ```
 
-`dedupe` records canonical relationships without deleting assets. `rebuild` atomically commits the current inbox to canonical JSONL and refreshes optional FTS5. Search, shortlist, and inspect read only the committed catalog.
+`dedupe` records canonical relationships without deleting assets. `rebuild` atomically commits the current inbox to canonical JSONL and refreshes optional FTS5. Search, shortlist, and inspect read only the committed catalog. Search returns `catalog_item_id` and `preview_relative_path` for pointer cards. Inspect resolves that preview against `pointer.json` and reports `preview_status` without copying media.
 
 ## Provider behavior
 
 ### Aura
 
-A local Aura catalog bank (`library/catalog.json` plus per-item preview/meta) is ingested as a pointer catalog. DesignV2 does not copy preview media and does not stage the library tree. Remix HTML is obtained on aura.build when the user account allows it; it is not present in the catalog bank.
+A local Aura catalog bank (`library/catalog.json` plus per-item preview/meta) is ingested as a pointer catalog. DesignV2 does not copy preview media and does not stage the library tree. Cards record `source.upstream_id` and `source.path` (preview relative to the catalog root). Remix HTML is obtained on aura.build when the user account allows it; it is not present in the catalog bank.
 
 Aura also accepts one user-exported HTML/CSS/JavaScript folder, `DESIGN.md`, or an explicit user metadata file named `design-v2.json`. An arbitrary proprietary `manifest.json` is not reverse-engineered. To use `manifest.json`, place supported fields under `opencode_design_v2`.
 
@@ -72,7 +72,7 @@ Supported user-declared fields are bounded to `name`, `description`, `kind`, `ro
 
 ### 21st
 
-A local 21st catalog bank (`library/catalog.json` plus per-item preview/meta) is ingested as a pointer catalog. DesignV2 does not copy preview media, does not run `21st get`, and does not stage the library tree. Component source is copied on 21st.dev when the user account and quota allow it; it is not present in the catalog bank.
+A local 21st catalog bank (`library/catalog.json` plus per-item preview/meta) is ingested as a pointer catalog. DesignV2 does not copy preview media, does not run `21st get`, and does not stage the library tree. Cards record `source.upstream_id` and `source.path` (preview relative to the catalog root). Component source is copied on 21st.dev when the user account and quota allow it; it is not present in the catalog bank.
 
 21st also accepts one user-selected local component folder. Marketplace pages, scrape JSON, and media dumps are rejected. Trust defaults to `unknown`; redistribution defaults to `local-only`; license remains `unknown` unless a local license file provides recognized evidence. Provenance is not treated as license permission. `import` of a catalog-bank root is rejected with `CATALOG_POINTER_ONLY`; use `ingest --provider 21st|aura` on that root instead.
 
@@ -88,7 +88,7 @@ Open Design remains an adapter over a valid local legacy Design Intelligence ban
 
 ### Refero and Motionsites
 
-DesignV2 writes bounded catalog metadata and local pointers. It does not copy the legacy media library. Refero catalogs may list styles under `styles`. Broken pointer targets, including 21st and Aura catalog pointers, are reported by doctor.
+DesignV2 writes bounded catalog metadata and local pointers. It does not copy the legacy media library. Refero catalogs may list styles under `styles`. Broken pointer targets, including 21st and Aura catalog pointers, are reported by doctor. Doctor also requires pointer catalogs to parse, `items`/`styles` to be valid, `copied_media` not true, and a bounded sample of preview files to exist.
 
 ## Normalization evidence
 
@@ -100,7 +100,7 @@ Anti-slop is a ranking penalty, not a ban. Explicit requests such as `glass futu
 
 ## Health report
 
-`opencode-bf design doctor` verifies the lock, canonical JSONL hash, optional SQLite hash, and FTS schema. It also reports bounded counts for providers, kinds, frameworks, license status, local-only items, quarantine, duplicates, missing local paths, broken pointers, DNA coverage, weak metadata, missing product fit, and missing framework metadata.
+`opencode-bf design doctor` verifies the lock, canonical JSONL hash, optional SQLite hash, and FTS schema. It also reports bounded counts for providers, kinds, frameworks, license status, local-only items, quarantine, duplicates, missing local paths, broken pointers, DNA coverage, weak metadata, missing product fit, and missing framework metadata. Pointer health checks catalog JSON, item lists, `copied_media`, and a sample of preview paths — it does not scan every preview.
 
 Use machine-readable output when needed:
 

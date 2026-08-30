@@ -54,7 +54,7 @@ def ingest_path(input_path: Path, root: Path, *, provider: str) -> dict[str, Any
     if provider in {"refero", "motionsites", "bank-pointer"}:
         return bank_pointer.ingest(input_path, root)
     src = input_path.expanduser()
-    if provider in bank_pointer.CATALOG_PROVIDERS and bank_pointer.is_catalog_bank(src):
+    if provider in bank_pointer.CATALOG_PROVIDERS and bank_pointer.has_catalog_json(src):
         return bank_pointer.ingest_catalog_bank(src, root, provider=provider)
     if provider == "open-design":
         return open_design.ingest(input_path, root)

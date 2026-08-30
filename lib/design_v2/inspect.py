@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
 from .bank import PathEscape, assert_under_v2, catalog_ready, resolve_design_v2_root
+from .importers.bank_pointer import resolve_catalog_file
 from .search import load_catalog
 
 MAX_INSPECT_FILES = 64
@@ -22,7 +24,13 @@ def inspect_item(item_id: str, *, root: Path | None = None) -> dict[str, Any]:
     files: list[str] = []
     file_count = 0
     local_path_status = "not-applicable"
-    local = (found.get("source") or {}).get("local_path") if isinstance(found.get("source"), dict) else None
+    preview_status = "not-applicable"
+    preview_relative_path = None
+    preview_path = None
+    catalog_item_id = None
+    raw_source = found.get("source")
+    source: dict[str, Any] = raw_source if isinstance(raw_source, dict) else {}
+    local = source.get("local_path")
     if isinstance(local, str) and local:
         candidate = bank / local
         try:
@@ -39,6 +47,28 @@ def inspect_item(item_id: str, *, root: Path | None = None) -> dict[str, Any]:
                     files.append(child.name)
         else:
             local_path_status = "missing"
+    raw_provenance = found.get("provenance")
+    provenance: dict[str, Any] = raw_provenance if isinstance(raw_provenance, dict) else {}
+    upstream = source.get("upstream_id")
+    rel = source.get("path")
+    if provenance.get("acquisition_method") == "design-bank-pointer":
+        catalog_item_id = upstream if isinstance(upstream, str) and upstream else None
+        if isinstance(rel, str) and rel:
+            preview_relative_path = rel
+            preview_status = "missing"
+            provider = str(found.get("provider") or source.get("provider") or "")
+            pointer_file = bank / "sources" / provider / "pointer.json"
+            if pointer_file.is_file() and not pointer_file.is_symlink():
+                try:
+                    payload = json.loads(pointer_file.read_text(encoding="utf-8"))
+                except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                    payload = None
+                root = payload.get("root") if isinstance(payload, dict) else None
+                if isinstance(root, str):
+                    resolved_preview = resolve_catalog_file(Path(root), rel)
+                    if resolved_preview is not None and resolved_preview.is_file() and not resolved_preview.is_symlink():
+                        preview_status = "available"
+                        preview_path = str(resolved_preview)
     return {
         "id": found.get("id"),
         "kind": found.get("kind"),
@@ -60,6 +90,10 @@ def inspect_item(item_id: str, *, root: Path | None = None) -> dict[str, Any]:
         "file_count": file_count,
         "files_truncated": file_count > len(files),
         "local_path_status": local_path_status,
+        "catalog_item_id": catalog_item_id,
+        "preview_relative_path": preview_relative_path,
+        "preview_path": preview_path,
+        "preview_status": preview_status,
         "packages_loaded": 0,
         "untrusted_text": True,
     }

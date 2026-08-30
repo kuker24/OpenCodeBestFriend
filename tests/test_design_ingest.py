@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import socket
 import sys
 import unittest
@@ -15,7 +16,9 @@ FIXTURES = ROOT / "tests" / "fixtures" / "design_v2"
 sys.path.insert(0, str(ROOT))
 
 from lib.design_v2.commands import bank_health  # noqa: E402
-from lib.design_v2.importers.bank_pointer import map_jenis_kind  # noqa: E402
+from lib.design_v2.importers.bank_pointer import is_catalog_bank, map_jenis_kind  # noqa: E402
+from lib.design_v2.inspect import inspect_item  # noqa: E402
+from lib.design_v2.search import search  # noqa: E402
 from lib.design_v2.importers.common import IngestRejected, copy_tree_filtered  # noqa: E402
 from lib.design_v2.importers.open_design import v1_to_v2  # noqa: E402
 from lib.design_v2.import_stage import ImportRejected, import_stage  # noqa: E402
@@ -237,6 +240,9 @@ class IngestTests(IsolatedHome):
             self.assertEqual(item["source"]["local_path"], "")
             self.assertIsNone(item["source"]["canonical_url"])
             self.assertEqual(item["provenance"]["acquisition_method"], "design-bank-pointer")
+            self.assertTrue(item["source"]["upstream_id"])
+            self.assertTrue(item["source"]["path"])
+            self.assertTrue(item["source"]["path"].startswith("library/"))
             inbox.append(item)
         self.assertEqual(len(inbox), expected)
         return inbox
@@ -254,12 +260,19 @@ class IngestTests(IsolatedHome):
         items = self._assert_pointer_catalog(result, "21st", 3)
         kinds = {item["kind"] for item in items}
         self.assertEqual(kinds, {"component", "section", "effect"})
+        by_id = {item["source"]["upstream_id"]: item for item in items}
+        self.assertEqual(
+            by_id["demo--primary-button"]["source"]["path"],
+            "library/button/demo--primary-button/preview.webp",
+        )
 
     def test_aura_catalog_pointer_no_copy(self):
         result = ingest_path(FIXTURES / "catalog_aura", self.bank, provider="aura")
         items = self._assert_pointer_catalog(result, "aura", 2)
         kinds = {item["kind"] for item in items}
         self.assertEqual(kinds, {"page", "component"})
+        by_id = {item["source"]["upstream_id"]: item for item in items}
+        self.assertEqual(by_id["land01"]["source"]["path"], "library/landing-page/land01/preview.png")
 
     def test_import_rejects_catalog_bank(self):
         with self.assertRaises(ImportRejected) as ctx:
@@ -268,6 +281,12 @@ class IngestTests(IsolatedHome):
         sources = self.bank / "sources" / "21st"
         if sources.is_dir():
             self.assertEqual([path for path in sources.iterdir() if path.is_dir()], [])
+        bad = self.tmp / "bad-catalog"
+        (bad / "library").mkdir(parents=True)
+        (bad / "library" / "catalog.json").write_text("{not-json", encoding="utf-8")
+        with self.assertRaises(ImportRejected) as ctx:
+            import_stage(bad, self.bank, provider="21st")
+        self.assertIn("CATALOG_POINTER_ONLY", str(ctx.exception))
 
     def test_malformed_catalog_rejected(self):
         bad = self.tmp / "bad-21st"
@@ -286,6 +305,60 @@ class IngestTests(IsolatedHome):
         pointer.write_text(json.dumps({"root": str(self.tmp / "missing"), "catalog": "library/catalog.json"}), encoding="utf-8")
         broken = bank_health(self.bank)
         self.assertEqual(broken["broken_pointers"], 1)
+
+    def test_is_catalog_bank_requires_items(self):
+        self.assertTrue(is_catalog_bank(FIXTURES / "catalog_21st"))
+        self.assertFalse(is_catalog_bank(self.tmp / "missing"))
+        bad = self.tmp / "shape"
+        (bad / "library").mkdir(parents=True)
+        (bad / "library" / "catalog.json").write_text("{not-json", encoding="utf-8")
+        self.assertFalse(is_catalog_bank(bad))
+        (bad / "library" / "catalog.json").write_text(json.dumps({"name": "x"}), encoding="utf-8")
+        self.assertFalse(is_catalog_bank(bad))
+        (bad / "library" / "catalog.json").write_text(json.dumps({"items": []}), encoding="utf-8")
+        self.assertTrue(is_catalog_bank(bad))
+
+    def test_catalog_preview_traceable(self):
+        ingest_path(FIXTURES / "catalog_21st", self.bank, provider="21st")
+        rebuild(self.bank)
+        item_id = "component:21st-demo-primary-button"
+        inspected = inspect_item(item_id, root=self.bank)
+        self.assertEqual(inspected["catalog_item_id"], "demo--primary-button")
+        self.assertEqual(inspected["preview_relative_path"], "library/button/demo--primary-button/preview.webp")
+        self.assertEqual(inspected["preview_status"], "available")
+        self.assertEqual(inspected["local_path_status"], "not-applicable")
+        preview = Path(str(inspected["preview_path"]))
+        self.assertTrue(preview.is_file())
+        self.assertTrue(str(preview).endswith("library/button/demo--primary-button/preview.webp"))
+        self.assertFalse(str(preview).startswith(str(self.bank)))
+        self.assertEqual(list(self.bank.rglob("*.webp")), [])
+        hits = search("primary button", root=self.bank, kind="component")["results"]
+        match = next(row for row in hits if row["id"] == item_id)
+        self.assertEqual(match["catalog_item_id"], "demo--primary-button")
+        self.assertEqual(match["preview_relative_path"], "library/button/demo--primary-button/preview.webp")
+
+    def test_doctor_copied_media_and_catalog_shape(self):
+        catalog = self.tmp / "catalog_21st"
+        shutil.copytree(FIXTURES / "catalog_21st", catalog)
+        ingest_path(catalog, self.bank, provider="21st")
+        rebuild(self.bank)
+        pointer = self.bank / "sources" / "21st" / "pointer.json"
+        payload = json.loads(pointer.read_text(encoding="utf-8"))
+        payload["copied_media"] = True
+        pointer.write_text(json.dumps(payload), encoding="utf-8")
+        self.assertEqual(bank_health(self.bank)["broken_pointers"], 1)
+        payload["copied_media"] = False
+        pointer.write_text(json.dumps(payload), encoding="utf-8")
+        (catalog / "library" / "catalog.json").write_text("{not-json", encoding="utf-8")
+        self.assertEqual(bank_health(self.bank)["broken_pointers"], 1)
+
+    def test_doctor_missing_sample_preview(self):
+        catalog = self.tmp / "catalog_21st"
+        shutil.copytree(FIXTURES / "catalog_21st", catalog)
+        ingest_path(catalog, self.bank, provider="21st")
+        rebuild(self.bank)
+        (catalog / "library" / "button" / "demo--primary-button" / "preview.webp").unlink()
+        self.assertEqual(bank_health(self.bank)["broken_pointers"], 1)
 
 
 if __name__ == "__main__":

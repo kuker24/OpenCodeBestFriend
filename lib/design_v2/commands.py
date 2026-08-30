@@ -24,7 +24,14 @@ from .bank import (
 )
 from .dedupe import dedupe
 from .import_stage import import_stage
-from .importers.bank_pointer import POINTER_PROVIDERS
+from .importers.bank_pointer import (
+    CATALOG_PROVIDERS,
+    POINTER_PREVIEW_SAMPLE,
+    POINTER_PROVIDERS,
+    pointer_catalog_rows,
+    preview_relative_path,
+    resolve_catalog_file,
+)
 from .ingest import ingest
 from .inspect import inspect_item
 from .rebuild import RebuildError, rebuild
@@ -226,6 +233,8 @@ def _pointer_is_broken(bank: Path, provider: str) -> bool:
     path = bank / "sources" / provider / "pointer.json"
     if not path.is_file():
         return False
+    if path.is_symlink():
+        return True
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
@@ -236,10 +245,36 @@ def _pointer_is_broken(bank: Path, provider: str) -> bool:
     catalog = payload.get("catalog")
     if not isinstance(root, str) or not isinstance(catalog, str):
         return True
+    if payload.get("copied_media") is True:
+        return True
     relative = Path(catalog)
     if relative.is_absolute() or ".." in relative.parts:
         return True
-    return not (Path(root).expanduser() / relative).is_file()
+    catalog_file = Path(root).expanduser() / relative
+    if catalog_file.is_symlink() or not catalog_file.is_file():
+        return True
+    try:
+        data = json.loads(catalog_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return True
+    rows = pointer_catalog_rows(data, provider)
+    if rows is None:
+        return True
+    if provider not in CATALOG_PROVIDERS:
+        return False
+    checked = 0
+    root_path = Path(root)
+    for row in rows:
+        rel = preview_relative_path(row)
+        if not rel:
+            continue
+        target = resolve_catalog_file(root_path, rel)
+        if target is None or target.is_symlink() or not target.is_file():
+            return True
+        checked += 1
+        if checked >= POINTER_PREVIEW_SAMPLE:
+            break
+    return False
 
 
 def bank_health(root: Path | None = None) -> dict[str, Any]:

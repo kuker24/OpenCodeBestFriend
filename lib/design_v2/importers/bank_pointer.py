@@ -6,6 +6,7 @@ from typing import Any
 
 from ..bank import atomic_write_json, ensure_layout
 from ..provenance import default_provenance, license_from_evidence
+from ..schema import REL_PATH_RE
 from .common import IngestRejected, KIND_DIR, catalog_item, detect_anti_slop, dna_from_text, slugify, write_inbox
 
 name = "bank-pointer"
@@ -13,6 +14,8 @@ name = "bank-pointer"
 ZERO = "0" * 64
 CATALOG_PROVIDERS = frozenset({"21st", "aura"})
 POINTER_PROVIDERS = ("refero", "motionsites", "21st", "aura")
+POINTER_PREVIEW_SAMPLE = 5
+PREVIEW_STILLS = {".webp", ".png", ".jpg", ".jpeg"}
 JENIS_KIND = {
     "shader": "effect",
     "theme": "theme",
@@ -55,9 +58,90 @@ def map_jenis_kind(jenis: str, catalog_kind: str | None = None) -> str:
     return "pattern"
 
 
-def is_catalog_bank(path: Path) -> bool:
-    catalog = path.expanduser() / "library" / "catalog.json"
+def catalog_json_path(path: Path) -> Path:
+    return path.expanduser() / "library" / "catalog.json"
+
+
+def has_catalog_json(path: Path) -> bool:
+    catalog = catalog_json_path(path)
     return catalog.is_file() and not catalog.is_symlink()
+
+
+def is_catalog_bank(path: Path) -> bool:
+    if not has_catalog_json(path):
+        return False
+    try:
+        data = json.loads(catalog_json_path(path).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    return isinstance(data, dict) and isinstance(data.get("items"), list)
+
+
+def preview_relative_path(row: dict[str, Any]) -> str:
+    item_id = str(row.get("id") or "").strip()
+    jenis = str(row.get("jenis") or "").strip()
+    raw = row.get("preview")
+    preview = raw.strip() if isinstance(raw, str) else ""
+    if not preview:
+        return ""
+    candidate = Path(preview)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        return ""
+    if len(candidate.parts) == 1:
+        if not item_id or not jenis:
+            return ""
+        rel = f"library/{jenis}/{item_id}/{preview}"
+    else:
+        rel = candidate.as_posix()
+    if Path(rel).suffix.lower() not in PREVIEW_STILLS:
+        return ""
+    if not REL_PATH_RE.fullmatch(rel) or ".." in Path(rel).parts:
+        return ""
+    return rel
+
+
+def resolve_catalog_file(root: Path, relative: str) -> Path | None:
+    rel = Path(relative)
+    if not relative or rel.is_absolute() or ".." in rel.parts:
+        return None
+    try:
+        base = root.expanduser().resolve()
+    except OSError:
+        return None
+    candidate = base / rel
+    if candidate.is_symlink():
+        return None
+    try:
+        resolved = candidate.resolve()
+        resolved.relative_to(base)
+    except (OSError, ValueError):
+        return None
+    return resolved
+
+
+def pointer_catalog_rows(data: Any, provider: str) -> list[dict[str, Any]] | None:
+    raw: list[Any]
+    if provider in CATALOG_PROVIDERS:
+        if not isinstance(data, dict) or not isinstance(data.get("items"), list):
+            return None
+        raw = data["items"]
+    elif isinstance(data, list):
+        raw = data
+    elif isinstance(data, dict):
+        found: list[Any] | None = None
+        for key in ("items", "styles"):
+            value = data.get(key)
+            if isinstance(value, list):
+                found = value
+                break
+        if found is None:
+            return None
+        raw = found
+    else:
+        return None
+    if any(not isinstance(row, dict) for row in raw):
+        return None
+    return raw
 
 
 def _load_catalog(path: Path) -> list[dict[str, Any]]:
@@ -110,10 +194,12 @@ def _pointer_item(
     tags: list[str],
     categories: list[str],
     role: str,
+    upstream_id: str | None = None,
+    source_path: str = "",
 ) -> dict[str, Any]:
     text = " ".join([name, description, " ".join(tags), " ".join(categories)])
     dna = dna_from_text(name, description, " ".join(tags), " ".join(categories))
-    return catalog_item(
+    item = catalog_item(
         kind=kind,
         provider=provider,
         slug=slug,
@@ -139,6 +225,10 @@ def _pointer_item(
         + [f"inferred:dna:{key}" for key in sorted(dna)],
         warnings=["LICENSE_UNKNOWN", "FRAMEWORK_UNKNOWN"] + ([] if dna.get("product_fit") else ["PRODUCT_FIT_UNKNOWN"]),
     )
+    item["source"]["upstream_id"] = upstream_id
+    item["source"]["path"] = source_path
+    item["source"]["local_path"] = ""
+    return item
 
 
 def _visual_item(provider: str, slug: str, name: str, description: str, tags: list[str]) -> dict[str, Any]:
@@ -236,6 +326,8 @@ def ingest_catalog_bank(path: Path, bank: Path, *, provider: str) -> dict[str, A
             tags=tags,
             categories=categories,
             role=kind,
+            upstream_id=item_id,
+            source_path=preview_relative_path(row),
         )
         write_inbox(bank, item)
         count += 1
