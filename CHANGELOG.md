@@ -1,8 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.4.0 — 2026-08-31
 
-- Add optional `design bootstrap` and `./install.sh --with-design-bank` acquisition for the full user-owned Design Bank. Public artifacts are checksum-verified, safely extracted, then pointer-ingested and rebuilt locally; normal install remains lightweight.
+Portable full Design Bank bootstrap.
+
+- Add opt-in `opencode-bf design bootstrap` and `./install.sh --with-design-bank`; normal installation remains lightweight and never starts the multi-gigabyte download.
+- Acquire the public Google Drive archive with curl retries/resume, a downloaded checksum, and a bundled pinned SHA-256 trust anchor.
+- Reject malformed or unsafe ZIPs with bounded member, size, depth, path, encryption, special-file, and compression-ratio policies.
+- Extract and validate 21st, Aura, Refero, and Motionsites catalogs in temporary storage before atomically committing the user-owned `~/Design` tree.
+- Pointer-ingest into `~/DesignV2` without copying preview media, then dedupe, rebuild, and run doctor entirely offline.
+- Preserve existing compatible banks, fail closed on incompatible targets, and leave `~/Design` plus `~/DesignV2` untouched during uninstall.
+- Validated with the genuine 3+ GB archive: 30,612 cards, zero broken pointers, zero copied media, and offline retrieval lifecycle PASS.
 
 ## 1.3.0 — 2026-08-30
 

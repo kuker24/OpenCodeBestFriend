@@ -5,11 +5,11 @@
 `doctor --deep` = is live runtime proven?
 `doctor --strict` = treat DEGRADED/WARN as failure.
 
-A successful 1.3.0 install should report approximately:
+A successful 1.4.0 install should report approximately:
 
 ```text
 PASS INSTALLED_PRODUCT opencode-bestfriend
-PASS INSTALLED_VERSION 1.3.0
+PASS INSTALLED_VERSION 1.4.0
 PASS SOURCE_REPOSITORY https://github.com/kuker24/OpenCodeBestFriend
 
 PASS OpenCode
@@ -25,7 +25,7 @@ OPTIONAL_ABSENT mcp:serena
 OPTIONAL_ABSENT mcp:exa
 
 PASS codebase-memory bin
-PASS Design Bank / Refero / Motionsites   (or DEGRADED Design Bank if skipped)
+PASS Design Bank / 21st / Aura / Refero / Motionsites   (when bootstrapped; or DEGRADED Design Bank)
 EMPTY Design V2 absent   (or PASS catalog / DEGRADED_FTS)
 PASS DI policy / taxonomy / CLI / runtime
 PASS OPENCODE_DISABLE_CLAUDE_CODE
