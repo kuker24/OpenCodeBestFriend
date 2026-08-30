@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from lib.design_v2.importers.common import IngestRejected  # noqa: E402
+from lib.design_v2.importers.common import IngestRejected, copy_tree_filtered  # noqa: E402
 from lib.design_v2.importers.open_design import v1_to_v2  # noqa: E402
 from lib.design_v2.ingest import ingest_path  # noqa: E402
 from lib.design_v2.dedupe import dedupe  # noqa: E402
@@ -54,6 +54,20 @@ class IngestTests(IsolatedHome):
         sources = self.bank / "sources" / "aura"
         if sources.is_dir():
             self.assertEqual([p for p in sources.iterdir() if p.is_dir()], [])
+
+    def test_normalized_asset_replace_removes_stale_files(self):
+        src = self.tmp / "asset"
+        src.mkdir()
+        (src / "index.html").write_text("<h1>one</h1>\n", encoding="utf-8")
+        (src / "old-animation.js").write_text("old\n", encoding="utf-8")
+        dest = self.bank / "sections" / "aura" / "hero"
+        copy_tree_filtered(src, dest)
+        self.assertTrue((dest / "old-animation.js").is_file())
+        (src / "old-animation.js").unlink()
+        (src / "index.html").write_text("<h1>two</h1>\n", encoding="utf-8")
+        copy_tree_filtered(src, dest)
+        self.assertFalse((dest / "old-animation.js").exists())
+        self.assertEqual((dest / "index.html").read_text(encoding="utf-8"), "<h1>two</h1>\n")
 
     def test_21st_rejects_scrape_and_media(self):
         scrape = self.tmp / "scrape"

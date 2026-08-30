@@ -71,6 +71,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--provider")
     parser.add_argument("--intent")
     parser.add_argument("--mode")
+    parser.add_argument("--framework", action="append")
     parser.add_argument("--structure-only", action="store_true")
     args = parser.parse_args(argv)
     if args.design_action in {"search", "shortlist"} and not args.query:

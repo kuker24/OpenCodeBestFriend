@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import os
+import sqlite3
 import sys
 import unittest
 import zipfile
@@ -24,9 +25,12 @@ from lib.design_v2.bank import (  # noqa: E402
 )
 from lib.design_v2.dna import extract_query  # noqa: E402
 from lib.design_v2.import_stage import ImportRejected, import_stage  # noqa: E402
-from lib.design_v2.rebuild import rebuild  # noqa: E402
+from lib.design_v2.commands import doctor_rows  # noqa: E402
+from lib.design_v2.bank import load_policy  # noqa: E402
+from lib.design_v2.rebuild import FTS_SCHEMA_VERSION, _write_sqlite, rebuild  # noqa: E402
 from lib.design_v2.schema import check_item, empty_item_v1, empty_item_v2  # noqa: E402
-from lib.design_v2.search import search, shortlist  # noqa: E402
+from lib.design_v2.search import _fts_ids, search, shortlist  # noqa: E402
+from lib.design_v2.security import compile_secret_patterns, secret_hits  # noqa: E402
 from lib.install import cmd_uninstall  # noqa: E402
 from lib.paths import assert_within_allowed  # noqa: E402
 from tests.support import IsolatedHome  # noqa: E402
@@ -99,6 +103,16 @@ class DesignV2Tests(IsolatedHome):
         bad_lic["license"]["redistribution"] = "yes"
         self.assertTrue(any("redistribution" in err for err in check_item(bad_lic)))
 
+    def test_catalog_item_json_schema_describes_both_versions(self):
+        schema = json.loads(
+            (ROOT / "lib" / "design_v2" / "schemas" / "catalog-item.schema.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(schema["oneOf"]), 2)
+        self.assertFalse(schema["$defs"]["itemV1"]["additionalProperties"])
+        self.assertFalse(schema["$defs"]["itemV2"]["additionalProperties"])
+        self.assertIn("kind", schema["$defs"]["itemV2"]["properties"])
+        self.assertIn("source", schema["$defs"]["itemV2"]["required"])
+
     def test_dna_extract(self):
         extracted = extract_query("cybersecurity premium dark dense dashboard jangan slop")
         self.assertIn("luxury", extracted["aesthetic"])
@@ -165,6 +179,64 @@ class DesignV2Tests(IsolatedHome):
         if "section:glass-hero" in ids:
             self.assertLess(ids.index("section:cyber-hero"), ids.index("section:glass-hero"))
 
+    def test_fts_candidates_use_bm25_order(self):
+        path = self.tmp / "rank.sqlite3"
+        weak = _item(
+            id="section:weak-dashboard",
+            name="Dashboard",
+            description="General layout",
+            search_text="dashboard",
+        )
+        strong = _item(
+            id="section:strong-dashboard",
+            name="Dark dashboard",
+            description="Dark dashboard operations dashboard",
+            search_text="dark dashboard dense dashboard",
+        )
+        try:
+            _write_sqlite(path, [weak, strong])
+        except sqlite3.OperationalError:
+            self.skipTest("SQLite FTS5 unavailable")
+        self.assertEqual(_fts_ids(path, "dark dashboard", 1), ["section:strong-dashboard"])
+
+    def test_intent_mode_framework_and_trust_affect_ranking(self):
+        preferred = _item(
+            id="section:preferred-dashboard",
+            name="Operations dashboard",
+            description="Dashboard workspace",
+            search_text="dashboard workspace",
+            intent=["greenfield"],
+            modes=["Operate"],
+            frameworks=["react"],
+            trust="curated",
+            license={"spdx": "MIT", "status": "known", "redistribution": "allowed"},
+        )
+        other = _item(
+            id="section:other-dashboard",
+            name="Operations dashboard",
+            description="Dashboard workspace",
+            search_text="dashboard workspace",
+            intent=["refresh"],
+            modes=["Market"],
+            frameworks=["vue"],
+            trust="unknown",
+        )
+        self._inbox(preferred)
+        self._inbox(other)
+        rebuild(self.bank)
+        hits = search(
+            "dashboard workspace",
+            intent="greenfield",
+            mode="Operate",
+            frameworks=["react"],
+        )
+        self.assertEqual(hits["results"][0]["id"], "section:preferred-dashboard")
+        self.assertIn("intent", hits["results"][0]["matched_fields"])
+        self.assertIn("mode", hits["results"][0]["matched_fields"])
+        self.assertIn("framework", hits["results"][0]["matched_fields"])
+        self.assertIn("trust:curated", hits["results"][0]["matched_fields"])
+        self.assertEqual(hits["context"]["frameworks"], ["react"])
+
     def test_empty_search_and_skip_fts(self):
         os.environ["OPENCODE_DESIGN_V2_SKIP_FTS"] = "1"
         rebuild(self.bank)
@@ -178,6 +250,38 @@ class DesignV2Tests(IsolatedHome):
         with redirect_stdout(buf):
             self.assertEqual(cli_main(["design", "doctor"]), 0)
         self.assertIn("DEGRADED_FTS", buf.getvalue())
+
+    def test_rebuild_retries_degraded_fts_for_same_generation(self):
+        os.environ["OPENCODE_DESIGN_V2_SKIP_FTS"] = "1"
+        first = rebuild(self.bank)
+        self.assertEqual(first["fts"]["status"], "skipped")
+        os.environ.pop("OPENCODE_DESIGN_V2_SKIP_FTS", None)
+        second = rebuild(self.bank)
+        if second["fts"]["status"] != "available":
+            self.skipTest("SQLite FTS5 unavailable")
+        self.assertTrue(second["reused"])
+        self.assertTrue(second["fts_rebuilt"])
+        self.assertEqual(second["fts"]["schema_version"], FTS_SCHEMA_VERSION)
+
+    def test_doctor_detects_catalog_hash_mismatch(self):
+        rebuild(self.bank)
+        lock = json.loads((self.bank / "catalog" / "catalog.lock.json").read_text(encoding="utf-8"))
+        jsonl = self.bank / "catalog" / lock["jsonl_filename"]
+        with jsonl.open("ab") as handle:
+            handle.write(b"tampered\n")
+        rows = doctor_rows(self.bank)
+        self.assertIn(("FAIL", "jsonl", "CATALOG_HASH_MISMATCH"), rows)
+        self.assertEqual(search("anything", root=self.bank)["bank_status"], "DEGRADED")
+
+    def test_doctor_detects_fts_hash_mismatch(self):
+        rebuild(self.bank)
+        lock = json.loads((self.bank / "catalog" / "catalog.lock.json").read_text(encoding="utf-8"))
+        if lock["fts"]["status"] != "available":
+            self.skipTest("SQLite FTS5 unavailable")
+        sqlite_path = self.bank / "catalog" / lock["fts"]["sqlite_filename"]
+        with sqlite_path.open("ab") as handle:
+            handle.write(b"tampered")
+        self.assertIn(("FAIL", "fts", "FTS_HASH_MISMATCH"), doctor_rows(self.bank))
 
     def test_import_stage_rejects_symlink_and_secret(self):
         src = self.tmp / "payload"
@@ -203,6 +307,30 @@ class DesignV2Tests(IsolatedHome):
             self.assertEqual(list(sources.iterdir()), [])
         self.assertTrue((self.bank / "quarantine").is_dir())
         self.assertTrue(any((self.bank / "quarantine").iterdir()))
+
+        common = self.tmp / "common-secret"
+        common.mkdir()
+        (common / "page.html").write_text("<p>ok</p>\n", encoding="utf-8")
+        (common / "notes.md").write_text(
+            "OPENAI_API_" + "KEY=dummy-value\n", encoding="utf-8"
+        )
+        with self.assertRaises(ImportRejected):
+            import_stage(common, self.bank)
+
+    def test_secret_patterns_cover_common_credentials(self):
+        patterns = compile_secret_patterns(load_policy())
+        samples = [
+            "OPENAI_API_" + "KEY=dummy-value",
+            "ANTHROPIC_API_" + "KEY=dummy-value",
+            "AWS_SECRET_ACCESS_" + "KEY=dummy-value",
+            "NPM_" + "TOKEN=dummy-value",
+            "gh" + "p_" + "a" * 24,
+            "github_" + "pat_" + "a" * 24,
+            "sk-" + "ant-" + "a" * 24,
+            "-----BEGIN " + "PRIVATE KEY-----",
+            "DATABASE_" + "URL=postgres://user:password@localhost/db",
+        ]
+        self.assertTrue(all(secret_hits(sample, patterns) for sample in samples))
 
     def test_import_stage_rejects_zip_traversal(self):
         zpath = self.tmp / "bad.zip"
@@ -283,9 +411,12 @@ class DesignV2Tests(IsolatedHome):
         )
         self._inbox(hero)
         rebuild(self.bank)
-        payload = shortlist("dark dense hero", intent="greenfield", mode="Operate")
+        payload = shortlist(
+            "dark dense hero", intent="greenfield", mode="Operate", frameworks=["react"]
+        )
         self.assertEqual(payload["packages_loaded_during_search"], 0)
         self.assertEqual(payload["offline"], True)
+        self.assertEqual(payload["frameworks"], ["react"])
         ids = [row["id"] for row in payload["visuals"]]
         self.assertIn("section:cli-hero", ids)
 

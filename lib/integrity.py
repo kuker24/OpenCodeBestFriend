@@ -10,6 +10,7 @@ from .common import (
     load_json,
     product_version,
     repo_root,
+    share_dir,
     sha256_file,
     write_json,
 )
@@ -122,6 +123,21 @@ def canonical_entries(root: Path | None = None) -> list[tuple[str, Path, Path, s
     if rules.is_dir():
         for path in sorted(rules.glob("*.md")):
             entries.append((f"rules/{path.name}", path, bf / "rules" / path.name, "rule"))
+    design_v2 = root / "lib" / "design_v2"
+    installed_design_v2 = share_dir() / "product" / "lib" / "design_v2"
+    if design_v2.is_dir():
+        for path in iter_skill_files(design_v2):
+            if path.suffix not in {".py", ".json"}:
+                continue
+            rel = path.relative_to(design_v2).as_posix()
+            entries.append(
+                (
+                    f"product/lib/design_v2/{rel}",
+                    path,
+                    installed_design_v2 / rel,
+                    "product-runtime",
+                )
+            )
     from .common import load_policy
 
     _allow, _skills, model, manual = load_policy(root)
@@ -232,7 +248,20 @@ def verify_owned_runtime() -> int:
     cmd_ok = 0
     cmd_total = 0
     helper_ok = 0
-    for key, source, installed, kind in canonical_entries(root):
+    entries = canonical_entries(root)
+    known_keys = {key for key, _source, _installed, _kind in entries}
+    if stored and isinstance(stored.get("files"), dict):
+        for key, metadata in stored["files"].items():
+            if not key.startswith("product/lib/design_v2/") or key in known_keys:
+                continue
+            rel = key.removeprefix("product/")
+            rel_path = Path(rel)
+            if rel_path.is_absolute() or ".." in rel_path.parts or rel_path.suffix not in {".py", ".json"}:
+                continue
+            meta = metadata if isinstance(metadata, dict) else {}
+            kind = str(meta.get("kind") or "product-runtime")
+            entries.append((key, root / rel_path, share_dir() / "product" / rel_path, kind))
+    for key, source, installed, kind in entries:
         live = fingerprint(installed, kind)
         if kind == "model-skill" and key.endswith("/SKILL.md"):
             skill_total += 1
@@ -250,6 +279,8 @@ def verify_owned_runtime() -> int:
                 f.add("MISSING", key, str(installed))
             else:
                 helper_ok += 1
+        if kind == "product-runtime" and live is None:
+            f.add("MISSING", key, str(installed))
         expected = expected_fingerprint(source, kind) if use_source and source.exists() else None
         if expected is None and stored and isinstance(stored.get("files"), dict):
             expected = (stored["files"].get(key) or {}).get("expected") or (stored["files"].get(key) or {}).get(

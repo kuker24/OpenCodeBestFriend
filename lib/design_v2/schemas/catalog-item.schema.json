@@ -2,6 +2,157 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://opencode-bestfriend.local/schemas/design-v2/catalog-item.schema.json",
   "title": "Design V2 catalog item",
-  "type": "object",
-  "description": "Dual-read: schema_version 1 (legacy DI) or 2 (Design V2). Validated in schema.py."
+  "oneOf": [
+    {"$ref": "#/$defs/itemV1"},
+    {"$ref": "#/$defs/itemV2"}
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z]+:[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "relativePath": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+    },
+    "stringArray": {"type": "array", "items": {"type": "string"}},
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "status", "redistribution"],
+      "properties": {
+        "spdx": {
+          "type": ["string", "null"],
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9.+-]{0,63}$"
+        },
+        "status": {"enum": ["known", "declared-only", "unknown", "conflicting"]},
+        "redistribution": {"enum": ["allowed", "local-only", "blocked", "unknown"]}
+      }
+    },
+    "sourceV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["archive", "path", "url", "version", "content_sha256"],
+      "properties": {
+        "archive": {"type": "string"},
+        "path": {"$ref": "#/$defs/relativePath"},
+        "url": {"type": ["string", "null"]},
+        "version": {"type": ["string", "null"]},
+        "content_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "sourceV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_sha256"],
+      "properties": {
+        "archive": {"type": "string"},
+        "path": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"},
+        "url": {"type": ["string", "null"]},
+        "version": {"type": ["string", "null"]},
+        "content_sha256": {"$ref": "#/$defs/sha256"},
+        "provider": {"type": ["string", "null"]},
+        "type": {
+          "type": ["string", "null"],
+          "enum": ["local", "archive", "github", "registry", "user-export", "manual", "generated", null]
+        },
+        "retrieval": {"type": ["string", "null"], "enum": ["offline", "local", null]},
+        "local_path": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"},
+        "canonical_url": {"type": ["string", "null"]},
+        "upstream_id": {"type": ["string", "null"]}
+      }
+    },
+    "itemV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "id", "kind", "name", "description", "source", "license",
+        "trust", "evidence_tier", "execution_class", "style_authority", "intent", "modes",
+        "surfaces", "platforms", "categories", "tags", "capabilities_required", "provider",
+        "search_policy", "selection_policy", "canonical_id", "alias_of", "duplicate_of",
+        "dedup_reason", "untrusted_text", "normalization_status", "extraction_evidence", "warnings"
+      ],
+      "properties": {
+        "schema_version": {"type": "integer", "const": 1},
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["system", "structure", "recipe", "specialist", "visual"]},
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "source": {"$ref": "#/$defs/sourceV1"},
+        "license": {"$ref": "#/$defs/license"},
+        "trust": {"enum": ["first-party", "upstream", "curated", "community", "unknown"]},
+        "evidence_tier": {"enum": ["E0", "E1", "E2", "E3"]},
+        "execution_class": {"enum": ["stub", "reference-only", "connector-required", "provider-required", "quarantined", "native-candidate", "adapted-candidate"]},
+        "style_authority": {"enum": ["authoritative", "inspiration-only", "structure-only", "none"]},
+        "intent": {"$ref": "#/$defs/stringArray"},
+        "modes": {"$ref": "#/$defs/stringArray"},
+        "surfaces": {"$ref": "#/$defs/stringArray"},
+        "platforms": {"$ref": "#/$defs/stringArray"},
+        "categories": {"$ref": "#/$defs/stringArray"},
+        "tags": {"$ref": "#/$defs/stringArray"},
+        "capabilities_required": {"$ref": "#/$defs/stringArray"},
+        "provider": {"type": ["string", "null"]},
+        "search_policy": {"enum": ["metadata-only", "never"]},
+        "selection_policy": {"enum": ["full-on-selection", "normalized-card-only", "metadata-only", "never"]},
+        "canonical_id": {"$ref": "#/$defs/id"},
+        "alias_of": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "duplicate_of": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "dedup_reason": {"type": ["string", "null"], "enum": ["path-lineage", "content-hash", "normalized-id", null]},
+        "untrusted_text": {"type": "boolean"},
+        "normalization_status": {"enum": ["complete", "partial", "manual-required"]},
+        "extraction_evidence": {"$ref": "#/$defs/stringArray"},
+        "warnings": {"$ref": "#/$defs/stringArray"},
+        "summary": {"type": "object"},
+        "search_text": {"type": "string"}
+      }
+    },
+    "itemV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "id", "kind", "name", "description", "source", "license",
+        "trust", "evidence_tier", "execution_class", "style_authority", "intent", "modes",
+        "surfaces", "platforms", "categories", "tags", "capabilities_required", "provider",
+        "search_policy", "selection_policy", "canonical_id", "alias_of", "duplicate_of",
+        "dedup_reason", "untrusted_text", "normalization_status", "extraction_evidence", "warnings"
+      ],
+      "properties": {
+        "schema_version": {"type": "integer", "const": 2},
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["system", "structure", "recipe", "specialist", "visual", "component", "primitive", "block", "section", "page", "template", "theme", "motion", "effect", "background", "pattern"]},
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "source": {"$ref": "#/$defs/sourceV2"},
+        "license": {"$ref": "#/$defs/license"},
+        "trust": {"enum": ["first-party", "upstream", "curated", "community", "unknown"]},
+        "evidence_tier": {"enum": ["E0", "E1", "E2", "E3"]},
+        "execution_class": {"enum": ["stub", "reference-only", "connector-required", "provider-required", "quarantined", "native-candidate", "adapted-candidate"]},
+        "style_authority": {"enum": ["authoritative", "inspiration-only", "structure-only", "none"]},
+        "intent": {"$ref": "#/$defs/stringArray"},
+        "modes": {"$ref": "#/$defs/stringArray"},
+        "surfaces": {"$ref": "#/$defs/stringArray"},
+        "platforms": {"$ref": "#/$defs/stringArray"},
+        "categories": {"$ref": "#/$defs/stringArray"},
+        "tags": {"$ref": "#/$defs/stringArray"},
+        "capabilities_required": {"$ref": "#/$defs/stringArray"},
+        "provider": {"type": ["string", "null"]},
+        "search_policy": {"enum": ["metadata-only", "never"]},
+        "selection_policy": {"enum": ["full-on-selection", "normalized-card-only", "metadata-only", "never"]},
+        "canonical_id": {"$ref": "#/$defs/id"},
+        "alias_of": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "duplicate_of": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "dedup_reason": {"type": ["string", "null"], "enum": ["path-lineage", "content-hash", "normalized-id", null]},
+        "untrusted_text": {"type": "boolean"},
+        "normalization_status": {"enum": ["complete", "partial", "manual-required"]},
+        "extraction_evidence": {"$ref": "#/$defs/stringArray"},
+        "warnings": {"$ref": "#/$defs/stringArray"},
+        "summary": {"type": "object"},
+        "search_text": {"type": "string"},
+        "dna": {"type": "object"},
+        "role": {"type": ["string", "null"]},
+        "frameworks": {"$ref": "#/$defs/stringArray"},
+        "anti_slop": {"$ref": "#/$defs/stringArray"},
+        "product_fit": {"$ref": "#/$defs/stringArray"},
+        "provenance": {"type": "object"}
+      }
+    }
+  }
 }

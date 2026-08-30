@@ -181,11 +181,16 @@ def check_lock(lock: Any) -> list[str]:
             errors.append("fts.status")
         sqlite_name = fts.get("sqlite_filename")
         sqlite_sha = fts.get("sqlite_sha256")
+        if fts.get("status") == "available" and (sqlite_name is None or sqlite_sha is None):
+            errors.append("fts.available_metadata")
         if sqlite_name is not None and not re.fullmatch(r"catalog-[0-9a-f]+\.sqlite3", str(sqlite_name)):
             errors.append("fts.sqlite_filename")
         if sqlite_sha is not None and not SHA_RE.fullmatch(str(sqlite_sha)):
             errors.append("fts.sqlite_sha256")
-        extra = set(fts) - {"status", "sqlite_filename", "sqlite_sha256"}
+        schema_version = fts.get("schema_version")
+        if schema_version is not None and schema_version != 2:
+            errors.append("fts.schema_version")
+        extra = set(fts) - {"status", "sqlite_filename", "sqlite_sha256", "schema_version"}
         if extra:
             errors.append("fts.additional")
     return errors

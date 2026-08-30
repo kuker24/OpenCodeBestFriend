@@ -19,6 +19,9 @@ class RebuildError(DesignV2Error):
     code = "REBUILD_FAILED"
 
 
+FTS_SCHEMA_VERSION = 2
+
+
 def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -73,10 +76,13 @@ def _write_sqlite(path: Path, items: list[dict[str, Any]]) -> str:
             [(item["id"], item.get("kind") or "", dump_line(item)) for item in items],
         )
         conn.execute(
-            "CREATE VIRTUAL TABLE items_fts USING fts5(id, name, description, search_text, kind, tags)"
+            "CREATE VIRTUAL TABLE items_fts USING fts5("
+            "id UNINDEXED, name, description, search_text, kind, tags, categories, intent, modes, frameworks)"
         )
         conn.executemany(
-            "INSERT INTO items_fts(id, name, description, search_text, kind, tags) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO items_fts("
+            "id, name, description, search_text, kind, tags, categories, intent, modes, frameworks"
+            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 (
                     item["id"],
@@ -85,6 +91,10 @@ def _write_sqlite(path: Path, items: list[dict[str, Any]]) -> str:
                     item.get("search_text") or "",
                     item.get("kind") or "",
                     " ".join(item.get("tags") or []),
+                    " ".join(item.get("categories") or []),
+                    " ".join(item.get("intent") or []),
+                    " ".join(item.get("modes") or []),
+                    " ".join(item.get("frameworks") or []),
                 )
                 for item in items
             ],
@@ -100,6 +110,63 @@ def _fts_status_for_error(exc: BaseException) -> str:
     if "fts5" in text or "no such module" in text:
         return "unavailable"
     return "failed"
+
+
+def _build_fts(path: Path, items: list[dict[str, Any]], sqlite_name: str) -> dict[str, Any]:
+    try:
+        _write_sqlite(path, items)
+        return {
+            "status": "available",
+            "sqlite_filename": sqlite_name,
+            "sqlite_sha256": _sha256_bytes(path.read_bytes()),
+            "schema_version": FTS_SCHEMA_VERSION,
+        }
+    except sqlite3.OperationalError as exc:
+        status = _fts_status_for_error(exc)
+    except Exception:
+        status = "failed"
+    if path.exists():
+        path.unlink()
+    return {
+        "status": status,
+        "sqlite_filename": None,
+        "sqlite_sha256": None,
+        "schema_version": FTS_SCHEMA_VERSION,
+    }
+
+
+def _fts_is_current(root: Path, fts: dict[str, Any]) -> bool:
+    if fts.get("status") != "available" or fts.get("schema_version") != FTS_SCHEMA_VERSION:
+        return False
+    name = str(fts.get("sqlite_filename") or "")
+    expected = str(fts.get("sqlite_sha256") or "")
+    path = root / "catalog" / name
+    return bool(name and expected and path.is_file() and _sha256_bytes(path.read_bytes()) == expected)
+
+
+def _refresh_fts(
+    root: Path,
+    dirs: dict[str, Path],
+    existing: dict[str, Any],
+    items: list[dict[str, Any]],
+) -> dict[str, Any]:
+    generation_id = str(existing["generation_id"])
+    sqlite_name = f"catalog-{generation_id}.sqlite3"
+    incoming = Path(tempfile.mkdtemp(prefix="v2-fts-", dir=str(dirs["tmp"])))
+    assert_under_v2(root, incoming)
+    try:
+        incoming_sqlite = incoming / sqlite_name
+        fts = _build_fts(incoming_sqlite, items, sqlite_name)
+        if fts["status"] == "available":
+            os.replace(incoming_sqlite, dirs["catalog"] / sqlite_name)
+        elif _fts_is_current(root, existing.get("fts") or {}):
+            return existing["fts"]
+        lock_doc = dict(existing)
+        lock_doc["fts"] = fts
+        _atomic_write_json(dirs["catalog"] / "catalog.lock.json", lock_doc)
+        return fts
+    finally:
+        shutil.rmtree(incoming, ignore_errors=True)
 
 
 def _gc(catalog: Path, current: str, keep: int) -> None:
@@ -145,24 +212,42 @@ def rebuild(root: Path, *, now: datetime | None = None) -> dict[str, Any]:
 
     existing = read_lock(root)
     jsonl_name = f"catalog-{generation_id}.jsonl"
-    if (
+    existing_jsonl = root / "catalog" / jsonl_name
+    same_generation = (
         existing
         and existing.get("generation_id") == generation_id
         and existing.get("jsonl_filename") == jsonl_name
-        and (root / "catalog" / jsonl_name).is_file()
-    ):
+        and existing_jsonl.is_file()
+        and str(existing.get("jsonl_sha256") or "") == _sha256_bytes(existing_jsonl.read_bytes())
+    )
+    skip_fts = env_get(SKIP_FTS_VAR) == "1"
+    if same_generation:
+        assert existing is not None
+        raw_fts = existing.get("fts")
+        existing_fts: dict[str, Any] = raw_fts if isinstance(raw_fts, dict) else {}
+        if skip_fts or _fts_is_current(root, existing_fts):
+            fts = existing_fts
+            fts_rebuilt = False
+        else:
+            fts = _refresh_fts(root, dirs, existing, items)
+            fts_rebuilt = True
         return {
             "status": "ok",
             "generation_id": generation_id,
             "reused": True,
             "item_count": len(items),
-            "fts": existing.get("fts"),
+            "fts": fts,
+            "fts_rebuilt": fts_rebuilt,
         }
 
-    skip_fts = env_get(SKIP_FTS_VAR) == "1"
     incoming = Path(tempfile.mkdtemp(prefix="v2-incoming-", dir=str(dirs["tmp"])))
     assert_under_v2(root, incoming)
-    fts: dict[str, Any] = {"status": "skipped", "sqlite_filename": None, "sqlite_sha256": None}
+    fts: dict[str, Any] = {
+        "status": "skipped",
+        "sqlite_filename": None,
+        "sqlite_sha256": None,
+        "schema_version": FTS_SCHEMA_VERSION,
+    }
     try:
         incoming_jsonl = incoming / jsonl_name
         incoming_jsonl.write_bytes(jsonl_bytes)
@@ -172,25 +257,7 @@ def rebuild(root: Path, *, now: datetime | None = None) -> dict[str, Any]:
             fts["status"] = "skipped"
         else:
             incoming_sqlite = incoming / sqlite_name
-            try:
-                _write_sqlite(incoming_sqlite, items)
-                fts = {
-                    "status": "available",
-                    "sqlite_filename": sqlite_name,
-                    "sqlite_sha256": _sha256_bytes(incoming_sqlite.read_bytes()),
-                }
-            except sqlite3.OperationalError as exc:
-                fts = {
-                    "status": _fts_status_for_error(exc),
-                    "sqlite_filename": None,
-                    "sqlite_sha256": None,
-                }
-                if incoming_sqlite.exists():
-                    incoming_sqlite.unlink()
-            except Exception:
-                fts = {"status": "failed", "sqlite_filename": None, "sqlite_sha256": None}
-                if incoming_sqlite.exists():
-                    incoming_sqlite.unlink()
+            fts = _build_fts(incoming_sqlite, items, sqlite_name)
         final_jsonl = dirs["catalog"] / jsonl_name
         os.replace(incoming_jsonl, final_jsonl)
         if fts.get("sqlite_filename"):

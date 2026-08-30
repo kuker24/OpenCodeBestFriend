@@ -147,6 +147,49 @@ class DoctorDeepTests(IsolatedHome):
         with redirect_stdout(io.StringIO()):
             self.assertEqual(cmd_verify(), 1)
 
+    def test_installed_design_v2_runtime_drift_detected(self):
+        self._install()
+        runtime = (
+            self.tmp
+            / ".local"
+            / "share"
+            / "opencode-bestfriend"
+            / "product"
+            / "lib"
+            / "design_v2"
+            / "search.py"
+        )
+        runtime.write_text(runtime.read_text(encoding="utf-8") + "\n# drift\n", encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_verify()
+        self.assertEqual(rc, 1, buf.getvalue())
+        self.assertIn("DRIFT", buf.getvalue())
+        self.assertIn("product/lib/design_v2/search.py", buf.getvalue())
+
+    def test_missing_installed_design_v2_runtime_detected(self):
+        self._install()
+        runtime = (
+            self.tmp
+            / ".local"
+            / "share"
+            / "opencode-bestfriend"
+            / "product"
+            / "lib"
+            / "design_v2"
+            / "search.py"
+        )
+        runtime.unlink()
+        os.environ["OPENCODE_BF_ROOT"] = str(
+            self.tmp / ".local" / "share" / "opencode-bestfriend" / "product"
+        )
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_verify()
+        self.assertEqual(rc, 1, buf.getvalue())
+        self.assertIn("MISSING", buf.getvalue())
+        self.assertIn("product/lib/design_v2/search.py", buf.getvalue())
+
     def test_stale_routing_detected(self):
         self._install()
         routing = self.tmp / ".config" / "opencode" / "bestfriend" / "rules" / "00-routing.md"
@@ -206,4 +249,3 @@ class DoctorDeepTests(IsolatedHome):
 
 if __name__ == "__main__":
     unittest.main()
-

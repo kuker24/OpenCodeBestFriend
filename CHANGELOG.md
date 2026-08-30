@@ -10,6 +10,7 @@ Offline Design Engine V2. No new skills or MCP.
 - Ingest: Aura export, user-selected 21st/github-oss, Open Design v1 adapter (no ZIP parser), Refero/Motionsites pointer
 - Impeccable thin shim `design_v2.py`; shortlist is lazy inside `new-work`. Design V2 is not a specialist
 - Doctor reports EMPTY/PASS/DEGRADED/DEGRADED_FTS for Design V2. Uninstall does not touch `~/DesignV2`
+- Release hardening: installed V2 runtime integrity, BM25 candidates, intent/mode/framework/trust ranking, catalog hashes, fail-closed secret coverage, replace-not-merge ingest, and FTS recovery
 
 ## 1.0.5 — 2026-08-28
 

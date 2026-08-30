@@ -5,6 +5,8 @@ import os
 import re
 import shutil
 import stat
+import tempfile
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -128,37 +130,59 @@ def copy_tree_filtered(src: Path, dest: Path, *, skip_suffixes: set[str] | None 
     policy = load_policy()
     skip = {s.lower() for s in (skip_suffixes or set())}
     copied: list[str] = []
-    dest.mkdir(parents=True, exist_ok=True)
-    for dirpath, dirnames, filenames in os.walk(src, followlinks=False):
-        current = Path(dirpath)
-        if current.is_symlink():
-            raise IngestRejected("symlink")
-        rel = current.relative_to(src)
-        target_dir = dest / rel if str(rel) != "." else dest
-        kept: list[str] = []
-        for name in dirnames:
-            child = current / name
-            if child.is_symlink():
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    staged = Path(tempfile.mkdtemp(prefix=f".{dest.name}-incoming-", dir=str(dest.parent)))
+    backup = dest.parent / f".{dest.name}-backup-{uuid.uuid4().hex}"
+    try:
+        for dirpath, dirnames, filenames in os.walk(src, followlinks=False):
+            current = Path(dirpath)
+            if current.is_symlink():
                 raise IngestRejected("symlink")
-            kept.append(name)
-            (target_dir / name).mkdir(parents=True, exist_ok=True)
-        dirnames[:] = kept
-        for name in filenames:
-            if name in {"provenance.json", "ingested.json"}:
-                continue
-            child = current / name
-            st = child.lstat()
-            if stat.S_ISLNK(st.st_mode) or not stat.S_ISREG(st.st_mode):
-                continue
-            suffix = Path(name).suffix.lower()
-            if suffix in skip:
-                continue
-            if not allowed_extension(name, policy) and name.lower() not in {"license", "copying", "design.md"}:
-                continue
-            out = target_dir / name
-            assert_under_v2(dest, out)
-            shutil.copyfile(child, out)
-            copied.append(str((rel / name) if str(rel) != "." else Path(name)))
+            rel = current.relative_to(src)
+            target_dir = staged / rel if str(rel) != "." else staged
+            kept: list[str] = []
+            for name in dirnames:
+                child = current / name
+                st = child.lstat()
+                if stat.S_ISLNK(st.st_mode) or not stat.S_ISDIR(st.st_mode):
+                    raise IngestRejected("unsafe_directory")
+                kept.append(name)
+                (target_dir / name).mkdir(parents=True, exist_ok=True)
+            dirnames[:] = kept
+            for name in filenames:
+                if name in {"provenance.json", "ingested.json"}:
+                    continue
+                child = current / name
+                st = child.lstat()
+                if stat.S_ISLNK(st.st_mode) or st.st_nlink > 1 or not stat.S_ISREG(st.st_mode):
+                    raise IngestRejected("unsafe_file")
+                suffix = Path(name).suffix.lower()
+                if suffix in skip:
+                    continue
+                if not allowed_extension(name, policy) and name.lower() not in {"license", "copying", "design.md"}:
+                    continue
+                out = target_dir / name
+                assert_under_v2(staged, out)
+                out.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(child, out)
+                copied.append(str((rel / name) if str(rel) != "." else Path(name)))
+        if dest.exists():
+            if dest.is_symlink() or not dest.is_dir():
+                raise IngestRejected("unsafe_destination")
+            os.replace(dest, backup)
+        try:
+            os.replace(staged, dest)
+        except Exception:
+            if backup.exists() and not dest.exists():
+                os.replace(backup, dest)
+            raise
+        if backup.exists():
+            shutil.rmtree(backup)
+    finally:
+        if staged.exists():
+            shutil.rmtree(staged, ignore_errors=True)
+        if backup.exists() and dest.exists():
+            shutil.rmtree(backup, ignore_errors=True)
     return copied
 
 

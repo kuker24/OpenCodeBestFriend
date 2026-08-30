@@ -26,8 +26,21 @@
       "properties": {
         "status": {"enum": ["available", "unavailable", "failed", "skipped"]},
         "sqlite_filename": {"type": ["string", "null"]},
-        "sqlite_sha256": {"type": ["string", "null"]}
-      }
+        "sqlite_sha256": {"type": ["string", "null"]},
+        "schema_version": {"type": "integer", "const": 2}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "available"}}},
+          "then": {
+            "required": ["sqlite_filename", "sqlite_sha256"],
+            "properties": {
+              "sqlite_filename": {"type": "string", "pattern": "^catalog-[0-9a-f]+\\.sqlite3$"},
+              "sqlite_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          }
+        }
+      ]
     },
     "input_hashes": {
       "type": "object",

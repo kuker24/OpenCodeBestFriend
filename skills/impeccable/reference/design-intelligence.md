@@ -47,7 +47,7 @@ Search reads the committed catalog only: at most five systems and three structur
 After the Design Intelligence shortlist (or instead of it when that bank is empty), retrieve from Design V2. Search is offline and must not create `~/DesignV2`.
 
 ```bash
-python3 <skill-base-dir>/scripts/design_v2.py shortlist --query "<query>" --intent <intent> --mode <mode>
+python3 <skill-base-dir>/scripts/design_v2.py shortlist --query "<query>" --intent <intent> --mode <mode> [--framework <project-framework>]
 ```
 
 Add `--structure-only` when the lane is structure only.

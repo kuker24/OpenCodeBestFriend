@@ -11,6 +11,9 @@
 - Wildcard `"permission": { "*": "allow" }` is reported as `DEGRADED_SECURITY`; installer never mutates permission
 - `opencode-bf security-profile` prints a recommendation only
 - Optional scanners are detected, not bundled
+- Installed `product/lib/design_v2/**` Python and JSON files are covered by `opencode-bf verify`.
+- Design V2 import rejects common API tokens, private-key headers, credential-bearing database URLs, unsafe links, traversal, and oversized input; normalized assets replace rather than merge prior destinations.
+- Design V2 doctor checks catalog JSONL and SQLite hashes against the canonical lock.
 - Model/provider names are opaque; do not print tokens or gateway maps
 - `vendor/license-audit.json` lists every skill license **as evidenced**. `not-stated-in-frontmatter` is not a grant. Nine snapshot skills remain unknown.
 

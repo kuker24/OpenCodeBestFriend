@@ -8,6 +8,29 @@
     "diversity_penalty": 4.0,
     "min_score": 0.01,
     "anti_slop_penalty": 3.0,
+    "context_weights": {
+      "intent": 4.0,
+      "mode": 3.0,
+      "framework": 4.0,
+      "framework_mismatch": 1.0
+    },
+    "trust_weights": {
+      "first-party": 2.5,
+      "curated": 2.0,
+      "upstream": 1.5,
+      "community": 0.5,
+      "unknown": 0.0
+    },
+    "license_status_weights": {
+      "known": 1.0,
+      "declared-only": 0.5,
+      "unknown": 0.0
+    },
+    "redistribution_weights": {
+      "allowed": 1.0,
+      "local-only": 0.5,
+      "unknown": 0.0
+    },
     "weights": {
       "name": 8.0,
       "id": 4.0,
@@ -56,8 +79,14 @@
   "secret_pattern_parts": [
     ["XAI_API_", "KEY", "\\s*[=:]\\s*(?:\"[^\"]*\"|'[^']*'|\\S+)"],
     ["gho_", "[A-Za-z0-9]{10,}"],
+    ["ghp_", "[A-Za-z0-9]{20,}"],
+    ["github_", "pat_[A-Za-z0-9_]{20,}"],
     ["xai-", "[A-Za-z0-9]{16,}"],
-    ["Bearer ", "[A-Za-z0-9._-]{20,}"]
+    ["sk-", "ant-[A-Za-z0-9_-]{16,}"],
+    ["Bearer ", "[A-Za-z0-9._-]{20,}"],
+    ["-----BEGIN ", "(?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"],
+    ["(?:OPENAI_API_", "KEY|ANTHROPIC_API_KEY|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|NPM_TOKEN)", "\\s*[=:]\\s*(?:\"[^\"\\r\\n]+\"|'[^'\\r\\n]+'|[^\\s#]+)"],
+    ["DATABASE_", "URL\\s*[=:]\\s*[^\\s:/]+://[^\\s:@]+:[^\\s@]+@"]
   ],
   "allowed_extensions": [
     ".html",

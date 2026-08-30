@@ -19,7 +19,7 @@ class SecurityError(DesignV2Error):
 def compile_secret_patterns(policy: dict[str, Any]) -> list[re.Pattern[str]]:
     compiled: list[re.Pattern[str]] = []
     for parts in policy.get("secret_pattern_parts") or []:
-        compiled.append(re.compile("".join(str(p) for p in parts)))
+        compiled.append(re.compile("".join(str(p) for p in parts), re.IGNORECASE))
     return compiled
 
 
@@ -164,10 +164,13 @@ def secret_hits(text: str, patterns: list[re.Pattern[str]]) -> bool:
 
 
 def scan_file_secrets(path: Path, policy: dict[str, Any], patterns: list[re.Pattern[str]]) -> bool:
-    max_read = int((policy.get("zip") or {}).get("max_read_bytes") or 1048576)
+    max_read = int((policy.get("import") or {}).get("max_file_bytes") or 10485760)
     try:
-        data = path.read_bytes()[:max_read]
+        with path.open("rb") as handle:
+            data = handle.read(max_read + 1)
     except OSError:
+        return True
+    if len(data) > max_read:
         return True
     if b"\x00" in data:
         return False

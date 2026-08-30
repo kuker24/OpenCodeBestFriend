@@ -6,6 +6,7 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Any
 
+from ..common import sha256_file
 from .bank import (
     DesignV2Error,
     bank_present,
@@ -57,8 +58,25 @@ def cmd_status(root: Path | None = None) -> int:
     return 0
 
 
-def cmd_search(query: str, *, kind: str | None = None, limit: int | None = None, root: Path | None = None) -> int:
-    payload = search(query, root=root, kind=kind, limit=limit)
+def cmd_search(
+    query: str,
+    *,
+    kind: str | None = None,
+    limit: int | None = None,
+    root: Path | None = None,
+    intent: str | None = None,
+    mode: str | None = None,
+    frameworks: list[str] | None = None,
+) -> int:
+    payload = search(
+        query,
+        root=root,
+        kind=kind,
+        limit=limit,
+        intent=intent,
+        mode=mode,
+        frameworks=frameworks,
+    )
     return _emit(payload)
 
 
@@ -107,6 +125,9 @@ def doctor_rows(root: Path | None = None) -> list[tuple[str, str, str]]:
     if not jsonl.is_file():
         rows.append(("FAIL", "jsonl", "missing"))
         return rows
+    if sha256_file(jsonl) != str(lock.get("jsonl_sha256") or ""):
+        rows.append(("FAIL", "jsonl", "CATALOG_HASH_MISMATCH"))
+        return rows
     rows.append(("PASS", "jsonl", jsonl_name))
     raw_fts = lock.get("fts")
     fts: dict[str, Any] = raw_fts if isinstance(raw_fts, dict) else {}
@@ -115,7 +136,10 @@ def doctor_rows(root: Path | None = None) -> list[tuple[str, str, str]]:
         sqlite_name = fts.get("sqlite_filename")
         sqlite_path = bank / "catalog" / str(sqlite_name)
         if sqlite_name and sqlite_path.is_file():
-            rows.append(("PASS", "fts", "available"))
+            if sha256_file(sqlite_path) == str(fts.get("sqlite_sha256") or ""):
+                rows.append(("PASS", "fts", "available"))
+            else:
+                rows.append(("FAIL", "fts", "FTS_HASH_MISMATCH"))
         else:
             rows.append(("DEGRADED_FTS", "fts", "sqlite-missing"))
     else:
@@ -163,10 +187,18 @@ def cmd_shortlist(
     root: Path | None = None,
     intent: str | None = None,
     mode: str | None = None,
+    frameworks: list[str] | None = None,
     structure_only: bool = False,
 ) -> int:
     return _emit(
-        shortlist(query, root=root, intent=intent, mode=mode, structure_only=structure_only)
+        shortlist(
+            query,
+            root=root,
+            intent=intent,
+            mode=mode,
+            frameworks=frameworks,
+            structure_only=structure_only,
+        )
     )
 
 
@@ -181,7 +213,15 @@ def dispatch(args: Namespace) -> int:
             if not query:
                 print("FAIL missing query", file=sys.stderr)
                 return 2
-            return cmd_search(query, kind=getattr(args, "kind", None), limit=getattr(args, "limit", None), root=root)
+            return cmd_search(
+                query,
+                kind=getattr(args, "kind", None),
+                limit=getattr(args, "limit", None),
+                root=root,
+                intent=getattr(args, "intent", None),
+                mode=getattr(args, "mode", None),
+                frameworks=getattr(args, "framework", None),
+            )
         if action == "inspect":
             item_id = getattr(args, "target", None)
             if not item_id:
@@ -218,6 +258,7 @@ def dispatch(args: Namespace) -> int:
                 root=root,
                 intent=getattr(args, "intent", None),
                 mode=getattr(args, "mode", None),
+                frameworks=getattr(args, "framework", None),
                 structure_only=bool(getattr(args, "structure_only", False)),
             )
         if action == "dedupe":

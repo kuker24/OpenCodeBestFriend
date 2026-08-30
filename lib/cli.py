@@ -99,6 +99,7 @@ def build_parser() -> argparse.ArgumentParser:
     des.add_argument("--provider")
     des.add_argument("--intent")
     des.add_argument("--mode")
+    des.add_argument("--framework", action="append")
     des.add_argument("--structure-only", action="store_true")
 
     cr = sub.add_parser("chromium")

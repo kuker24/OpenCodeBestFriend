@@ -6,6 +6,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from ..common import sha256_file
 from .bank import catalog_ready, jsonl_path, load_policy, read_lock, resolve_design_v2_root
 from .dna import extract_query, score_dna, slop_penalty, tokenize
 from .schema import load_jsonl
@@ -28,6 +29,9 @@ def lexical_score(item: dict[str, Any], query: str, policy: dict[str, Any]) -> t
         "category": " ".join(item.get("categories") or []),
         "tags": " ".join(item.get("tags") or []),
         "summary": item.get("search_text") or "",
+        "intent": " ".join(item.get("intent") or []),
+        "mode": " ".join(item.get("modes") or []),
+        "framework": " ".join(item.get("frameworks") or []),
     }
     score = 0.0
     matched: list[str] = []
@@ -38,6 +42,83 @@ def lexical_score(item: dict[str, Any], query: str, policy: dict[str, Any]) -> t
         score += float(weights.get(field) or 1.0) * len(overlap) / math.sqrt(len(q_tokens))
         matched.append(field)
     return score, matched
+
+
+def _normalized(value: str | None) -> str:
+    return "-".join(tokenize(value or ""))
+
+
+def _requested_frameworks(
+    query: str,
+    explicit: list[str] | tuple[str, ...] | None,
+    items: list[dict[str, Any]],
+) -> set[str]:
+    requested = {_normalized(value) for value in (explicit or []) if _normalized(value)}
+    if requested:
+        return requested
+    query_tokens = set(tokenize(query))
+    for item in items:
+        for value in item.get("frameworks") or []:
+            framework_tokens = set(tokenize(str(value)))
+            if framework_tokens and framework_tokens <= query_tokens:
+                requested.add(_normalized(str(value)))
+    return requested
+
+
+def ranking_score(
+    item: dict[str, Any],
+    *,
+    intent: str | None,
+    mode: str | None,
+    frameworks: set[str],
+    policy: dict[str, Any],
+) -> tuple[float, list[str]]:
+    search_cfg = policy.get("search") or {}
+    context = search_cfg.get("context_weights") or {}
+    signals: list[str] = []
+    score = 0.0
+
+    requested_intent = _normalized(intent)
+    item_intents = {_normalized(str(value)) for value in item.get("intent") or []}
+    if requested_intent and requested_intent in item_intents:
+        score += float(context.get("intent") or 0.0)
+        signals.append("intent")
+
+    requested_mode = _normalized(mode)
+    item_modes = {_normalized(str(value)) for value in item.get("modes") or []}
+    if requested_mode and requested_mode in item_modes:
+        score += float(context.get("mode") or 0.0)
+        signals.append("mode")
+
+    item_frameworks = {_normalized(str(value)) for value in item.get("frameworks") or []}
+    if frameworks and item_frameworks:
+        overlap = frameworks & item_frameworks
+        if overlap:
+            score += float(context.get("framework") or 0.0) * len(overlap) / len(frameworks)
+            signals.append("framework")
+        else:
+            score -= float(context.get("framework_mismatch") or 0.0)
+
+    trust = str(item.get("trust") or "unknown")
+    trust_weight = float((search_cfg.get("trust_weights") or {}).get(trust) or 0.0)
+    score += trust_weight
+    if trust_weight:
+        signals.append(f"trust:{trust}")
+
+    license_obj = item.get("license") or {}
+    license_status = str(license_obj.get("status") or "unknown")
+    license_weight = float((search_cfg.get("license_status_weights") or {}).get(license_status) or 0.0)
+    score += license_weight
+    if license_weight:
+        signals.append(f"license:{license_status}")
+    redistribution = str(license_obj.get("redistribution") or "unknown")
+    redistribution_weight = float(
+        (search_cfg.get("redistribution_weights") or {}).get(redistribution) or 0.0
+    )
+    score += redistribution_weight
+    if redistribution_weight:
+        signals.append(f"redistribution:{redistribution}")
+    return score, signals
 
 
 VISUAL_KINDS = frozenset(
@@ -109,7 +190,7 @@ def _fts_ids(sqlite_path: Path, query: str, limit: int) -> list[str] | None:
         if cur.fetchone() is None:
             return None
         rows = conn.execute(
-            "SELECT id FROM items_fts WHERE items_fts MATCH ? LIMIT ?",
+            "SELECT id FROM items_fts WHERE items_fts MATCH ? ORDER BY bm25(items_fts), id LIMIT ?",
             (match, limit),
         ).fetchall()
         return [str(row[0]) for row in rows]
@@ -127,6 +208,9 @@ def load_catalog(root: Path) -> tuple[list[dict[str, Any]], dict[str, Any] | Non
     if not lock or not path:
         return [], lock, "DEGRADED"
     try:
+        expected = str(lock.get("jsonl_sha256") or "")
+        if expected and sha256_file(path) != expected:
+            return [], lock, "DEGRADED"
         items = load_jsonl(path)
     except (OSError, ValueError, json.JSONDecodeError):
         return [], lock, "DEGRADED"
@@ -140,6 +224,9 @@ def search(
     kind: str | None = None,
     kinds: frozenset[str] | set[str] | None = None,
     limit: int | None = None,
+    intent: str | None = None,
+    mode: str | None = None,
+    frameworks: list[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     policy = load_policy()
     bank = root if root is not None else resolve_design_v2_root()
@@ -149,7 +236,6 @@ def search(
     penalty = float(search_cfg.get("diversity_penalty") or 4.0)
     min_score = float(search_cfg.get("min_score") or 0.01)
     extracted = extract_query(query)
-
     items, lock, bank_status = load_catalog(bank)
     if bank_status != "ok":
         return {
@@ -162,12 +248,22 @@ def search(
             "dna": extracted,
         }
 
+    requested_frameworks = _requested_frameworks(query, frameworks, items)
+    ranking_query = " ".join(
+        value
+        for value in (query, intent or "", mode or "", " ".join(sorted(requested_frameworks)))
+        if value
+    )
+    extracted = extract_query(ranking_query)
+
     fts = lock.get("fts") if isinstance(lock, dict) else None
     retrieval = "jsonl"
     candidates = items
     if isinstance(fts, dict) and fts.get("status") == "available" and fts.get("sqlite_filename"):
         sqlite_path = bank / "catalog" / str(fts["sqlite_filename"])
-        ids = _fts_ids(sqlite_path, query, candidate_limit)
+        expected_fts = str(fts.get("sqlite_sha256") or "")
+        fts_valid = sqlite_path.is_file() and (not expected_fts or sha256_file(sqlite_path) == expected_fts)
+        ids = _fts_ids(sqlite_path, ranking_query, candidate_limit) if fts_valid else None
         if ids is not None:
             by_id = {item["id"]: item for item in items}
             ordered = [by_id[i] for i in ids if i in by_id]
@@ -180,10 +276,21 @@ def search(
         ok, _reason = eligible(item, kind, kinds=kinds)
         if not ok:
             continue
-        points, matched = lexical_score(item, query, policy)
+        points, matched = lexical_score(item, ranking_query, policy)
         points += score_dna(item, extracted, policy)
         points -= slop_penalty(item, extracted, policy)
-        if points <= 0 or points < min_score:
+        if points <= 0:
+            continue
+        context_points, context_signals = ranking_score(
+            item,
+            intent=intent,
+            mode=mode,
+            frameworks=requested_frameworks,
+            policy=policy,
+        )
+        points += context_points
+        matched.extend(context_signals)
+        if points < min_score:
             continue
         scored.append((points, item, matched))
     if retrieval == "jsonl" and len(scored) > candidate_limit:
@@ -218,6 +325,8 @@ def search(
                 "score": adj,
                 "matched_fields": matched,
                 "license": item.get("license"),
+                "trust": item.get("trust"),
+                "frameworks": item.get("frameworks") or [],
                 "dna": item.get("dna") or {},
                 "untrusted_text": True,
             }
@@ -231,6 +340,11 @@ def search(
         "packages_loaded_during_search": 0,
         "dna": {k: v for k, v in extracted.items() if k != "tokens"},
         "fts": fts,
+        "context": {
+            "intent": intent,
+            "mode": mode,
+            "frameworks": sorted(requested_frameworks),
+        },
     }
 
 
@@ -240,6 +354,7 @@ def shortlist(
     root: Path | None = None,
     intent: str | None = None,
     mode: str | None = None,
+    frameworks: list[str] | tuple[str, ...] | None = None,
     structure_only: bool = False,
 ) -> dict[str, Any]:
     bank = root if root is not None else resolve_design_v2_root()
@@ -249,6 +364,7 @@ def shortlist(
         "query": query,
         "intent": intent,
         "mode": mode,
+        "frameworks": list(frameworks or []),
         "systems": [],
         "structures": [],
         "visuals": [],
@@ -266,7 +382,13 @@ def shortlist(
     if bank_status != "ok" or not items:
         return payload
     if not structure_only:
-        payload["systems"] = search(query, root=bank, kind="system", limit=5)["results"]
-        payload["visuals"] = search(query, root=bank, kinds=VISUAL_KINDS, limit=5)["results"]
-    payload["structures"] = search(query, root=bank, kind="structure", limit=3)["results"]
+        payload["systems"] = search(
+            query, root=bank, kind="system", limit=5, intent=intent, mode=mode, frameworks=frameworks
+        )["results"]
+        payload["visuals"] = search(
+            query, root=bank, kinds=VISUAL_KINDS, limit=5, intent=intent, mode=mode, frameworks=frameworks
+        )["results"]
+    payload["structures"] = search(
+        query, root=bank, kind="structure", limit=3, intent=intent, mode=mode, frameworks=frameworks
+    )["results"]
     return payload

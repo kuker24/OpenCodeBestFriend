@@ -11,11 +11,14 @@ ONLINE (user brings files)     OFFLINE
   ~/DesignV2  USER DATA            JSONL canonical
                                          + optional FTS5
                                          ↓
-                                   DNA / taxonomy / anti-slop
+                         BM25 / DNA / taxonomy / compatibility
+                               / trust / anti-slop / diversity
 ```
 
 - Root: `OPENCODE_DESIGN_V2` (deprecated alias `GROK_DESIGN_V2`) or `~/DesignV2`. Not installer-owned. Uninstall does not touch it.
 - JSONL is the canonical catalog. FTS5 is an optional accelerator. Missing FTS is `DEGRADED_FTS`, not a failed generation.
+- FTS candidates use BM25 before DNA, taxonomy, intent/mode, framework compatibility, trust/license, anti-slop, and diversity ranking.
+- Doctor verifies the JSONL and SQLite SHA-256 values recorded in `catalog.lock.json`.
 - Read-only commands (`status`, `search`, `inspect`, `doctor`, `sources`, `shortlist`) do not create the bank.
 - 21st.dev / Aura are **not** runtime providers. No MCP. Online only to import user-obtained files.
 - Aura ingest: official HTML/CSS/JS or `DESIGN.md` export. Unknown layout is rejected.
@@ -34,4 +37,4 @@ opencode-bf design status|search|inspect|rebuild|doctor|ingest|dedupe|import|sou
 - `import <path> [--provider]` — stage files only
 - `ingest --provider <aura|21st|open-design|refero|motionsites|github-oss|manual> [path]`
 - `dedupe` then `rebuild` to commit the catalog
-- `shortlist --query "..." [--intent] [--mode] [--structure-only]` — bounded offline retrieval for Impeccable
+- `shortlist --query "..." [--intent] [--mode] [--framework <name>] [--structure-only]` — bounded offline retrieval for Impeccable
