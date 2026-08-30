@@ -16,7 +16,7 @@ FIXTURES = ROOT / "tests" / "fixtures" / "design_v2"
 sys.path.insert(0, str(ROOT))
 
 from lib.design_v2.commands import bank_health  # noqa: E402
-from lib.design_v2.importers.bank_pointer import is_catalog_bank, map_jenis_kind  # noqa: E402
+from lib.design_v2.importers.bank_pointer import is_catalog_bank, map_jenis_kind, preview_relative_path  # noqa: E402
 from lib.design_v2.inspect import inspect_item  # noqa: E402
 from lib.design_v2.search import search  # noqa: E402
 from lib.design_v2.importers.common import IngestRejected, copy_tree_filtered  # noqa: E402
@@ -204,6 +204,11 @@ class IngestTests(IsolatedHome):
         self.assertEqual(map_jenis_kind("landing-page"), "page")
         self.assertEqual(map_jenis_kind("lainnya"), "pattern")
         self.assertEqual(map_jenis_kind("lainnya", "component"), "component")
+        self.assertEqual(
+            preview_relative_path({"id": "x", "jenis": "template", "preview": "preview.avif"}),
+            "library/template/x/preview.avif",
+        )
+        self.assertEqual(preview_relative_path({"id": "x", "jenis": "template", "preview": "preview.gif"}), "")
 
     def test_refero_styles_catalog(self):
         design = self.tmp / "Design"

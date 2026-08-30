@@ -4,6 +4,7 @@
 
 - DesignV2 can index local Aura/21st visual catalog banks by pointer without copying preview media; existing single-source import behavior remains unchanged.
 - Catalog pointers store item-level preview paths; inspect and search resolve them without copying media. Doctor parses pointer catalogs and samples preview files.
+- Search ranks structural query nouns (button, hero, pricing, shader, landing) toward matching kind/category. Catalog preview pointers accept AVIF stills.
 
 ## 1.2.0 — 2026-08-30
 

@@ -130,6 +130,79 @@ def ranking_score(
     return score, signals
 
 
+KIND_INTENT_TERMS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
+    "button": (("component",), ("button",)),
+    "card": (("component",), ("card",)),
+    "form": (("component",), ("form",)),
+    "nav": (("component",), ("nav", "navbar")),
+    "navbar": (("component",), ("navbar", "nav")),
+    "navigation": (("component",), ("nav", "navbar")),
+    "input": (("component",), ("input",)),
+    "modal": (("component",), ("modal",)),
+    "tabs": (("component",), ("tabs",)),
+    "accordion": (("component",), ("accordion",)),
+    "badge": (("component",), ("badge",)),
+    "dropdown": (("component",), ("dropdown",)),
+    "hero": (("section",), ("hero",)),
+    "features": (("section",), ("features",)),
+    "footer": (("section",), ("footer",)),
+    "cta": (("section",), ("cta",)),
+    "pricing": (("section",), ("pricing",)),
+    "about": (("section",), ("about",)),
+    "blog": (("section",), ("blog",)),
+    "carousel": (("section",), ("carousel",)),
+    "stats": (("section",), ("stats",)),
+    "testimonials": (("section",), ("testimonials",)),
+    "shader": (("effect",), ("shader",)),
+    "effect": (("effect",), ("shader", "effect")),
+    "theme": (("theme",), ("theme",)),
+    "template": (("template",), ("template",)),
+    "landing": (("page", "template"), ("landing-page",)),
+    "component": (("component",), ()),
+    "section": (("section",), ()),
+    "page": (("page",), ()),
+    "mobile": (("page",), ("mobile-app",)),
+}
+
+
+def query_kind_intent(query: str) -> tuple[frozenset[str], frozenset[str]]:
+    kinds: set[str] = set()
+    categories: set[str] = set()
+    for token in tokenize(query):
+        mapped = KIND_INTENT_TERMS.get(token)
+        if not mapped:
+            continue
+        kinds.update(mapped[0])
+        categories.update(mapped[1])
+    return frozenset(kinds), frozenset(categories)
+
+
+def kind_intent_score(item: dict[str, Any], query: str, policy: dict[str, Any]) -> tuple[float, list[str]]:
+    preferred_kinds, preferred_cats = query_kind_intent(query)
+    if not preferred_kinds and not preferred_cats:
+        return 0.0, []
+    search_cfg = policy.get("search") or {}
+    kind_match = float(search_cfg.get("kind_intent_match") or 6.0)
+    kind_mismatch = float(search_cfg.get("kind_intent_mismatch") or 4.0)
+    cat_match = float(search_cfg.get("category_intent_match") or 4.0)
+    item_kind = str(item.get("kind") or "")
+    item_cats = {str(value).lower() for value in (item.get("categories") or []) if value}
+    role = str(item.get("role") or "").lower()
+    cat_hit = bool(preferred_cats and (item_cats & preferred_cats or role in preferred_cats))
+    kind_hit = bool(preferred_kinds and item_kind in preferred_kinds)
+    score = 0.0
+    signals: list[str] = []
+    if kind_hit:
+        score += kind_match
+        signals.append("kind_intent")
+    elif preferred_kinds and not cat_hit:
+        score -= kind_mismatch
+    if cat_hit:
+        score += cat_match
+        signals.append("category_intent")
+    return score, signals
+
+
 VISUAL_KINDS = frozenset(
     {
         "visual",
@@ -335,6 +408,9 @@ def search(
         )
         points += context_points
         matched.extend(context_signals)
+        intent_points, intent_signals = kind_intent_score(item, ranking_query, policy)
+        points += intent_points
+        matched.extend(intent_signals)
         if points < min_score:
             continue
         scored.append((points, item, matched))

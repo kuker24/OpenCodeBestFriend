@@ -33,6 +33,9 @@
     },
     "product_fit_match": 6.0,
     "product_fit_mismatch": 2.0,
+    "kind_intent_match": 6.0,
+    "kind_intent_mismatch": 4.0,
+    "category_intent_match": 4.0,
     "dna_dimension_weights": {
       "aesthetic": 5.0,
       "density": 2.0,

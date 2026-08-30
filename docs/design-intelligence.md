@@ -64,7 +64,7 @@ opencode-bf design ingest --provider aura ~/Downloads/my-design
 
 ### Aura
 
-A local Aura catalog bank (`library/catalog.json` plus per-item preview/meta) is ingested as a pointer catalog. DesignV2 does not copy preview media and does not stage the library tree. Cards record `source.upstream_id` and `source.path` (preview relative to the catalog root). Remix HTML is obtained on aura.build when the user account allows it; it is not present in the catalog bank.
+A local Aura catalog bank (`library/catalog.json` plus per-item preview/meta) is ingested as a pointer catalog. DesignV2 does not copy preview media and does not stage the library tree. Cards record `source.upstream_id` and `source.path` (preview relative to the catalog root). Still previews may be webp, png, jpg, jpeg, or avif. Remix HTML is obtained on aura.build when the user account allows it; it is not present in the catalog bank.
 
 Aura also accepts one user-exported HTML/CSS/JavaScript folder, `DESIGN.md`, or an explicit user metadata file named `design-v2.json`. An arbitrary proprietary `manifest.json` is not reverse-engineered. To use `manifest.json`, place supported fields under `opencode_design_v2`.
 
@@ -96,7 +96,7 @@ Normalized records carry `extraction_evidence` entries prefixed with `detected:`
 
 Design DNA remains lexical and interpretable. Dimensions include aesthetic, density, geometry, typography, spacing, color, hierarchy, layout, motion, interaction, responsive behavior, product fit, content style, visual complexity, and accessibility. No embeddings or vector database are used.
 
-Anti-slop is a ranking penalty, not a ban. Explicit requests such as `glass futuristic dashboard` reduce the relevant glass penalty. Explicit avoidance such as `no slop` increases penalties. Unrelated phrases such as `not childish` do not globally activate anti-slop avoidance.
+Anti-slop is a ranking penalty, not a ban. Explicit requests such as `glass futuristic dashboard` reduce the relevant glass penalty. Explicit avoidance such as `no slop` increases penalties. Unrelated phrases such as `not childish` do not globally activate anti-slop avoidance. Structural query nouns such as `button`, `hero`, `pricing`, `shader`, and `landing` boost matching kind and category (for example a button query prefers `component`/`button` over an effect whose name happens to contain button).
 
 ## Health report
 

@@ -15,7 +15,7 @@ ZERO = "0" * 64
 CATALOG_PROVIDERS = frozenset({"21st", "aura"})
 POINTER_PROVIDERS = ("refero", "motionsites", "21st", "aura")
 POINTER_PREVIEW_SAMPLE = 5
-PREVIEW_STILLS = {".webp", ".png", ".jpg", ".jpeg"}
+PREVIEW_STILLS = {".webp", ".png", ".jpg", ".jpeg", ".avif"}
 JENIS_KIND = {
     "shader": "effect",
     "theme": "theme",

@@ -29,7 +29,7 @@ from lib.design_v2.commands import doctor_rows  # noqa: E402
 from lib.design_v2.bank import load_policy  # noqa: E402
 from lib.design_v2.rebuild import FTS_SCHEMA_VERSION, _write_sqlite, rebuild  # noqa: E402
 from lib.design_v2.schema import check_item, empty_item_v1, empty_item_v2  # noqa: E402
-from lib.design_v2.search import _fts_ids, search, shortlist  # noqa: E402
+from lib.design_v2.search import _fts_ids, query_kind_intent, search, shortlist  # noqa: E402
 from lib.design_v2.security import compile_secret_patterns, secret_hits  # noqa: E402
 from lib.install import cmd_uninstall  # noqa: E402
 from lib.paths import assert_within_allowed  # noqa: E402
@@ -198,6 +198,74 @@ class DesignV2Tests(IsolatedHome):
         except sqlite3.OperationalError:
             self.skipTest("SQLite FTS5 unavailable")
         self.assertEqual(_fts_ids(path, "dark dashboard", 1), ["section:strong-dashboard"])
+
+    def test_kind_intent_prefers_component_button_over_effect(self):
+        button = _item(
+            id="component:primary-button",
+            name="Primary Button",
+            description="A compact primary button",
+            kind="component",
+            categories=["button"],
+            tags=["button"],
+            role="component",
+            search_text="premium modern button",
+        )
+        shader = _item(
+            id="effect:shiny-button",
+            name="Shiny Borders Button",
+            description="Shiny borders button shader",
+            kind="effect",
+            categories=["shader"],
+            tags=["shader", "button"],
+            role="effect",
+            search_text="premium modern button shiny",
+        )
+        self._inbox(button)
+        self._inbox(shader)
+        rebuild(self.bank)
+        hits = search("premium modern button")
+        ids = [row["id"] for row in hits["results"]]
+        self.assertEqual(ids[0], "component:primary-button")
+        self.assertIn("kind_intent", hits["results"][0]["matched_fields"])
+        self.assertIn("category_intent", hits["results"][0]["matched_fields"])
+
+    def test_kind_intent_prefers_shader_effect_and_hero_section(self):
+        shader = _item(
+            id="effect:cyber-shader",
+            name="Cybernetic Grid shader",
+            kind="effect",
+            categories=["shader"],
+            search_text="dark futuristic shader",
+        )
+        page = _item(
+            id="page:futuristic-landing",
+            name="Futuristic Sci-Fi Landing Page Template",
+            kind="page",
+            categories=["landing-page"],
+            search_text="dark futuristic shader landing",
+        )
+        hero = _item(
+            id="section:saas-hero",
+            name="Hero Section",
+            kind="section",
+            categories=["hero"],
+            search_text="clean SaaS hero section",
+        )
+        other = _item(
+            id="component:saas-card",
+            name="SaaS hero card",
+            kind="component",
+            categories=["card"],
+            search_text="clean SaaS hero section",
+        )
+        for row in (shader, page, hero, other):
+            self._inbox(row)
+        rebuild(self.bank)
+        self.assertEqual(search("dark futuristic shader")["results"][0]["id"], "effect:cyber-shader")
+        self.assertEqual(search("clean SaaS hero section")["results"][0]["id"], "section:saas-hero")
+        kinds, cats = query_kind_intent("premium modern button")
+        self.assertEqual(kinds, frozenset({"component"}))
+        self.assertEqual(cats, frozenset({"button"}))
 
     def test_intent_mode_framework_and_trust_affect_ranking(self):
         preferred = _item(
