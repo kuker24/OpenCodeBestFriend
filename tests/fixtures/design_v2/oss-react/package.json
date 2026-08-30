@@ -1,0 +1,11 @@
+{
+  "name": "synthetic-finance-panel",
+  "private": true,
+  "scripts": {
+    "postinstall": "this-command-must-never-run"
+  },
+  "dependencies": {
+    "react": "synthetic",
+    "tailwindcss": "synthetic"
+  }
+}

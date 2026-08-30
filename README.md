@@ -141,14 +141,20 @@ Portable policy, taxonomy, schemas, and Python runtime ship in git. The installe
 Offline user-data bank at `OPENCODE_DESIGN_V2` or `~/DesignV2` (`GROK_DESIGN_V2` is a deprecated alias). Not installer-owned. Uninstall does not touch it.
 
 ```bash
-opencode-bf design import ./export --provider aura
-opencode-bf design ingest --provider aura ./export
+opencode-bf design import ~/Downloads/aura-export --provider aura
+opencode-bf design sources
+opencode-bf design ingest --provider aura --source-id <source_id>
+opencode-bf design dedupe
 opencode-bf design rebuild
-opencode-bf design search "dark dense dashboard"
-opencode-bf design shortlist --query "dark dense dashboard"
+opencode-bf design doctor
+opencode-bf design search "premium cybersecurity dashboard dark minimal"
+opencode-bf design shortlist --query "premium cybersecurity dashboard dark minimal"
+opencode-bf design inspect <id>
 ```
 
-Search, inspect, doctor, sources, and shortlist are read-only and do not create the bank. JSONL is canonical; missing FTS is `DEGRADED_FTS`.
+`import` accepts local files, folders, or ZIPs only and returns a stable staged `source_id`. A direct `ingest --provider <provider> <local-path>` remains available as a one-step shortcut. URLs are rejected and no command fetches Aura or 21st content.
+
+Search, inspect, doctor, sources, and shortlist are read-only and do not create the bank. JSONL is canonical; missing or stale FTS is `DEGRADED_FTS`. Run `opencode-bf design --help` for the complete local lifecycle.
 
 ## Claude isolation
 

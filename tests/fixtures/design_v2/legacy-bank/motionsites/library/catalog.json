@@ -1,0 +1,10 @@
+{
+  "items": [
+    {
+      "id": "motion-terminal-01",
+      "title": "Terminal Reveal",
+      "jenis": "subtle developer tool hero motion",
+      "types_source": ["developer-tools", "terminal", "subtle"]
+    }
+  ]
+}

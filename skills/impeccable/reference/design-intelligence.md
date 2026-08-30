@@ -52,11 +52,11 @@ python3 <skill-base-dir>/scripts/design_v2.py shortlist --query "<query>" --inte
 
 Add `--structure-only` when the lane is structure only.
 
-`EMPTY` or `DESIGN_V2_RUNTIME_MISSING`: skip V2 and continue DI plus native new-work. Do not run `import`, `ingest`, or `rebuild` from this playbook.
+`EMPTY` or `DESIGN_V2_RUNTIME_MISSING`: skip V2 and continue DI plus native new-work. The shim is read-only; do not run `import`, `ingest`, `dedupe`, or `rebuild` from this playbook.
 
-Visual hits are inspiration cards, not installable kits. Keep the combined cap of three full-card challengers across DI, V2, and native catalogs.
+Visual hits are inspiration cards, not installable kits. Each V2 result includes one bounded reasoning card: direction, selected system/style, structure, components/patterns, motion, why, compatibility, license/trust, avoid flags, and `inspect_id`. Keep the combined cap of three full-card challengers across DI, V2, and native catalogs.
 
-Do not pin V2 items with `pin-selection` (that opens Open Design packages). After the user locks a V2-backed direction, inspect with `design_v2.py inspect <id>` only.
+Do not pin V2 items with `pin-selection` (that opens Open Design packages). After the user locks a V2-backed direction, inspect only that selected candidate with `design_v2.py inspect <id>`. Never inspect every shortlist result.
 
 Use at most one primary system and one secondary influence in the final direction. A brand-named E1 system is inspiration, never an official kit or permission for pixel copying. Unknown-license material stays local evidence: abstract its system discipline, but never copy its prose, source markup, component code, CSS, or token file into project files. Do not retrieve recipes or specialists from this flow.
 

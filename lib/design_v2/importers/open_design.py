@@ -8,7 +8,7 @@ from typing import Any
 from ..bank import DesignV2Error
 from ..dna import extract_query
 from ..provenance import default_provenance
-from .common import IngestRejected, write_inbox
+from .common import IngestRejected, detect_anti_slop, write_inbox
 
 name = "open-design"
 
@@ -61,13 +61,17 @@ def v1_to_v2(item: dict[str, Any]) -> dict[str, Any]:
     )
     extracted = extract_query(blob)
     dna: dict[str, Any] = {}
-    for key in ("aesthetic", "density", "geometry", "motion", "product_fit", "visual_complexity"):
+    for key in (
+        "aesthetic", "density", "geometry", "typography", "spacing", "color", "hierarchy", "layout",
+        "motion", "interaction", "responsive_behavior", "product_fit", "content_style", "visual_complexity",
+        "accessibility",
+    ):
         if extracted.get(key):
             dna[key] = extracted[key]
     out["dna"] = dna
     out.setdefault("role", None)
     out.setdefault("frameworks", [])
-    out.setdefault("anti_slop", [])
+    out.setdefault("anti_slop", detect_anti_slop(blob))
     out.setdefault("product_fit", list(extracted.get("product_fit") or []))
     raw_lic = item.get("license")
     license_obj: dict[str, Any] = raw_lic if isinstance(raw_lic, dict) else {}
@@ -77,6 +81,12 @@ def v1_to_v2(item: dict[str, Any]) -> dict[str, Any]:
         license_evidence="unknown" if license_obj.get("status") == "unknown" else "declared-only",
         redistribution=license_obj.get("redistribution") or "local-only",
     )
+    out["extraction_evidence"] = sorted(
+        set(out.get("extraction_evidence") or []) | {f"inferred:dna:{key}" for key in dna}
+    )
+    out["selection_policy"] = "full-on-selection" if license_obj.get("status") == "known" else "normalized-card-only"
+    if license_obj.get("status") == "known":
+        out["execution_class"] = "adapted-candidate"
     return out
 
 

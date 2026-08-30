@@ -6,7 +6,7 @@ from typing import Any
 
 from ..bank import atomic_write_json, ensure_layout
 from ..provenance import default_provenance, license_from_evidence
-from .common import IngestRejected, catalog_item, dna_from_text, slugify, write_inbox
+from .common import IngestRejected, catalog_item, detect_anti_slop, dna_from_text, slugify, write_inbox
 
 name = "bank-pointer"
 
@@ -60,6 +60,11 @@ def _visual_item(provider: str, slug: str, name: str, description: str, tags: li
         tags=tags,
         categories=["visual"],
         search_text=" ".join([name, description, " ".join(tags)]),
+        anti_slop=detect_anti_slop(" ".join([name, description, " ".join(tags)])),
+        extraction_evidence=["detected:source:legacy-design-bank-pointer"] + [
+            f"inferred:dna:{key}" for key in sorted(dna)
+        ],
+        warnings=["LICENSE_UNKNOWN", "FRAMEWORK_UNKNOWN"] + ([] if dna.get("product_fit") else ["PRODUCT_FIT_UNKNOWN"]),
     )
 
 

@@ -1,6 +1,6 @@
 # Design Intelligence
 
-Local reference engine for GrokBestFriend 1.3.1. **Not an independent
+Legacy Design Intelligence reference engine. **Not DesignV2 and not an independent
 router or skill.** Impeccable `new-work` owns its bounded retrieval stage.
 
 This tree is policy, taxonomy, and schemas. The indexer lives in
@@ -41,4 +41,4 @@ python3 scripts/design-intelligence.py doctor --bank /tmp/di
 Bank resolution: `--bank` → `GROK_DESIGN_INTELLIGENCE_BANK` → `~/DesignIntelligence`.
 Tests must pass `--bank` at a temporary path.
 
-See [docs/design-intelligence.md](../../docs/design-intelligence.md).
+See [docs/design-intelligence.md](../docs/design-intelligence.md).

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -12,6 +13,7 @@ from typing import Any
 
 from ..bank import DesignV2Error, assert_under_v2, atomic_write_json, ensure_layout, load_policy
 from ..dna import extract_query
+from ..provenance import load_provenance
 from ..schema import empty_item_v2
 from ..security import allowed_extension
 
@@ -35,6 +37,42 @@ KIND_DIR = {
 }
 
 SLUG_RE = re.compile(r"[^a-z0-9]+")
+DNA_DIMENSIONS = (
+    "aesthetic",
+    "density",
+    "geometry",
+    "typography",
+    "spacing",
+    "color",
+    "hierarchy",
+    "layout",
+    "motion",
+    "interaction",
+    "responsive_behavior",
+    "product_fit",
+    "content_style",
+    "visual_complexity",
+    "accessibility",
+)
+ANTI_SLOP_PHRASES = {
+    "giant gradient headline": "giant-gradient-title",
+    "giant gradient title": "giant-gradient-title",
+    "excessive glass": "excessive-glassmorphism",
+    "excessive glassmorphism": "excessive-glassmorphism",
+    "excessive glow": "excessive-glow",
+    "floating blob": "floating-gradient-blobs",
+    "floating gradient blob": "floating-gradient-blobs",
+    "random bento": "random-bento",
+    "pill everything": "pill-everything",
+    "pill-everything": "pill-everything",
+    "meaningless dashboard card": "meaningless-dashboard-cards",
+    "huge radius": "huge-radius",
+    "generic saas hero": "generic-saas-hero",
+    "over animation": "over-animation",
+    "over-animation": "over-animation",
+    "fake metric": "fake-metrics",
+    "decorative chart": "decorative-charts",
+}
 
 
 class IngestRejected(DesignV2Error):
@@ -111,19 +149,70 @@ def guess_kind_role(names: list[str], text: str) -> tuple[str, str]:
 def dna_from_text(*parts: str) -> dict[str, Any]:
     extracted = extract_query(" ".join(p for p in parts if p))
     dna: dict[str, Any] = {}
-    if extracted.get("aesthetic"):
-        dna["aesthetic"] = extracted["aesthetic"]
-    if extracted.get("density"):
-        dna["density"] = extracted["density"]
-    if extracted.get("geometry"):
-        dna["geometry"] = extracted["geometry"]
-    if extracted.get("motion"):
-        dna["motion"] = extracted["motion"]
-    if extracted.get("product_fit"):
-        dna["product_fit"] = extracted["product_fit"]
-    if extracted.get("visual_complexity"):
-        dna["visual_complexity"] = extracted["visual_complexity"]
+    for key in DNA_DIMENSIONS:
+        if extracted.get(key):
+            dna[key] = extracted[key]
     return dna
+
+
+def detect_anti_slop(text: str) -> list[str]:
+    lowered = text.lower().replace("_", " ").replace("-", " ")
+    flags = {flag for phrase, flag in ANTI_SLOP_PHRASES.items() if phrase.replace("-", " ") in lowered}
+    if "gradient" in lowered and "purple" in lowered and "blue" in lowered:
+        flags.add("purple-blue-gradient")
+    if text.lower().count("rounded-full") >= 3:
+        flags.add("pill-everything")
+    if text.lower().count("backdrop-blur") >= 3:
+        flags.add("excessive-glassmorphism")
+    if text.lower().count("rounded-3xl") >= 4:
+        flags.add("huge-radius")
+    if text.lower().count("animate-") >= 5:
+        flags.add("over-animation")
+    return sorted(flags)
+
+
+def detect_frameworks(files: list[Path], text: str) -> tuple[list[str], list[str]]:
+    names = {path.name.lower() for path in files}
+    suffixes = {path.suffix.lower() for path in files}
+    lowered = text.lower()
+    frameworks: set[str] = set()
+    evidence: list[str] = []
+    if suffixes & {".tsx", ".jsx"} or "from 'react'" in lowered or 'from "react"' in lowered:
+        frameworks.add("react")
+        evidence.append("detected:framework:react")
+    tailwind_config = any(name.startswith("tailwind.config.") for name in names)
+    tailwind_classes = bool(re.search(r"class(?:name)?\s*=.{0,120}\b(?:bg-|text-|grid|flex|p[trblxy]?--?\d|m[trblxy]?--?\d|rounded-)", text, re.IGNORECASE))
+    package = next((path for path in files if path.name.lower() == "package.json"), None)
+    tailwind_dependency = False
+    if package is not None:
+        try:
+            data = json.loads(package.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            data = {}
+        if isinstance(data, dict):
+            dependencies = {
+                str(key).lower()
+                for section in ("dependencies", "devDependencies", "peerDependencies")
+                for key in ((data.get(section) or {}) if isinstance(data.get(section), dict) else {})
+            }
+            tailwind_dependency = "tailwindcss" in dependencies
+    if tailwind_config or tailwind_classes or tailwind_dependency:
+        frameworks.add("tailwind")
+        evidence.append("detected:framework:tailwind")
+    if ".html" in suffixes:
+        frameworks.add("html")
+        evidence.append("detected:framework:html")
+    if ".css" in suffixes:
+        frameworks.add("css")
+        evidence.append("detected:framework:css")
+    if suffixes & {".js", ".mjs"}:
+        frameworks.add("javascript")
+        evidence.append("detected:framework:javascript")
+    return sorted(frameworks), evidence
+
+
+def staged_provenance(folder: Path, provider: str) -> dict[str, Any]:
+    return load_provenance(folder, expected_provider=provider)
 
 
 def copy_tree_filtered(src: Path, dest: Path, *, skip_suffixes: set[str] | None = None) -> list[str]:
@@ -213,6 +302,13 @@ def catalog_item(
     tags: list[str] | None = None,
     categories: list[str] | None = None,
     search_text: str = "",
+    anti_slop: list[str] | None = None,
+    product_fit: list[str] | None = None,
+    extraction_evidence: list[str] | None = None,
+    warnings: list[str] | None = None,
+    source_id: str | None = None,
+    intent: list[str] | None = None,
+    modes: list[str] | None = None,
 ) -> dict[str, Any]:
     item = empty_item_v2()
     item_id = make_id(kind, provider, slug)
@@ -225,9 +321,12 @@ def catalog_item(
     item["role"] = role
     item["dna"] = dna
     item["frameworks"] = frameworks
-    item["product_fit"] = list(dna.get("product_fit") or [])
+    item["anti_slop"] = sorted(set(anti_slop or []))
+    item["product_fit"] = sorted(set(product_fit if product_fit is not None else (dna.get("product_fit") or [])))
     item["tags"] = tags or []
     item["categories"] = categories or []
+    item["intent"] = sorted(set(intent or []))
+    item["modes"] = sorted(set(modes or []))
     item["search_text"] = search_text
     item["license"] = license_obj
     item["trust"] = "unknown"
@@ -236,7 +335,15 @@ def catalog_item(
     item["style_authority"] = "inspiration-only"
     item["untrusted_text"] = True
     item["normalization_status"] = "partial"
-    item["provenance"] = provenance
+    item["selection_policy"] = "full-on-selection" if license_obj.get("status") == "known" else "normalized-card-only"
+    if license_obj.get("status") == "known":
+        item["execution_class"] = "adapted-candidate"
+        item["evidence_tier"] = "E1"
+    item["extraction_evidence"] = sorted(set(extraction_evidence or []))
+    item["warnings"] = sorted(set(warnings or []))
+    item["provenance"] = dict(provenance)
+    if source_id:
+        item["provenance"]["source_id"] = source_id
     item["source"] = {
         "archive": "",
         "path": local_path,
@@ -248,6 +355,6 @@ def catalog_item(
         "retrieval": "offline",
         "local_path": local_path,
         "canonical_url": None,
-        "upstream_id": None,
+        "upstream_id": source_id,
     }
     return item

@@ -1,0 +1,10 @@
+{
+  "items": [
+    {
+      "name": "Civic Clarity",
+      "slug": "civic-clarity",
+      "northStar": "government public service trustworthy accessible light minimal",
+      "tags": ["public-service", "accessible", "minimal"]
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Post-1.1.0 DesignV2 population workflow, metadata evidence, expanded lexical DNA, contextual anti-slop, framework-aware dedupe, bounded health reporting, idempotent import `source_id`, FTS schema-3 rebuild without catalog rewrite, and offline/security smoke coverage
+
 ## 1.1.0 — 2026-08-30
 
 Offline Design Engine V2. No new skills or MCP.

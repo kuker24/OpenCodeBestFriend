@@ -1,0 +1,12 @@
+{
+  "name": "Sentinel Security Operations",
+  "description": "Dense, accessible cybersecurity operations dashboard",
+  "kind": "page",
+  "role": "dashboard",
+  "frameworks": ["html", "css"],
+  "categories": ["operations", "security"],
+  "tags": ["incident-response", "high-contrast"],
+  "product_fit": ["security", "dashboard"],
+  "intent": ["greenfield"],
+  "modes": ["Operate"]
+}

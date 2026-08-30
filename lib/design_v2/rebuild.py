@@ -10,16 +10,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import SKIP_FTS_VAR
+from . import FTS_SCHEMA_VERSION, SKIP_FTS_VAR
 from .bank import DesignV2Error, assert_under_v2, ensure_layout, env_get, load_policy, read_lock
 from .schema import check_item, dump_line, load_jsonl
 
 
 class RebuildError(DesignV2Error):
     code = "REBUILD_FAILED"
-
-
-FTS_SCHEMA_VERSION = 2
 
 
 def _sha256_bytes(data: bytes) -> str:
@@ -77,12 +74,14 @@ def _write_sqlite(path: Path, items: list[dict[str, Any]]) -> str:
         )
         conn.execute(
             "CREATE VIRTUAL TABLE items_fts USING fts5("
-            "id UNINDEXED, name, description, search_text, kind, tags, categories, intent, modes, frameworks)"
+            "id UNINDEXED, name, description, search_text, kind, tags, categories, intent, modes, frameworks, "
+            "product_fit, anti_slop, dna)"
         )
         conn.executemany(
             "INSERT INTO items_fts("
-            "id, name, description, search_text, kind, tags, categories, intent, modes, frameworks"
-            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "id, name, description, search_text, kind, tags, categories, intent, modes, frameworks, "
+            "product_fit, anti_slop, dna"
+            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 (
                     item["id"],
@@ -95,6 +94,14 @@ def _write_sqlite(path: Path, items: list[dict[str, Any]]) -> str:
                     " ".join(item.get("intent") or []),
                     " ".join(item.get("modes") or []),
                     " ".join(item.get("frameworks") or []),
+                    " ".join(item.get("product_fit") or []),
+                    " ".join(item.get("anti_slop") or []),
+                    " ".join(
+                        str(value)
+                        for raw in (item.get("dna") or {}).values()
+                        for value in (raw if isinstance(raw, list) else [raw])
+                        if value
+                    ),
                 )
                 for item in items
             ],

@@ -12,7 +12,7 @@
       "intent": 4.0,
       "mode": 3.0,
       "framework": 4.0,
-      "framework_mismatch": 1.0
+      "framework_mismatch": 1.5
     },
     "trust_weights": {
       "first-party": 2.5,
@@ -31,20 +31,43 @@
       "local-only": 0.5,
       "unknown": 0.0
     },
+    "product_fit_match": 6.0,
+    "product_fit_mismatch": 2.0,
+    "dna_dimension_weights": {
+      "aesthetic": 5.0,
+      "density": 2.0,
+      "geometry": 1.5,
+      "typography": 1.5,
+      "spacing": 1.0,
+      "color": 1.5,
+      "hierarchy": 1.0,
+      "layout": 2.0,
+      "motion": 1.0,
+      "interaction": 1.0,
+      "responsive_behavior": 1.0,
+      "content_style": 1.0,
+      "visual_complexity": 1.0,
+      "accessibility": 2.0
+    },
     "weights": {
       "name": 8.0,
       "id": 4.0,
       "description": 3.0,
       "category": 2.5,
       "tags": 2.0,
+      "intent": 2.0,
+      "mode": 2.0,
+      "framework": 1.5,
+      "product_fit": 4.0,
+      "anti_slop": 0.25,
       "summary": 2.0,
-      "dna": 5.0
+      "dna": 1.5
     }
   },
   "zip": {
-    "max_members": 20000,
-    "max_member_uncompressed": 52428800,
-    "max_total_uncompressed": 2147483648,
+    "max_members": 2000,
+    "max_member_uncompressed": 10485760,
+    "max_total_uncompressed": 104857600,
     "max_compression_ratio": 200,
     "max_read_bytes": 1048576
   },
@@ -118,7 +141,9 @@
     "huge-radius",
     "over-animation",
     "generic-saas-hero",
-    "purple-blue-gradient"
+    "purple-blue-gradient",
+    "fake-metrics",
+    "decorative-charts"
   ],
   "enums": {
     "kind_v1": ["system", "structure", "recipe", "specialist", "visual"],

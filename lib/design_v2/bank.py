@@ -181,6 +181,7 @@ def list_sources(root: Path | None = None) -> dict[str, Any]:
                     entries.append(
                         {
                             "id": child.name,
+                            "source_id": child.name,
                             "ingested": (child / "ingested.json").is_file(),
                         }
                     )

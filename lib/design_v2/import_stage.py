@@ -11,8 +11,8 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from .bank import DesignV2Error, assert_under_v2, ensure_layout, load_policy
-from .provenance import default_provenance
+from .bank import SOURCE_PROVIDERS, DesignV2Error, assert_under_v2, ensure_layout, load_policy
+from .provenance import SOURCE_ID_RE, ProvenanceError, default_provenance, load_provenance
 from .security import (
     allowed_extension,
     compile_secret_patterns,
@@ -34,6 +34,50 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _sha256_tree(path: Path, *, exclude: frozenset[str] = frozenset()) -> str:
+    h = hashlib.sha256()
+    children = [
+        entry
+        for entry in path.rglob("*")
+        if entry.is_file() and entry.relative_to(path).as_posix() not in exclude
+    ]
+    for child in sorted(children, key=lambda entry: entry.as_posix()):
+        rel = child.relative_to(path).as_posix()
+        h.update(rel.encode("utf-8"))
+        h.update(_sha256_file(child).encode("ascii"))
+    return h.hexdigest()
+
+
+_SOURCE_META = frozenset({"provenance.json", "ingested.json"})
+
+
+def _source_digest_matches(folder: Path, digest: str, provider: str) -> bool:
+    try:
+        payload = load_provenance(folder, expected_provider=provider)
+    except ProvenanceError:
+        payload = {}
+    if payload.get("content_sha256") == digest:
+        return True
+    return _sha256_tree(folder, exclude=_SOURCE_META) == digest
+
+
+def _existing_source_id(root: Path, provider: str, digest: str) -> str | None:
+    base = root / "sources" / provider
+    if not base.is_dir():
+        return None
+    for child in sorted(base.iterdir()):
+        if child.is_dir() and SOURCE_ID_RE.fullmatch(child.name) and _source_digest_matches(child, digest, provider):
+            return child.name
+    return None
+
+
+def _safe_provenance(folder: Path, provider: str, source_id: str, digest: str) -> dict[str, Any]:
+    try:
+        return load_provenance(folder, expected_provider=provider)
+    except ProvenanceError:
+        return default_provenance(provider=provider, source_id=source_id, content_sha256=digest)
 
 
 def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -136,6 +180,8 @@ def _quarantine(root: Path, staged: Path, source_id: str, issues: list[str]) -> 
 
 def import_stage(input_path: Path, root: Path, *, provider: str = "manual") -> dict[str, Any]:
     policy = load_policy()
+    if provider not in SOURCE_PROVIDERS or provider in {"refero", "motionsites"}:
+        raise ImportRejected("provider")
     src = input_path.expanduser()
     if not src.exists():
         raise ImportRejected("missing")
@@ -150,8 +196,8 @@ def import_stage(input_path: Path, root: Path, *, provider: str = "manual") -> d
         raise ImportRejected(",".join(issues))
 
     dirs = ensure_layout(root)
-    source_id = uuid.uuid4().hex[:16]
-    incoming = Path(tempfile.mkdtemp(prefix=f"incoming-{source_id}-", dir=str(dirs["tmp"])))
+    temp_id = uuid.uuid4().hex[:16]
+    incoming = Path(tempfile.mkdtemp(prefix=f"incoming-{temp_id}-", dir=str(dirs["tmp"])))
     assert_under_v2(root, incoming)
     staged = incoming / "payload"
     try:
@@ -164,18 +210,34 @@ def import_stage(input_path: Path, root: Path, *, provider: str = "manual") -> d
                 raise ImportRejected("type")
             staged.mkdir(parents=True, exist_ok=True)
             _copy_file_nofollow(src, staged / src.name)
+        staged_issues = inspect_tree(staged, policy)
+        if staged_issues:
+            raise ImportRejected(",".join(staged_issues))
         _scan_staged(staged, policy)
-        digest = _sha256_file(src) if stat.S_ISREG(st.st_mode) else source_id
+        digest = _sha256_file(src) if stat.S_ISREG(st.st_mode) else _sha256_tree(staged)
+        existing_id = _existing_source_id(root, provider, digest)
+        source_id = existing_id or digest[:16]
         dest = dirs["sources"] / provider / source_id
         assert_under_v2(root, dest)
+        if existing_id or (dest.exists() and _source_digest_matches(dest, digest, provider)):
+            report = {
+                "status": "already_staged",
+                "source_id": source_id,
+                "provider": provider,
+                "path": str(dest.relative_to(root)),
+                "provenance": _safe_provenance(dest, provider, source_id, digest),
+            }
+            _atomic_write_json(dirs["reports"] / f"import-{source_id}.json", report)
+            return report
         if dest.exists():
-            shutil.rmtree(dest)
+            raise ImportRejected("source_id_collision")
         dest.parent.mkdir(parents=True, exist_ok=True)
         os.replace(staged, dest)
         provenance = default_provenance(
             provider=provider,
             source_id=source_id,
-            content_sha256=digest if len(digest) == 64 else None,
+            source_name=src.stem if stat.S_ISREG(st.st_mode) else src.name,
+            content_sha256=digest,
         )
         _atomic_write_json(dest / "provenance.json", provenance)
         report = {
@@ -190,7 +252,7 @@ def import_stage(input_path: Path, root: Path, *, provider: str = "manual") -> d
     except ImportRejected as exc:
         issues = [str(exc)]
         if incoming.exists():
-            _quarantine(root, incoming, source_id, issues)
+            _quarantine(root, incoming, temp_id, issues)
         raise
     finally:
         if incoming.exists():

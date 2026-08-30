@@ -45,37 +45,15 @@ def main(argv: list[str] | None = None) -> int:
     engine = resolve_engine()
     root = engine.parent.parent
     sys.path.insert(0, str(root))
-    from lib.design_v2.commands import dispatch
+    from lib.design_v2.commands import add_design_cli, dispatch
 
-    parser = argparse.ArgumentParser(prog="design_v2", description="Thin Impeccable adapter for Design V2")
-    parser.add_argument(
-        "design_action",
-        choices=[
-            "status",
-            "search",
-            "inspect",
-            "rebuild",
-            "doctor",
-            "ingest",
-            "dedupe",
-            "import",
-            "sources",
-            "shortlist",
-        ],
+    parser = argparse.ArgumentParser(
+        prog="design_v2",
+        description="Read-only Impeccable adapter for Design V2",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("target", nargs="?")
-    parser.add_argument("--query")
-    parser.add_argument("--kind")
-    parser.add_argument("--limit", type=int)
-    parser.add_argument("--bank")
-    parser.add_argument("--provider")
-    parser.add_argument("--intent")
-    parser.add_argument("--mode")
-    parser.add_argument("--framework", action="append")
-    parser.add_argument("--structure-only", action="store_true")
+    add_design_cli(parser, read_only=True)
     args = parser.parse_args(argv)
-    if args.design_action in {"search", "shortlist"} and not args.query:
-        args.query = args.target
     return dispatch(args)
 
 

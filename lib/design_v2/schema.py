@@ -188,7 +188,7 @@ def check_lock(lock: Any) -> list[str]:
         if sqlite_sha is not None and not SHA_RE.fullmatch(str(sqlite_sha)):
             errors.append("fts.sqlite_sha256")
         schema_version = fts.get("schema_version")
-        if schema_version is not None and schema_version != 2:
+        if schema_version is not None and schema_version not in (2, 3):
             errors.append("fts.schema_version")
         extra = set(fts) - {"status", "sqlite_filename", "sqlite_sha256", "schema_version"}
         if extra:

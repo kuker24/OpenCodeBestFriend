@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..common import sha256_file
+from . import FTS_SCHEMA_VERSION
 from .bank import catalog_ready, jsonl_path, load_policy, read_lock, resolve_design_v2_root
 from .dna import extract_query, score_dna, slop_penalty, tokenize
 from .schema import load_jsonl
@@ -32,6 +33,14 @@ def lexical_score(item: dict[str, Any], query: str, policy: dict[str, Any]) -> t
         "intent": " ".join(item.get("intent") or []),
         "mode": " ".join(item.get("modes") or []),
         "framework": " ".join(item.get("frameworks") or []),
+        "product_fit": " ".join(item.get("product_fit") or []),
+        "anti_slop": " ".join(item.get("anti_slop") or []),
+        "dna": " ".join(
+            str(value)
+            for raw in (item.get("dna") or {}).values()
+            for value in (raw if isinstance(raw, list) else [raw])
+            if value
+        ),
     }
     score = 0.0
     matched: list[str] = []
@@ -172,6 +181,37 @@ def diversity_penalty(selected: list[dict[str, Any]], candidate: dict[str, Any],
     return hits * penalty
 
 
+def reasoning_card(item: dict[str, Any], matched: list[str]) -> dict[str, Any]:
+    raw_dna = item.get("dna")
+    dna: dict[str, Any] = raw_dna if isinstance(raw_dna, dict) else {}
+    raw_license = item.get("license")
+    license_obj: dict[str, Any] = raw_license if isinstance(raw_license, dict) else {}
+    def values(raw: Any) -> list[str]:
+        if isinstance(raw, list):
+            return [str(value) for value in raw]
+        if isinstance(raw, str) and raw:
+            return [raw]
+        return []
+
+    patterns = list(dict.fromkeys(list(item.get("categories") or []) + list(item.get("tags") or [])))[:6]
+    return {
+        "direction": item.get("name"),
+        "selected_system_style": values(dna.get("aesthetic"))[:4],
+        "structure": item.get("role") or item.get("kind"),
+        "components_patterns": patterns,
+        "motion": values(dna.get("motion"))[:4],
+        "why": list(dict.fromkeys(matched))[:8],
+        "compatibility": list(item.get("frameworks") or [])[:8],
+        "license_trust": {
+            "trust": item.get("trust"),
+            "license_status": license_obj.get("status"),
+            "redistribution": license_obj.get("redistribution"),
+        },
+        "avoid": list(item.get("anti_slop") or [])[:8],
+        "inspect_id": item.get("id"),
+    }
+
+
 def _fts_query(query: str) -> str:
     tokens = tokenize(query)
     return " OR ".join(tokens)
@@ -259,7 +299,12 @@ def search(
     fts = lock.get("fts") if isinstance(lock, dict) else None
     retrieval = "jsonl"
     candidates = items
-    if isinstance(fts, dict) and fts.get("status") == "available" and fts.get("sqlite_filename"):
+    if (
+        isinstance(fts, dict)
+        and fts.get("status") == "available"
+        and fts.get("sqlite_filename")
+        and fts.get("schema_version") == FTS_SCHEMA_VERSION
+    ):
         sqlite_path = bank / "catalog" / str(fts["sqlite_filename"])
         expected_fts = str(fts.get("sqlite_sha256") or "")
         fts_valid = sqlite_path.is_file() and (not expected_fts or sha256_file(sqlite_path) == expected_fts)
@@ -323,11 +368,20 @@ def search(
                 "name": item.get("name"),
                 "description": item.get("description"),
                 "score": adj,
-                "matched_fields": matched,
+                "matched_fields": list(dict.fromkeys(matched)),
                 "license": item.get("license"),
                 "trust": item.get("trust"),
+                "provider": item.get("provider"),
+                "source_id": (
+                    (item.get("source") or {}).get("upstream_id")
+                    if isinstance(item.get("source"), dict)
+                    else None
+                ),
                 "frameworks": item.get("frameworks") or [],
+                "product_fit": item.get("product_fit") or [],
+                "anti_slop": item.get("anti_slop") or [],
                 "dna": item.get("dna") or {},
+                "reasoning_card": reasoning_card(item, matched),
                 "untrusted_text": True,
             }
         )
@@ -356,9 +410,14 @@ def shortlist(
     mode: str | None = None,
     frameworks: list[str] | tuple[str, ...] | None = None,
     structure_only: bool = False,
+    limit: int | None = None,
 ) -> dict[str, Any]:
     bank = root if root is not None else resolve_design_v2_root()
     items, lock, bank_status = load_catalog(bank)
+    bounded_limit = max(1, min(int(limit or 5), 5))
+    system_limit = 0 if structure_only else bounded_limit
+    structure_limit = min(bounded_limit, 3)
+    visual_limit = 0 if structure_only else bounded_limit
     payload: dict[str, Any] = {
         "status": "ok" if bank_status == "ok" else bank_status,
         "query": query,
@@ -369,9 +428,9 @@ def shortlist(
         "structures": [],
         "visuals": [],
         "limits": {
-            "systems": 0 if structure_only else 5,
-            "structures": 3,
-            "visuals": 0 if structure_only else 5,
+            "systems": system_limit,
+            "structures": structure_limit,
+            "visuals": visual_limit,
         },
         "packages_loaded_during_search": 0,
         "untrusted_text": True,
@@ -383,12 +442,12 @@ def shortlist(
         return payload
     if not structure_only:
         payload["systems"] = search(
-            query, root=bank, kind="system", limit=5, intent=intent, mode=mode, frameworks=frameworks
+            query, root=bank, kind="system", limit=system_limit, intent=intent, mode=mode, frameworks=frameworks
         )["results"]
         payload["visuals"] = search(
-            query, root=bank, kinds=VISUAL_KINDS, limit=5, intent=intent, mode=mode, frameworks=frameworks
+            query, root=bank, kinds=VISUAL_KINDS, limit=visual_limit, intent=intent, mode=mode, frameworks=frameworks
         )["results"]
     payload["structures"] = search(
-        query, root=bank, kind="structure", limit=3, intent=intent, mode=mode, frameworks=frameworks
+        query, root=bank, kind="structure", limit=structure_limit, intent=intent, mode=mode, frameworks=frameworks
     )["results"]
     return payload
