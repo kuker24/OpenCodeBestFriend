@@ -18,7 +18,7 @@
 
 `STALE AGENTS.md` — owned block missing USED / CONSIDERED_NOT_USED / MANUAL_NOT_INVOKED. Reinstall.
 
-Doctor `OPTIONAL_ABSENT` is not a core failure. `DEGRADED` is non-fatal unless `doctor --strict`.
+Doctor `OPTIONAL_ABSENT` is not a core failure. `DEGRADED` is non-fatal unless `doctor --strict`. `EMPTY Design V2` means no user bank yet — not a failure. `DEGRADED_FTS` means JSONL search works without SQLite FTS.
 
 `doctor --deep` exit 1 with `NOT_CHECKED` — `opencode mcp list` failed or was empty; core MCP is not proven live.
 

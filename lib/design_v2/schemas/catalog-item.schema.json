@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://opencode-bestfriend.local/schemas/design-v2/catalog-item.schema.json",
+  "title": "Design V2 catalog item",
+  "type": "object",
+  "description": "Dual-read: schema_version 1 (legacy DI) or 2 (Design V2). Validated in schema.py."
+}

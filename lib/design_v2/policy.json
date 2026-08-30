@@ -1,0 +1,139 @@
+{
+  "schema_version": 2,
+  "catalog_schema_version": 2,
+  "keep_generations": 2,
+  "search": {
+    "candidate_limit": 50,
+    "result_limit": 5,
+    "diversity_penalty": 4.0,
+    "min_score": 0.01,
+    "anti_slop_penalty": 3.0,
+    "weights": {
+      "name": 8.0,
+      "id": 4.0,
+      "description": 3.0,
+      "category": 2.5,
+      "tags": 2.0,
+      "summary": 2.0,
+      "dna": 5.0
+    }
+  },
+  "zip": {
+    "max_members": 20000,
+    "max_member_uncompressed": 52428800,
+    "max_total_uncompressed": 2147483648,
+    "max_compression_ratio": 200,
+    "max_read_bytes": 1048576
+  },
+  "import": {
+    "max_file_bytes": 10485760,
+    "max_total_bytes": 104857600,
+    "max_files": 2000
+  },
+  "text": {
+    "name_max": 160,
+    "description_max": 400,
+    "field_max": 240,
+    "tag_max": 48,
+    "tag_count_max": 24,
+    "search_text_max": 1200
+  },
+  "license_signatures": {
+    "MIT": {
+      "required": [
+        "MIT License",
+        "Permission is hereby granted, free of charge",
+        "THE SOFTWARE IS PROVIDED"
+      ]
+    },
+    "Apache-2.0": {
+      "required": [
+        "Apache License",
+        "Version 2.0"
+      ]
+    }
+  },
+  "secret_pattern_parts": [
+    ["XAI_API_", "KEY", "\\s*[=:]\\s*(?:\"[^\"]*\"|'[^']*'|\\S+)"],
+    ["gho_", "[A-Za-z0-9]{10,}"],
+    ["xai-", "[A-Za-z0-9]{16,}"],
+    ["Bearer ", "[A-Za-z0-9._-]{20,}"]
+  ],
+  "allowed_extensions": [
+    ".html",
+    ".css",
+    ".js",
+    ".mjs",
+    ".ts",
+    ".tsx",
+    ".jsx",
+    ".json",
+    ".md",
+    ".txt",
+    ".svg",
+    ".webp",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".woff2",
+    ".zip"
+  ],
+  "anti_slop": [
+    "giant-gradient-title",
+    "excessive-glow",
+    "excessive-glassmorphism",
+    "pill-everything",
+    "floating-gradient-blobs",
+    "random-bento",
+    "meaningless-dashboard-cards",
+    "huge-radius",
+    "over-animation",
+    "generic-saas-hero",
+    "purple-blue-gradient"
+  ],
+  "enums": {
+    "kind_v1": ["system", "structure", "recipe", "specialist", "visual"],
+    "kind": [
+      "system",
+      "structure",
+      "recipe",
+      "specialist",
+      "visual",
+      "component",
+      "primitive",
+      "block",
+      "section",
+      "page",
+      "template",
+      "theme",
+      "motion",
+      "effect",
+      "background",
+      "pattern"
+    ],
+    "license_status": ["known", "declared-only", "unknown", "conflicting"],
+    "redistribution": ["allowed", "local-only", "blocked", "unknown"],
+    "trust": ["first-party", "upstream", "curated", "community", "unknown"],
+    "evidence_tier": ["E0", "E1", "E2", "E3"],
+    "execution_class": [
+      "stub",
+      "reference-only",
+      "connector-required",
+      "provider-required",
+      "quarantined",
+      "native-candidate",
+      "adapted-candidate"
+    ],
+    "style_authority": ["authoritative", "inspiration-only", "structure-only", "none"],
+    "search_policy": ["metadata-only", "never"],
+    "selection_policy": ["full-on-selection", "normalized-card-only", "metadata-only", "never"],
+    "normalization_status": ["complete", "partial", "manual-required"],
+    "dedup_reason": ["path-lineage", "content-hash", "normalized-id"],
+    "source_type": ["local", "archive", "github", "registry", "user-export", "manual", "generated"],
+    "retrieval": ["offline", "local"],
+    "density": ["sparse", "balanced", "dense"],
+    "geometry": ["sharp", "rounded", "organic"],
+    "visual_complexity": ["low", "medium", "high"],
+    "fts_status": ["available", "unavailable", "failed", "skipped"]
+  }
+}

@@ -21,22 +21,26 @@ function bankFromAdapterConfig() {
   return "";
 }
 
+function envBank() {
+  return process.env.OPENCODE_DESIGN_BANK || process.env.GROK_DESIGN_BANK || "";
+}
+
 export const DEFAULT_BANK =
-  process.env.OPENCODE_DESIGN_BANK ||
+  envBank() ||
   bankFromAdapterConfig() ||
   path.join(os.homedir(), "Design");
 
 export function resolveBankRoot(explicit) {
   const candidates = [
     explicit,
-    process.env.OPENCODE_DESIGN_BANK,
+    envBank(),
     bankFromAdapterConfig(),
     path.join(os.homedir(), "Design"),
   ].filter(Boolean);
   for (const root of candidates) {
     if (catalogsOk(root)) return root;
   }
-  return explicit || process.env.OPENCODE_DESIGN_BANK || DEFAULT_BANK;
+  return explicit || envBank() || DEFAULT_BANK;
 }
 
 export const REFERO_KINDS = [

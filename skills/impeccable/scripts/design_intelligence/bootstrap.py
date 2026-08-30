@@ -452,7 +452,9 @@ def validate_bank_target(
 
 def default_bank_target(home: Path | None = None, env: dict[str, str] | None = None) -> Path:
     environ = env if env is not None else os.environ
-    explicit = (environ.get("OPENCODE_DESIGN_INTELLIGENCE_BANK") or "").strip()
+    explicit = (
+        environ.get("OPENCODE_DESIGN_INTELLIGENCE_BANK") or environ.get("GROK_DESIGN_INTELLIGENCE_BANK") or ""
+    ).strip()
     if explicit:
         if has_control_chars(explicit) or contains_glob(explicit):
             raise BootstrapError("UNSAFE_PATH", "bank target contains control or glob characters")

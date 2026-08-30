@@ -19,6 +19,8 @@ NONBLOCKING = frozenset(
         "NOT_APPLICABLE",
         "DESIGN_EXCLUSION",
         "INFO",
+        "EMPTY",
+        "DEGRADED_FTS",
     }
 )
 

@@ -24,6 +24,7 @@ from .common import (
 )
 from .identity import identity_findings, owned_agents_block
 from .integrity import AGENTS_TOKENS, agents_stale, routing_stale
+from .design_v2.commands import product_doctor_rows
 from .status import Findings, report
 
 CLAUDE_ACTIVE_PATTERNS = (
@@ -517,6 +518,9 @@ def cmd_doctor(deep: bool = False, strict: bool = False) -> int:
             f.add("PASS" if r.returncode == 0 else "FAIL", "DI CLI load", "")
         except FileNotFoundError:
             f.add("FAIL", "DI CLI load", "python3 missing")
+
+    for status, label, evidence in product_doctor_rows():
+        f.add(status, label, evidence)
 
     helper = bin_dir() / "opencode-chromium-cdp"
     if not helper.is_file():

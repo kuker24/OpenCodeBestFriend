@@ -64,10 +64,11 @@ Restart OpenCode after install. Config is not hot-reloaded.
         │
         ▼
      Design
-     ├─ Design Bank
-     │  ├─ Refero
-     │  └─ Motionsites
-     └─ Design Intelligence
+      ├─ Design Bank
+      │  ├─ Refero
+      │  └─ Motionsites
+      ├─ Design Intelligence
+      └─ Design V2 (offline user bank, ~/DesignV2)
 ```
 
 Availability is not a reason to activate a tool. One primary specialist. At most one risk specialist.
@@ -134,6 +135,20 @@ That finishes as `DEGRADED_DESIGN_BANK` without breaking core install.
 ## Design Intelligence
 
 Portable policy, taxonomy, schemas, and Python runtime ship in git. The installer copies them into OpenCode-owned paths. Retrieval stays lazy inside Impeccable `new-work`.
+
+## Design V2
+
+Offline user-data bank at `OPENCODE_DESIGN_V2` or `~/DesignV2` (`GROK_DESIGN_V2` is a deprecated alias). Not installer-owned. Uninstall does not touch it.
+
+```bash
+opencode-bf design import ./export --provider aura
+opencode-bf design ingest --provider aura ./export
+opencode-bf design rebuild
+opencode-bf design search "dark dense dashboard"
+opencode-bf design shortlist --query "dark dense dashboard"
+```
+
+Search, inspect, doctor, sources, and shortlist are read-only and do not create the bank. JSONL is canonical; missing FTS is `DEGRADED_FTS`.
 
 ## Claude isolation
 

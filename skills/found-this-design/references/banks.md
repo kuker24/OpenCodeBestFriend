@@ -1,6 +1,6 @@
 # Design bank paths and catalog fields
 
-Root: `$OPENCODE_DESIGN_BANK` if set, otherwise `~/Design`. Both catalogs must exist or search exits non-zero.
+Root: `$OPENCODE_DESIGN_BANK` if set, else `$GROK_DESIGN_BANK`, otherwise `~/Design`. Both catalogs must exist or search exits non-zero.
 
 | Bank | Catalog | Item files |
 |---|---|---|

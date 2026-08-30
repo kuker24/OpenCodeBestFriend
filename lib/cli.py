@@ -28,6 +28,7 @@ from lib.install import (  # noqa: E402
     cmd_uninstall,
 )
 from lib.integrity import cmd_verify  # noqa: E402
+from lib.design_v2.commands import dispatch as design_dispatch  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -73,6 +74,32 @@ def build_parser() -> argparse.ArgumentParser:
 
     di = sub.add_parser("design-intelligence")
     di.add_argument("action", choices=["status"])
+
+    des = sub.add_parser("design", help="offline Design V2 bank")
+    des.add_argument(
+        "design_action",
+        choices=[
+            "status",
+            "search",
+            "inspect",
+            "rebuild",
+            "doctor",
+            "ingest",
+            "dedupe",
+            "import",
+            "sources",
+            "shortlist",
+        ],
+    )
+    des.add_argument("target", nargs="?")
+    des.add_argument("--query")
+    des.add_argument("--kind")
+    des.add_argument("--limit", type=int)
+    des.add_argument("--bank")
+    des.add_argument("--provider")
+    des.add_argument("--intent")
+    des.add_argument("--mode")
+    des.add_argument("--structure-only", action="store_true")
 
     cr = sub.add_parser("chromium")
     cr.add_argument("action", choices=["status"])
@@ -122,6 +149,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_design_bank()
     if cmd == "design-intelligence":
         return cmd_design_intelligence()
+    if cmd == "design":
+        if args.design_action in {"search", "shortlist"} and not args.query:
+            args.query = args.target
+        return design_dispatch(args)
     if cmd == "chromium":
         return cmd_chromium()
     if cmd == "isolation-check":

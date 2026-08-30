@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.0.5",
+  "productVersion": "1.1.0",
   "note": "Evidence-based. A missing frontmatter license is not a grant. Adapted ≠ first-party.",
   "skills": {
     "adhd": {"license": "MIT", "evidence": "SKILL.md frontmatter", "redistribution": "mit"},

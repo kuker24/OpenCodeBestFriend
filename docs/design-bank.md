@@ -7,7 +7,7 @@ Refero/bank/catalog.json
 motionsites/library/catalog.json
 ```
 
-Discover order: `OPENCODE_DESIGN_BANK` → existing pointer → `~/Design` → owned cache → download GrokBestFriend v1.0.0 `Design-bank.tgz` (SHA-256 fail-closed).
+Discover order: `OPENCODE_DESIGN_BANK` (deprecated alias `GROK_DESIGN_BANK`) → existing pointer → `~/Design` → owned cache → download GrokBestFriend v1.0.0 `Design-bank.tgz` (SHA-256 fail-closed).
 
 Owned extract destination:
 

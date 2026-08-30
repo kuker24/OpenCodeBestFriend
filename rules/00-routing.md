@@ -41,7 +41,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 
 - Matching or choosing a visual direction from the local design bank (Refero / Motionsites): `/found-this-design` first. Then `/impeccable` after a pick. Bank root comes from `~/.config/opencode/bestfriend/config/design-bank.json` (optional override `OPENCODE_DESIGN_BANK`).
 - Visual UI once a world is chosen or the brief is already visual: `/impeccable` first.
-- Design Intelligence is an internal, lazy retrieval stage of Impeccable `new-work`, never a primary route or specialist.
+- Design Intelligence is an internal, lazy retrieval stage of Impeccable `new-work`, never a primary route or specialist. Design V2 is the same: an offline user bank, never a specialist.
 - Installable UI components: MCP `shadcn` only. Do not add Magic UI, Kibo, 21st.dev, or community UI MCP servers.
 - Use the hub only when cwd has `components.json`. Never silent `shadcn init` on this adapter, a backend or Python tree, or a non-UI cwd.
 - Scroll-scrub fly-through or 3D-world landing: `/scroll-world`.

@@ -16,10 +16,11 @@
         │
         ▼
      Design
-     ├─ Design Bank
-     │  ├─ Refero
-     │  └─ Motionsites
-     └─ Design Intelligence
+      ├─ Design Bank
+      │  ├─ Refero
+      │  └─ Motionsites
+      ├─ Design Intelligence
+      └─ Design V2 (offline, ~/DesignV2)
 ```
 
 Runtime destinations (user-local):

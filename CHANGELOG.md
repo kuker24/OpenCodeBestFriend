@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 — 2026-08-30
+
+Offline Design Engine V2. No new skills or MCP.
+
+- `opencode-bf design {status,search,inspect,rebuild,doctor,ingest,dedupe,import,sources,shortlist}`
+- User bank at `OPENCODE_DESIGN_V2` or `~/DesignV2` (deprecated alias `GROK_DESIGN_V2`). Not installer-owned
+- JSONL canonical catalog; FTS5 optional (`DEGRADED_FTS`). Read-only commands do not create the bank
+- Ingest: Aura export, user-selected 21st/github-oss, Open Design v1 adapter (no ZIP parser), Refero/Motionsites pointer
+- Impeccable thin shim `design_v2.py`; shortlist is lazy inside `new-work`. Design V2 is not a specialist
+- Doctor reports EMPTY/PASS/DEGRADED/DEGRADED_FTS for Design V2. Uninstall does not touch `~/DesignV2`
+
 ## 1.0.5 — 2026-08-28
 
 Runtime integrity, migration, and supply-chain hardening. No new skills or MCP. Nine snapshot skills remain unknown — not a grant.
