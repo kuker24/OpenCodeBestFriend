@@ -1,0 +1,33 @@
+{
+  "name": "21st Bank",
+  "count": 3,
+  "items": [
+    {
+      "id": "demo--primary-button",
+      "title": "Primary Button",
+      "jenis": "button",
+      "kind": "component",
+      "tags": ["control"],
+      "description": "A compact primary button",
+      "preview": "preview.webp"
+    },
+    {
+      "id": "demo--saas-hero",
+      "title": "SaaS Hero",
+      "jenis": "hero",
+      "kind": "component",
+      "tags": [],
+      "description": "Clean SaaS hero section",
+      "preview": "preview.webp"
+    },
+    {
+      "id": "demo--dark-shader",
+      "title": "Dark Futuristic Shader",
+      "jenis": "shader",
+      "kind": "component",
+      "tags": ["shader"],
+      "description": "Dark futuristic shader background",
+      "preview": "preview.webp"
+    }
+  ]
+}

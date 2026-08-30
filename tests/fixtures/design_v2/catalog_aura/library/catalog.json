@@ -1,0 +1,24 @@
+{
+  "name": "Aura Bank",
+  "count": 2,
+  "items": [
+    {
+      "id": "land01",
+      "title": "Mobile app landing page",
+      "jenis": "landing-page",
+      "kind": "component",
+      "tags": [],
+      "description": "Clean mobile app landing page",
+      "preview": "preview.png"
+    },
+    {
+      "id": "btn01",
+      "title": "Ghost button",
+      "jenis": "button",
+      "kind": "component",
+      "tags": [],
+      "description": null,
+      "preview": "preview.png"
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 
 | Name | Root or data | Purpose | Acquisition and network |
 |---|---|---|---|
-| Legacy Design Bank | `OPENCODE_DESIGN_BANK` or `~/Design` | Refero and Motionsites visual references | Existing legacy discovery; DesignV2 stores pointers only |
+| Legacy Design Bank | `OPENCODE_DESIGN_BANK` or `~/Design` | Refero, Motionsites, and local 21st/Aura visual catalogs | Existing legacy discovery; DesignV2 stores pointers only |
 | Legacy Design Intelligence | `~/DesignIntelligence` | Open Design selection and retrieval reasoning inside Impeccable | Local archive catalog |
 | DesignV2 | `OPENCODE_DESIGN_V2` or `~/DesignV2` | Normalized offline design/component library | User supplies local files; retrieval never uses the network |
 
@@ -28,7 +28,15 @@ local file, folder, or ZIP  ->  normalize + provenance
                           + license + anti-slop + diversity
 ```
 
-OpenCodeBestFriend does not crawl Aura or 21st, reuse browser sessions, require an Aura/21st account at runtime, fetch a supplied URL, or register their MCP servers. A URL passed to `import` or path-based `ingest` is rejected with `REMOTE_URL_REJECTED`.
+OpenCodeBestFriend does not crawl Aura or 21st, reuse browser sessions, require an Aura/21st account at runtime, fetch a supplied URL, bulk-copy marketplace source, download catalog previews during ingest, or register their MCP servers. A URL passed to `import` or path-based `ingest` is rejected with `REMOTE_URL_REJECTED`. Local Aura/21st catalog banks are visual references only.
+
+| Location | Meaning | Can implement directly? |
+|---|---|---|
+| aura.build / 21st.dev | Original marketplace/source platform | Only through a legitimate user account/export/copy flow |
+| `Design/aura` | Local visual catalog + preview + metadata | Reference only |
+| `Design/21st` | Local visual catalog + preview + metadata | Reference only |
+| User-exported Aura folder | Actual local source | Yes, through the existing Aura importer |
+| User-selected 21st source folder | Actual component source | Yes, through the existing 21st importer |
 
 ## Population lifecycle
 
@@ -56,13 +64,17 @@ opencode-bf design ingest --provider aura ~/Downloads/my-design
 
 ### Aura
 
-Aura accepts user-exported HTML/CSS/JavaScript, `DESIGN.md`, or an explicit user metadata file named `design-v2.json`. An arbitrary proprietary `manifest.json` is not reverse-engineered. To use `manifest.json`, place supported fields under `opencode_design_v2`.
+A local Aura catalog bank (`library/catalog.json` plus per-item preview/meta) is ingested as a pointer catalog. DesignV2 does not copy preview media and does not stage the library tree. Remix HTML is obtained on aura.build when the user account allows it; it is not present in the catalog bank.
+
+Aura also accepts one user-exported HTML/CSS/JavaScript folder, `DESIGN.md`, or an explicit user metadata file named `design-v2.json`. An arbitrary proprietary `manifest.json` is not reverse-engineered. To use `manifest.json`, place supported fields under `opencode_design_v2`.
 
 Supported user-declared fields are bounded to `name`, `description`, `kind`, `role`, `frameworks`, `categories`, `tags`, `product_fit`, `intent`, `modes`, `anti_slop`, and `dna`. Invalid explicit manifests fail closed. Unknown layouts return `UNKNOWN_AURA_LAYOUT`.
 
 ### 21st
 
-21st accepts one user-selected local component folder. Marketplace pages, scrape JSON, and media dumps are rejected. Trust defaults to `unknown`; redistribution defaults to `local-only`; license remains `unknown` unless a local license file provides recognized evidence. Provenance is not treated as license permission.
+A local 21st catalog bank (`library/catalog.json` plus per-item preview/meta) is ingested as a pointer catalog. DesignV2 does not copy preview media, does not run `21st get`, and does not stage the library tree. Component source is copied on 21st.dev when the user account and quota allow it; it is not present in the catalog bank.
+
+21st also accepts one user-selected local component folder. Marketplace pages, scrape JSON, and media dumps are rejected. Trust defaults to `unknown`; redistribution defaults to `local-only`; license remains `unknown` unless a local license file provides recognized evidence. Provenance is not treated as license permission. `import` of a catalog-bank root is rejected with `CATALOG_POINTER_ONLY`; use `ingest --provider 21st|aura` on that root instead.
 
 Lightweight preview images already present in the user package may be preserved and recorded as user-supplied preview media. Videos and animated marketplace media are skipped. The importer never downloads preview media.
 
@@ -76,7 +88,7 @@ Open Design remains an adapter over a valid local legacy Design Intelligence ban
 
 ### Refero and Motionsites
 
-DesignV2 writes bounded catalog metadata and local pointers. It does not copy the legacy media library. Broken pointer targets are reported by doctor.
+DesignV2 writes bounded catalog metadata and local pointers. It does not copy the legacy media library. Refero catalogs may list styles under `styles`. Broken pointer targets, including 21st and Aura catalog pointers, are reported by doctor.
 
 ## Normalization evidence
 

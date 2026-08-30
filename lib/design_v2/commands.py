@@ -24,6 +24,7 @@ from .bank import (
 )
 from .dedupe import dedupe
 from .import_stage import import_stage
+from .importers.bank_pointer import POINTER_PROVIDERS
 from .ingest import ingest
 from .inspect import inspect_item
 from .rebuild import RebuildError, rebuild
@@ -307,7 +308,7 @@ def bank_health(root: Path | None = None) -> dict[str, Any]:
 
     quarantine = bank / "quarantine"
     quarantine_count = sum(1 for child in quarantine.iterdir()) if quarantine.is_dir() else 0
-    broken_pointers = sum(1 for provider in ("refero", "motionsites") if _pointer_is_broken(bank, provider))
+    broken_pointers = sum(1 for provider in POINTER_PROVIDERS if _pointer_is_broken(bank, provider))
     raw_fts = (lock or {}).get("fts") if isinstance(lock, dict) else None
     fts: dict[str, Any] = raw_fts if isinstance(raw_fts, dict) else {}
     dna_items = sum(1 for item in items if isinstance(item.get("dna"), dict) and any(item["dna"].values()))

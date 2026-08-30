@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- DesignV2 can index local Aura/21st visual catalog banks by pointer without copying preview media; existing single-source import behavior remains unchanged.
+
 ## 1.2.0 — 2026-08-30
 
 Design Engine V2 population workflow. No new skills or MCP.

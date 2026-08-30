@@ -3,17 +3,25 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import sys
 import unittest
+import urllib.request
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
+FIXTURES = ROOT / "tests" / "fixtures" / "design_v2"
 sys.path.insert(0, str(ROOT))
 
+from lib.design_v2.commands import bank_health  # noqa: E402
+from lib.design_v2.importers.bank_pointer import map_jenis_kind  # noqa: E402
 from lib.design_v2.importers.common import IngestRejected, copy_tree_filtered  # noqa: E402
 from lib.design_v2.importers.open_design import v1_to_v2  # noqa: E402
+from lib.design_v2.import_stage import ImportRejected, import_stage  # noqa: E402
 from lib.design_v2.ingest import ingest_path  # noqa: E402
 from lib.design_v2.dedupe import dedupe  # noqa: E402
+from lib.design_v2.rebuild import rebuild  # noqa: E402
 from lib.design_v2.schema import check_item, empty_item_v1  # noqa: E402
 from lib.cli import main as cli_main  # noqa: E402
 from tests.support import IsolatedHome  # noqa: E402
@@ -185,6 +193,99 @@ class IngestTests(IsolatedHome):
         (export / "DESIGN.md").write_text("Dark hero\n", encoding="utf-8")
         rc = cli_main(["design", "ingest", str(export), "--provider", "aura", "--bank", str(self.bank)])
         self.assertEqual(rc, 0)
+
+    def test_jenis_kind_mapping(self):
+        self.assertEqual(map_jenis_kind("shader"), "effect")
+        self.assertEqual(map_jenis_kind("button"), "component")
+        self.assertEqual(map_jenis_kind("hero"), "section")
+        self.assertEqual(map_jenis_kind("landing-page"), "page")
+        self.assertEqual(map_jenis_kind("lainnya"), "pattern")
+        self.assertEqual(map_jenis_kind("lainnya", "component"), "component")
+
+    def test_refero_styles_catalog(self):
+        design = self.tmp / "Design"
+        (design / "Refero" / "bank").mkdir(parents=True)
+        (design / "motionsites" / "library").mkdir(parents=True)
+        (design / "Refero" / "bank" / "catalog.json").write_text(
+            json.dumps({"styles": [{"name": "Noir Ops", "slug": "noir-ops", "northStar": "dark", "tags": ["dark"]}]}),
+            encoding="utf-8",
+        )
+        (design / "motionsites" / "library" / "catalog.json").write_text(
+            json.dumps({"items": []}),
+            encoding="utf-8",
+        )
+        result = ingest_path(design, self.bank, provider="refero")
+        self.assertEqual(result["count"], 1)
+        self.assertEqual(result["copied_media"], False)
+
+    def _assert_pointer_catalog(self, result: dict, provider: str, expected: int) -> list[dict]:
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["copied_media"], False)
+        self.assertEqual(result["count"], expected)
+        pointer = json.loads((self.bank / "sources" / provider / "pointer.json").read_text(encoding="utf-8"))
+        self.assertFalse(pointer["copied_media"])
+        self.assertEqual(pointer["catalog"], "library/catalog.json")
+        staged = [path for path in (self.bank / "sources" / provider).iterdir() if path.is_dir()]
+        self.assertEqual(staged, [])
+        self.assertEqual(list(self.bank.rglob("*.webp")), [])
+        self.assertEqual(list(self.bank.rglob("*.png")), [])
+        inbox = []
+        for path in (self.bank / "inbox").glob("*.json"):
+            item = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(check_item(item), [])
+            self.assertEqual(item["execution_class"], "reference-only")
+            self.assertEqual(item["source"]["local_path"], "")
+            self.assertIsNone(item["source"]["canonical_url"])
+            self.assertEqual(item["provenance"]["acquisition_method"], "design-bank-pointer")
+            inbox.append(item)
+        self.assertEqual(len(inbox), expected)
+        return inbox
+
+    def test_21st_catalog_pointer_no_copy(self):
+        def network_forbidden(*_args: object, **_kwargs: object) -> None:
+            raise AssertionError("offline retrieval attempted network access")
+
+        with (
+            patch.object(socket, "socket", side_effect=network_forbidden),
+            patch.object(socket, "create_connection", side_effect=network_forbidden),
+            patch.object(urllib.request, "urlopen", side_effect=network_forbidden),
+        ):
+            result = ingest_path(FIXTURES / "catalog_21st", self.bank, provider="21st")
+        items = self._assert_pointer_catalog(result, "21st", 3)
+        kinds = {item["kind"] for item in items}
+        self.assertEqual(kinds, {"component", "section", "effect"})
+
+    def test_aura_catalog_pointer_no_copy(self):
+        result = ingest_path(FIXTURES / "catalog_aura", self.bank, provider="aura")
+        items = self._assert_pointer_catalog(result, "aura", 2)
+        kinds = {item["kind"] for item in items}
+        self.assertEqual(kinds, {"page", "component"})
+
+    def test_import_rejects_catalog_bank(self):
+        with self.assertRaises(ImportRejected) as ctx:
+            import_stage(FIXTURES / "catalog_21st", self.bank, provider="21st")
+        self.assertIn("CATALOG_POINTER_ONLY", str(ctx.exception))
+        sources = self.bank / "sources" / "21st"
+        if sources.is_dir():
+            self.assertEqual([path for path in sources.iterdir() if path.is_dir()], [])
+
+    def test_malformed_catalog_rejected(self):
+        bad = self.tmp / "bad-21st"
+        (bad / "library").mkdir(parents=True)
+        (bad / "library" / "catalog.json").write_text("{not-json", encoding="utf-8")
+        with self.assertRaises(IngestRejected) as ctx:
+            ingest_path(bad, self.bank, provider="21st")
+        self.assertIn("MALFORMED_CATALOG", str(ctx.exception))
+
+    def test_catalog_pointer_doctor(self):
+        ingest_path(FIXTURES / "catalog_21st", self.bank, provider="21st")
+        rebuild(self.bank)
+        report = bank_health(self.bank)
+        self.assertEqual(report["broken_pointers"], 0)
+        pointer = self.bank / "sources" / "21st" / "pointer.json"
+        pointer.write_text(json.dumps({"root": str(self.tmp / "missing"), "catalog": "library/catalog.json"}), encoding="utf-8")
+        broken = bank_health(self.bank)
+        self.assertEqual(broken["broken_pointers"], 1)
 
 
 if __name__ == "__main__":
