@@ -155,11 +155,12 @@ class PreprocessTests(IsolatedHome):
         dest = self.tmp / "work.png"
         with self.assertRaises(PreprocessError) as raised:
             prepare_working_image(bad, dest)
-        self.assertEqual(raised.exception.code, "IMAGE_FAILED")
         try:
             from PIL import Image  # type: ignore
         except Exception:
+            self.assertEqual(raised.exception.code, "IMAGE_READ")
             return
+        self.assertEqual(raised.exception.code, "IMAGE_FAILED")
         huge = self.tmp / "huge.png"
         img = Image.new("RGB", (10, 10), "white")
         img.save(huge)

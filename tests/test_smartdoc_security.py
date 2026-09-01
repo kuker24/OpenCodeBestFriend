@@ -81,6 +81,13 @@ class SmartDocSecurityTests(IsolatedHome):
     def test_malformed_image_fails_closed(self):
         path = self.tmp / "bad.png"
         path.write_bytes(b"not-png")
+        try:
+            import PIL  # type: ignore  # noqa: F401
+        except Exception:
+            result = extract_file(path)
+            self.assertEqual(result["status"], "NOT_CONFIGURED")
+            self.assertEqual(result.get("text") or "", "")
+            return
         with self.assertRaises(ExtractError):
             extract_file(path)
 
