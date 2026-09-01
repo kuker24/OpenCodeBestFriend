@@ -5,17 +5,17 @@
 `doctor --deep` = is live runtime proven?
 `doctor --strict` = treat DEGRADED/WARN as failure.
 
-A successful 1.4.0 install should report approximately:
+A successful 1.5.0 install should report approximately:
 
 ```text
 PASS INSTALLED_PRODUCT opencode-bestfriend
-PASS INSTALLED_VERSION 1.4.0
+PASS INSTALLED_VERSION 1.5.0
 PASS SOURCE_REPOSITORY https://github.com/kuker24/OpenCodeBestFriend
 
 PASS OpenCode
 PASS opencode.jsonc parseable
 PASS AGENTS.md thin owned-lines=…
-PASS skills TOTAL 40/40 MODEL 24/24 MANUAL 16/16
+PASS skills TOTAL 42/42 MODEL 26/26 MANUAL 16/16
 PASS rules 6 portable; 04-context-guard EXCLUDED_BY_DESIGN
 
 CONFIGURED mcp:codebase-memory-mcp

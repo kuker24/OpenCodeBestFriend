@@ -36,6 +36,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Throwaway evidence for one design question: `/prototype`. Skip ordinary implementation, ADHD, and `/arena`.
 - Unknown / hard bugs, regressions, measured slowdown: `/diagnosing-bugs`. Skip typos, known-cause, and test-first known fixes (`/tdd`).
 - Authoring SKILL.md / AGENTS.md / skill descriptions / context pointers: `/writing-for-agents`. Workflow choice stays `/ask-matt`.
+- Documents (answer, create, transform, extract, review, PDF/DOCX): `/smartdoc`. Reusable book/module knowledge: `/smartbook-ingest`. SmartDoc may read an existing SmartBook; that is not a second implementation specialist. Impeccable `document` stays DESIGN.md.
 
 ## UI and browser
 
@@ -74,7 +75,8 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 | `/implement` | in-session write (no user skill) |
 | `/review` `/code-review` | in-session review; `/matt-code-review` if two-axis |
 | `/imagine` | NOT_APPLICABLE; directors stay visual-studio / scroll-world |
-| `/docx` `/pdf` `/pptx` | in-session write or NOT_APPLICABLE |
+| `/docx` `/pdf` | missing alias; nearest = `smartdoc` (do not add `commands/pdf.md` or `commands/docx.md`) |
+| `/pptx` | NOT_APPLICABLE |
 | `/pr-babysit` | `/gh-axi` |
 | `game-asset-*` `/resume-*` `/build-with-ai` | NOT_APPLICABLE |
 

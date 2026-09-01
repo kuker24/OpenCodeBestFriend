@@ -1,14 +1,14 @@
 # OpenCodeBestFriend
 
 Production-ready capability layer for OpenCode:
-40 routed skills, MCP, Codebase Memory,
-Design Bank, Design Intelligence, browser and verification tooling.
+42 routed skills, MCP, Codebase Memory,
+Design Bank, Design Intelligence, SmartDoc, browser and verification tooling.
 
 OpenCodeBestFriend is an installer and runtime overlay for [OpenCode](https://opencode.ai). It is **not** Claude Code, **not** a model provider, and **not** a dump of a developer home directory.
 
 ## What it is
 
-- 40 skills: 24 model-invoked, 16 manual slash commands
+- 42 skills: 26 model-invoked, 16 manual slash commands
 - A thin `AGENTS.md` router (lazy, one primary specialist)
 - Core MCP: Codebase Memory, Context7, shadcn
 - Design Bank discovery or download (media is **not** in git)
@@ -61,19 +61,20 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-   24 automatic       Codebase Memory        Verification
-   16 manual          Context7              Engineering
-                      shadcn
+    26 automatic       Codebase Memory        Verification
+    16 manual          Context7              Engineering
+                       shadcn
         │
         ▼
-     Design
+     Design / Documents
       ├─ Design Bank
       │  ├─ 21st
       │  ├─ Aura
       │  ├─ Refero
       │  └─ Motionsites
       ├─ Design Intelligence
-      └─ Design V2 (offline user bank, ~/DesignV2)
+      ├─ Design V2 (offline user bank, ~/DesignV2)
+      └─ SmartDoc / SmartBook (user-owned ~/SmartDoc)
 ```
 
 Availability is not a reason to activate a tool. One primary specialist. At most one risk specialist.
@@ -95,6 +96,8 @@ Default: repository evidence first. Then at most one specialist.
 | Motion | `emil-design-eng` |
 | Photoreal / media | `visual-studio` |
 | Scroll-driven 3D | `scroll-world` |
+| Documents (PDF/DOCX/answer/extract/review) | `smartdoc` |
+| Reusable book/module knowledge | `smartbook-ingest` |
 | Architecture bake-off | `/architect` (manual) |
 | Repo rationale | `/why` (manual) |
 
@@ -138,6 +141,18 @@ Portable policy, taxonomy, schemas, and Python runtime ship in git. The installe
 ## Design V2
 
 Offline user-data bank at `OPENCODE_DESIGN_V2` or `~/DesignV2` (`GROK_DESIGN_V2` is a deprecated alias). Not installer-owned. Uninstall does not touch it.
+
+## SmartDoc / SmartBook
+
+`smartdoc` handles per-job documents (answer, create, transform, extract, review, PDF/DOCX). `smartbook-ingest` compiles reusable local knowledge. User data lives at `OPENCODE_SMARTDOC` or `~/SmartDoc` and survives uninstall.
+
+```bash
+opencode-bf smartdoc status --json
+opencode-bf smartdoc profile create campus --field Nama=Budi --field NIM=12345
+opencode-bf smartbook ingest ./module.md --slug jaringan
+```
+
+Local Similarity Audit compares against a named corpus. It is not Turnitin. Optional `pypdf`, Pillow, and `pdftoppm` report `NOT_CONFIGURED` when absent.
 
 ```bash
 opencode-bf design import ~/Downloads/aura-export --provider aura

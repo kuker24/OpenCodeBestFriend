@@ -29,6 +29,12 @@ from lib.install import (  # noqa: E402
 )
 from lib.integrity import cmd_verify  # noqa: E402
 from lib.design_v2.commands import add_design_cli, dispatch as design_dispatch  # noqa: E402
+from lib.smartdoc.commands import (  # noqa: E402
+    add_smartbook_cli,
+    add_smartdoc_cli,
+    dispatch_smartbook,
+    dispatch_smartdoc,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -92,6 +98,11 @@ def build_parser() -> argparse.ArgumentParser:
     se = sub.add_parser("serena")
     se.add_argument("action", choices=["enable"])
 
+    sd = sub.add_parser("smartdoc", help="document profiles, extract, status")
+    add_smartdoc_cli(sd)
+    sb = sub.add_parser("smartbook", help="reusable SmartBook lifecycle")
+    add_smartbook_cli(sb)
+
     return p
 
 
@@ -142,6 +153,10 @@ def main(argv: list[str] | None = None) -> int:
         return isolation_check(deep=args.deep)
     if cmd == "serena":
         return cmd_serena_enable()
+    if cmd == "smartdoc":
+        return dispatch_smartdoc(args)
+    if cmd == "smartbook":
+        return dispatch_smartbook(args)
     return 2
 
 

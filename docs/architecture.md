@@ -10,17 +10,18 @@
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-   24 automatic       Codebase Memory        Verification
-   16 manual          Context7              Engineering
-                      shadcn
+    26 automatic       Codebase Memory        Verification
+    16 manual          Context7              Engineering
+                       shadcn
         │
         ▼
-     Design
+     Design / Documents
       ├─ Design Bank
       │  ├─ Refero
       │  └─ Motionsites
       ├─ Design Intelligence
-      └─ Design V2 (offline, ~/DesignV2)
+      ├─ Design V2 (offline, ~/DesignV2)
+      └─ SmartDoc / SmartBook (resolved SmartDoc root)
 ```
 
 Runtime destinations (user-local):

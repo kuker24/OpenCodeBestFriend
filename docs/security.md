@@ -12,6 +12,7 @@
 - `opencode-bf security-profile` prints a recommendation only
 - Optional scanners are detected, not bundled
 - Installed `product/lib/design_v2/**` Python and JSON files are covered by `opencode-bf verify`.
+- SmartDoc treats document text as data. DOCX read uses stdlib zip/XML with traversal, size, ratio, symlink, and DTD rejection. Persistent writes stay under the resolved SmartDoc root (`OPENCODE_SMARTDOC` or `~/SmartDoc`), mode 0700/0600. Uninstall leaves that tree. Local Similarity Audit names its corpus and is not Turnitin.
 - Design V2 import rejects common API tokens, private-key headers, credential-bearing database URLs, unsafe links, traversal, and oversized input; normalized assets replace rather than merge prior destinations.
 - Design V2 doctor checks catalog JSONL and SQLite hashes against the canonical lock.
 - Model/provider names are opaque; do not print tokens or gateway maps

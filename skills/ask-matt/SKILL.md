@@ -20,6 +20,8 @@ Follow the thin router in `~/.config/opencode/AGENTS.md`. If routing is non-obvi
 
 **Design:** `found-this-design` `impeccable` `visual-studio` `scroll-world` `emil-design-eng`
 
+**Documents:** `smartdoc` (per-job). `smartbook-ingest` only to compile/update reusable knowledge.
+
 **Engineering (auto when the description matches):** `diagnosing-bugs` `domain-modeling` `codebase-design` `writing-for-agents` `research` `prototype`
 
 **Engineering (manual / slash only):** `/architect` `/arena` `/blast-radius` `/why` `/figure-it-out` `/decision-log` `/improve-codebase-architecture` `/create-verification-skill` `/maintain-verification-skill` `/technical-writing` `/unslop` `/reflect` `/wizard` `/wait-what`

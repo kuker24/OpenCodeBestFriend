@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.0 — 2026-09-01
+
+SmartDoc and SmartBook.
+
+- Add model-invoked `smartdoc` (per-job document intelligence) and `smartbook-ingest` (reusable local knowledge). Skills 42 total, 26 model, 16 manual.
+- Deterministic runtime in `lib/smartdoc/`: contract lock, sanitize, DOCX zip/XML extract, profiles, Local Similarity Audit against a named corpus, handwriting renderer.
+- User data lives under the resolved SmartDoc root (`OPENCODE_SMARTDOC` or `~/SmartDoc`). Uninstall preserves it.
+- Optional `pypdf` / Pillow / `pdftoppm` degrade to `NOT_CONFIGURED`. No Turnitin claim, no detector-evasion loop, no new MCP.
+
 ## 1.4.0 — 2026-08-31
 
 Portable full Design Bank bootstrap.

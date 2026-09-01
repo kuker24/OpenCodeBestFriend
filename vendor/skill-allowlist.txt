@@ -28,6 +28,8 @@ prototype
 reflect
 research
 scroll-world
+smartbook-ingest
+smartdoc
 tdd
 technical-writing
 to-spec

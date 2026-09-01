@@ -34,6 +34,8 @@ class RoutingTests(unittest.TestCase):
             "shadcn": "shadcn",
             "architect": "architect",
             "codebase-memory": "codebase-memory",
+            "smartdoc": "smartdoc",
+            "smartbook-ingest": "smartbook-ingest",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)

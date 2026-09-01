@@ -19,3 +19,5 @@ MANUAL_NOT_INVOKED
 ```
 
 Never list unused tools as used.
+
+Documents (answer, create, transform, extract, review, PDF/DOCX) route to `smartdoc`. Reusable book/module knowledge routes to `smartbook-ingest`. `/docx` and `/pdf` are missing aliases; nearest is `smartdoc`. `/pptx` is NOT_APPLICABLE. Do not add `commands/pdf.md` or `commands/docx.md`. Impeccable `document` remains DESIGN.md generation.

@@ -19,6 +19,7 @@ from .status import Findings
 
 AGENTS_TOKENS = ("USED", "CONSIDERED_NOT_USED", "MANUAL_NOT_INVOKED")
 ROUTING_TITLE = "# OpenCode specialist routing (opencode-bestfriend)"
+PRODUCT_RUNTIME_PACKAGES = ("design_v2", "smartdoc")
 
 
 def expected_wrapper_text() -> str:
@@ -123,18 +124,20 @@ def canonical_entries(root: Path | None = None) -> list[tuple[str, Path, Path, s
     if rules.is_dir():
         for path in sorted(rules.glob("*.md")):
             entries.append((f"rules/{path.name}", path, bf / "rules" / path.name, "rule"))
-    design_v2 = root / "lib" / "design_v2"
-    installed_design_v2 = share_dir() / "product" / "lib" / "design_v2"
-    if design_v2.is_dir():
-        for path in iter_skill_files(design_v2):
+    for pkg in PRODUCT_RUNTIME_PACKAGES:
+        src_pkg = root / "lib" / pkg
+        installed_pkg = share_dir() / "product" / "lib" / pkg
+        if not src_pkg.is_dir():
+            continue
+        for path in iter_skill_files(src_pkg):
             if path.suffix not in {".py", ".json"}:
                 continue
-            rel = path.relative_to(design_v2).as_posix()
+            rel = path.relative_to(src_pkg).as_posix()
             entries.append(
                 (
-                    f"product/lib/design_v2/{rel}",
+                    f"product/lib/{pkg}/{rel}",
                     path,
-                    installed_design_v2 / rel,
+                    installed_pkg / rel,
                     "product-runtime",
                 )
             )
@@ -252,7 +255,7 @@ def verify_owned_runtime() -> int:
     known_keys = {key for key, _source, _installed, _kind in entries}
     if stored and isinstance(stored.get("files"), dict):
         for key, metadata in stored["files"].items():
-            if not key.startswith("product/lib/design_v2/") or key in known_keys:
+            if key in known_keys or not any(key.startswith(f"product/lib/{pkg}/") for pkg in PRODUCT_RUNTIME_PACKAGES):
                 continue
             rel = key.removeprefix("product/")
             rel_path = Path(rel)

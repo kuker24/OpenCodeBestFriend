@@ -20,6 +20,7 @@ class IsolatedHome(unittest.TestCase):
                 "OPENCODE_BF_MOCK_OPENCODE",
                 "OPENCODE_BF_TEST_CBM",
                 "OPENCODE_DESIGN_BANK",
+                "OPENCODE_SMARTDOC",
                 "OPENCODE_DISABLE_CLAUDE_CODE",
                 "OPENCODE_BF_MOCK_MCP_LIST",
                 "OPENCODE_BF_MOCK_MCP_LIST_RC",

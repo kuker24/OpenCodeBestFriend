@@ -32,6 +32,7 @@ class InstallTests(unittest.TestCase):
             "OPENCODE_BF_MOCK_OPENCODE",
             "OPENCODE_BF_TEST_CBM",
             "OPENCODE_DESIGN_BANK",
+            "OPENCODE_SMARTDOC",
             "OPENCODE_DISABLE_CLAUDE_CODE",
             "PATH",
         )}
@@ -106,7 +107,7 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(sha256(self.sentinel), self.sentinel_hash)
         self.assertEqual({p.name for p in (self.tmp / ".claude").iterdir()}, {"sentinel.txt"})
         skills = list((self.tmp / ".config" / "opencode" / "skills").iterdir())
-        self.assertEqual(len([p for p in skills if p.is_dir()]), 24)
+        self.assertEqual(len([p for p in skills if p.is_dir()]), 26)
         cmds = list((self.tmp / ".config" / "opencode" / "commands").glob("*.md"))
         self.assertEqual(len(cmds), 16)
         self.assertEqual(cmd_skills_verify(), 0)
@@ -121,7 +122,7 @@ class InstallTests(unittest.TestCase):
 
         rc2 = cmd_install()
         self.assertEqual(rc2, 0)
-        self.assertEqual(len([p for p in (self.tmp / ".config" / "opencode" / "skills").iterdir() if p.is_dir()]), 24)
+        self.assertEqual(len([p for p in (self.tmp / ".config" / "opencode" / "skills").iterdir() if p.is_dir()]), 26)
         self.assertEqual(len(list((self.tmp / ".config" / "opencode" / "commands").glob("*.md"))), 16)
         bashrc = (self.tmp / ".bashrc").read_text(encoding="utf-8")
         self.assertEqual(bashrc.count("OPENCODEBESTFRIEND:BEGIN"), 1)
@@ -143,13 +144,17 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(cmd_install(), 0)
         design = self.tmp / "Design"
         design_v2 = self.tmp / "DesignV2"
+        smartdoc = self.tmp / "SmartDoc"
         design.mkdir()
         design_v2.mkdir()
+        smartdoc.mkdir()
         (design / "sentinel.txt").write_text("keep\n", encoding="utf-8")
         (design_v2 / "sentinel.txt").write_text("keep\n", encoding="utf-8")
+        (smartdoc / "sentinel.txt").write_text("keep\n", encoding="utf-8")
         self.assertEqual(cmd_uninstall(), 0)
         self.assertEqual((design / "sentinel.txt").read_text(encoding="utf-8"), "keep\n")
         self.assertEqual((design_v2 / "sentinel.txt").read_text(encoding="utf-8"), "keep\n")
+        self.assertEqual((smartdoc / "sentinel.txt").read_text(encoding="utf-8"), "keep\n")
 
     def test_agents_marker_merge_and_uninstall(self):
         agents = self.tmp / ".config" / "opencode" / "AGENTS.md"

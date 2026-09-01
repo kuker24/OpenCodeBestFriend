@@ -106,7 +106,7 @@ class MigrationTests(IsolatedHome):
             (self.tmp / ".local" / "share" / "opencode-bestfriend" / "components" / "installer").exists()
         )
         skills = list((self.tmp / ".config" / "opencode" / "skills").iterdir())
-        self.assertEqual(len([p for p in skills if p.is_dir()]), 24)
+        self.assertEqual(len([p for p in skills if p.is_dir()]), 26)
         with redirect_stdout(io.StringIO()):
             self.assertEqual(cmd_verify(), 0)
             self.assertEqual(cmd_doctor(), 0)

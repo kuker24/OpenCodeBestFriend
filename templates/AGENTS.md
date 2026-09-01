@@ -37,7 +37,7 @@ UI direction → skill `found-this-design` then `impeccable`. Motion → `emil-d
 
 Browser QA → skill `browser-act`. Observed cause → `chrome-devtools-axi` after `opencode-chromium-cdp` (`127.0.0.1:9223`). Never Google Chrome. Project Playwright only if the project already has it.
 
-Auth/secret/payment/upload/webhook/privileged/public API → `full-audit-keamanan`. Measured LCP/INP/CLS/latency/bundle → `full-performance-audit`. GitHub → `gh-axi`. Hard unknown bug → `diagnosing-bugs`.
+Auth/secret/payment/upload/webhook/privileged/public API → `full-audit-keamanan`. Measured LCP/INP/CLS/latency/bundle → `full-performance-audit`. GitHub → `gh-axi`. Hard unknown bug → `diagnosing-bugs`. Documents (answer/create/transform/extract/review/PDF/DOCX) → `smartdoc`. Reusable book/module knowledge → `smartbook-ingest`.
 
 ## When routing is non-obvious
 

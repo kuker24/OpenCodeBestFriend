@@ -32,6 +32,8 @@
     "reflect": {"invocation": "manual"},
     "research": {"invocation": "model"},
     "scroll-world": {"invocation": "model"},
+    "smartdoc": {"invocation": "model"},
+    "smartbook-ingest": {"invocation": "model"},
     "tdd": {"invocation": "model"},
     "technical-writing": {"invocation": "manual"},
     "to-spec": {"invocation": "model"},
