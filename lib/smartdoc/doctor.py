@@ -36,6 +36,51 @@ def _tiny_docx(path: Path) -> None:
         handle.writestr("[Content_Types].xml", "<Types></Types>")
 
 
+def _tiny_text_pdf(path: Path, text: str = "doctor mixed native text page with sufficient printable content") -> None:
+    escaped = text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    stream = f"BT /F1 12 Tf 30 150 Td ({escaped}) Tj ET".encode("latin-1")
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 420 200] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        b"<< /Length " + str(len(stream)).encode("ascii") + b" >>\nstream\n" + stream + b"\nendstream",
+    ]
+    data = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
+    offsets = [0]
+    for number, obj in enumerate(objects, start=1):
+        offsets.append(len(data))
+        data.extend(f"{number} 0 obj\n".encode("ascii"))
+        data.extend(obj)
+        data.extend(b"\nendobj\n")
+    xref = len(data)
+    data.extend(f"xref\n0 {len(objects) + 1}\n".encode("ascii"))
+    data.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        data.extend(f"{offset:010d} 00000 n \n".encode("ascii"))
+    data.extend(
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode("ascii")
+    )
+    path.write_bytes(bytes(data))
+
+
+def _tiny_mixed_pdf(path: Path, work: Path) -> None:
+    from PIL import Image, ImageDraw  # type: ignore
+    from pypdf import PdfReader, PdfWriter  # type: ignore
+
+    native = work / "mixed-native.pdf"
+    scan = work / "mixed-scan.pdf"
+    _tiny_text_pdf(native)
+    image = Image.new("RGB", (900, 240))
+    ImageDraw.Draw(image).text((40, 80), "DOCTOR MIXED OCR PAGE", fill=(255, 255, 255))
+    image.save(scan, "PDF")
+    writer = PdfWriter()
+    writer.add_page(PdfReader(str(native)).pages[0])
+    writer.add_page(PdfReader(str(scan)).pages[0])
+    with path.open("wb") as handle:
+        writer.write(handle)
+
+
 def run_doctor(*, root: Path | None = None) -> dict[str, Any]:
     resolved = root or resolve_smartdoc_root()
     matrix = capability_matrix()
@@ -138,7 +183,15 @@ def run_doctor(*, root: Path | None = None) -> dict[str, Any]:
             checks.append(_check("ocr_pdf", "NOT_CONFIGURED"))
 
         if matrix.get("PDF_READ") == "READY" and matrix.get("OCR_PDF") == "READY":
-            checks.append(_check("mixed_document", "PASS", detail="hybrid native/OCR path available"))
+            try:
+                mixed_path = probe / "mixed-probe.pdf"
+                _tiny_mixed_pdf(mixed_path, probe)
+                mixed = extract_file(mixed_path, ocr="AUTO")
+                methods = [record.get("method") for record in (mixed.get("page_records") or [])]
+                ok = mixed.get("status") in {"READY", "PARTIAL"} and methods == ["native_text", "ocr"]
+                checks.append(_check("mixed_document", "PASS" if ok else "FAIL", methods=methods))
+            except Exception as exc:
+                checks.append(_check("mixed_document", "FAIL", detail=str(exc)))
         elif matrix.get("OCR_PDF") == "READY" or matrix.get("PDF_READ") == "READY":
             checks.append(_check("mixed_document", "NOT_CONFIGURED", partial=True))
         else:

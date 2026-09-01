@@ -6,11 +6,13 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from .capabilities import capability_matrix, status_payload
+from .contract import content_lock, empty_contract, goal_lock
 from .doctor import run_doctor
-from .extract import ExtractError, extract_file
+from .extract import OCR_POLICIES, ExtractError, extract_file
 from .originality import local_similarity_audit
 from .paths import PathEscape, resolve_smartdoc_root
 from .profiles import create_profile, delete_profile, list_profiles, load_profile, select_profile, selected_name
+from .render import RenderError, render_handwriting
 from .smartbook import SmartBookError, ingest, inspect_book, list_books, retrieve, validate_book
 from .styles import create_style, delete_style, list_styles, load_style
 
@@ -28,15 +30,25 @@ def add_smartdoc_cli(parser: ArgumentParser) -> None:
     _flags(actions.add_parser("doctor", help="smoke-test SmartDoc runtime"))
     pre = _flags(actions.add_parser("preflight", help="extract metadata from a file"))
     pre.add_argument("path")
-    pre.add_argument("--ocr", default="AUTO")
+    pre.add_argument("--ocr", type=str.upper, choices=sorted(OCR_POLICIES), default="AUTO")
     pre.add_argument("--ocr-lang", action="append", default=[])
     ext = _flags(actions.add_parser("extract", help="extract text from a file"))
     ext.add_argument("path")
-    ext.add_argument("--ocr", default="AUTO")
+    ext.add_argument("--ocr", type=str.upper, choices=sorted(OCR_POLICIES), default="AUTO")
     ext.add_argument("--ocr-lang", action="append", default=[])
     orig = _flags(actions.add_parser("originality", help="Local Similarity Audit against files"))
     orig.add_argument("path")
     orig.add_argument("--against", action="append", default=[])
+    orig.add_argument("--ocr", type=str.upper, choices=sorted(OCR_POLICIES), default="AUTO")
+    orig.add_argument("--ocr-lang", action="append", default=[])
+    render = _flags(actions.add_parser("render", help="render an extracted document"))
+    render.add_argument("path")
+    render.add_argument("--renderer", choices=["handwriting"], default="handwriting")
+    render.add_argument("--output", required=True)
+    render.add_argument("--ocr", type=str.upper, choices=sorted(OCR_POLICIES), default="AUTO")
+    render.add_argument("--ocr-lang", action="append", default=[])
+    render.add_argument("--seed", type=int, default=1)
+    render.add_argument("--overwrite", action="store_true")
     prof = _flags(actions.add_parser("profile"))
     psub = prof.add_subparsers(dest="profile_action", required=True)
     psub.add_parser("list")
@@ -71,7 +83,7 @@ def add_smartbook_cli(parser: ArgumentParser) -> None:
     ing = _flags(actions.add_parser("ingest"))
     ing.add_argument("path")
     ing.add_argument("--slug", required=True)
-    ing.add_argument("--ocr", default="AUTO")
+    ing.add_argument("--ocr", type=str.upper, choices=sorted(OCR_POLICIES), default="AUTO")
     ing.add_argument("--ocr-lang", action="append", default=[])
     ret = _flags(actions.add_parser("retrieve"))
     ret.add_argument("slug")
@@ -114,6 +126,23 @@ def _root(args: Namespace) -> Path:
     return resolve_smartdoc_root(explicit=getattr(args, "root", None))
 
 
+def _extraction_coverage(result: dict[str, object], *, source_id: str) -> dict[str, object]:
+    return {
+        "id": source_id,
+        "status": result.get("status"),
+        "pages_total": result.get("pages_total", result.get("pages")),
+        "pages_ready": result.get("pages_ready"),
+        "pages_failed": result.get("pages_failed") or [],
+        "pages_skipped": result.get("pages_skipped") or 0,
+        "warnings": result.get("warnings") or [],
+        "has_text": bool(str(result.get("text") or "").strip()),
+    }
+
+
+def _is_readable(result: dict[str, object]) -> bool:
+    return result.get("status") in {"READY", "PARTIAL"} and bool(str(result.get("text") or "").strip())
+
+
 def dispatch_smartdoc(args: Namespace) -> int:
     as_json = bool(getattr(args, "json", False))
     root = _root(args)
@@ -139,12 +168,74 @@ def dispatch_smartdoc(args: Namespace) -> int:
                 }
             return _emit(result, as_json=True)
         if action == "originality":
-            src = extract_file(Path(args.path))
+            langs = [str(x) for x in (getattr(args, "ocr_lang", None) or [])]
+            ocr_policy = str(getattr(args, "ocr", "AUTO"))
+            src = extract_file(Path(args.path), ocr=ocr_policy, languages=langs or None)
+            source_coverage = _extraction_coverage(src, source_id=str(args.path))
+            if not _is_readable(src):
+                payload = {
+                    "status": "AUDIT_NOT_RUN",
+                    "label": "Local Similarity Audit",
+                    "reason": "SOURCE_UNREADABLE",
+                    "source": source_coverage,
+                    "corpus": [str(path) for path in args.against],
+                }
+                _emit(payload, as_json=True)
+                return 1
             corpus = []
+            corpus_coverage = []
+            unreadable = []
             for against in args.against:
-                item = extract_file(Path(against))
+                item = extract_file(Path(against), ocr=ocr_policy, languages=langs or None)
+                coverage = _extraction_coverage(item, source_id=str(against))
+                corpus_coverage.append(coverage)
+                if not _is_readable(item):
+                    unreadable.append(coverage)
+                    continue
                 corpus.append({"id": against, "text": item.get("text") or ""})
-            return _emit(local_similarity_audit(src.get("text") or "", corpus), as_json=True)
+            if unreadable and not corpus:
+                payload = {
+                    "status": "CORPUS_INCOMPLETE",
+                    "label": "Local Similarity Audit",
+                    "reason": "NO_READABLE_CORPUS",
+                    "corpus": [str(path) for path in args.against],
+                    "coverage": {"source": source_coverage, "corpus": corpus_coverage},
+                    "excluded_corpus": unreadable,
+                }
+                _emit(payload, as_json=True)
+                return 1
+            report = local_similarity_audit(src.get("text") or "", corpus)
+            partial = src.get("status") == "PARTIAL" or any(row.get("status") == "PARTIAL" for row in corpus_coverage)
+            report["status"] = "CORPUS_INCOMPLETE" if unreadable else ("PARTIAL" if partial else "READY")
+            report["coverage"] = {"source": source_coverage, "corpus": corpus_coverage}
+            if unreadable:
+                report["excluded_corpus"] = unreadable
+            _emit(report, as_json=True)
+            return 1 if unreadable else 0
+        if action == "render":
+            langs = [str(x) for x in (getattr(args, "ocr_lang", None) or [])]
+            ocr_policy = str(getattr(args, "ocr", "AUTO"))
+            extracted = extract_file(Path(args.path), ocr=ocr_policy, languages=langs or None)
+            if not _is_readable(extracted):
+                return _emit(extracted, as_json=True)
+            content = str(extracted.get("text") or "")
+            contract = empty_contract()
+            contract["intent"] = "TRANSFORM"
+            contract["goal"] = {"description": f"Render {args.renderer}"}
+            contract["output"] = {"format": "pdf", "renderer": args.renderer}
+            contract["extraction"] = {"ocr": ocr_policy, "languages": langs}
+            locked = content_lock(goal_lock(contract), content)
+            output = Path(args.output).expanduser()
+            rendered = render_handwriting(
+                content,
+                output.parent,
+                output.name,
+                contract=locked,
+                seed=int(args.seed),
+                overwrite=bool(args.overwrite),
+            )
+            rendered["source"] = _extraction_coverage(extracted, source_id=str(args.path))
+            return _emit(rendered, as_json=True)
         if action == "profile":
             sub = args.profile_action
             if sub == "list":
@@ -170,7 +261,7 @@ def dispatch_smartdoc(args: Namespace) -> int:
             if sub == "delete":
                 delete_style(root, args.name)
                 return 0
-    except (PathEscape, ExtractError) as exc:
+    except (PathEscape, ExtractError, RenderError) as exc:
         print(f"FAIL {exc}", file=sys.stderr)
         return 1
     return 2
@@ -194,7 +285,13 @@ def dispatch_smartbook(args: Namespace) -> int:
             if extracted.get("status") not in {"READY", "PARTIAL"}:
                 return _emit(extracted, as_json=True)
             return _emit(
-                ingest(root, slug=args.slug, source_name=path.name, text=extracted.get("text") or ""),
+                ingest(
+                    root,
+                    slug=args.slug,
+                    source_name=path.name,
+                    text=extracted.get("text") or "",
+                    page_records=extracted.get("page_records") or None,
+                ),
                 as_json=True,
             )
         if action == "retrieve":

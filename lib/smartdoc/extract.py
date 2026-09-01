@@ -4,6 +4,7 @@ import shutil
 import stat
 import subprocess
 import tempfile
+import time
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -79,7 +80,14 @@ def _resolve_ocr_langs(languages: list[str] | None, contract_language: str | Non
     )
 
 
-def raster_pdf_page(pdf: Path, page: int, dest_dir: Path, *, dpi: int = OCR_DPI) -> Path:
+def raster_pdf_page(
+    pdf: Path,
+    page: int,
+    dest_dir: Path,
+    *,
+    dpi: int = OCR_DPI,
+    timeout: float = RASTER_TIMEOUT_SEC,
+) -> Path:
     binary = shutil.which("pdftoppm")
     if not binary:
         raise FileNotFoundError("PDF_RASTER_NOT_CONFIGURED")
@@ -99,7 +107,13 @@ def raster_pdf_page(pdf: Path, page: int, dest_dir: Path, *, dpi: int = OCR_DPI)
         str(prefix),
     ]
     try:
-        proc = subprocess.run(cmd, capture_output=True, timeout=RASTER_TIMEOUT_SEC, check=False)
+        proc = subprocess.run(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout,
+            check=False,
+        )
     except subprocess.TimeoutExpired as exc:
         raise FileNotFoundError("PDF_RASTER_FAILED") from exc
     out = dest_dir / f"page-{page}.png"
@@ -220,7 +234,7 @@ def _page_record(
     }
 
 
-def _ocr_page_image(image: Path, languages: list[str]) -> dict[str, Any]:
+def _ocr_page_image(image: Path, languages: list[str], *, timeout: float | None = None) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="ocbf-ocr-work-") as raw:
         work = Path(raw) / "work.png"
         try:
@@ -236,7 +250,11 @@ def _ocr_page_image(image: Path, languages: list[str]) -> dict[str, Any]:
                     "confidence": None,
                 }
             target = image
-        return ocr_mod.ocr_image(target, languages=languages, timeout=ocr_mod.OCR_TIMEOUT_PAGE_SEC)
+        return ocr_mod.ocr_image(
+            target,
+            languages=languages,
+            timeout=timeout if timeout is not None else ocr_mod.OCR_TIMEOUT_PAGE_SEC,
+        )
 
 
 def extract_pdf(
@@ -247,6 +265,7 @@ def extract_pdf(
     contract_language: str | None = None,
 ) -> dict[str, Any]:
     policy = normalize_ocr_policy(ocr)
+    started = time.monotonic()
     native_pages: list[str] | None = None
     try:
         from pypdf import PdfReader  # type: ignore
@@ -263,11 +282,30 @@ def extract_pdf(
     records: list[dict[str, Any]] = []
     sanitizers: list[dict[str, int]] = []
     failed: list[int] = []
+    skipped: list[int] = []
+    result_warnings: list[str] = []
+    ocr_attempts = 0
+
+    def remaining() -> float:
+        return max(0.0, ocr_mod.OCR_TIMEOUT_JOB_SEC - (time.monotonic() - started))
+
+    def skip_page(page_no: int, code: str) -> None:
+        records.append(
+            _page_record(
+                page_no,
+                method="none",
+                text="",
+                status=code,
+                warnings=[code],
+            )
+        )
+        failed.append(page_no)
+        skipped.append(page_no)
+        if code not in result_warnings:
+            result_warnings.append(code)
 
     if native_pages is not None:
         page_count = len(native_pages)
-        if page_count > ocr_mod.MAX_OCR_PAGES:
-            page_count = ocr_mod.MAX_OCR_PAGES
         for idx in range(page_count):
             raw_native = native_pages[idx]
             cleaned_native, rec = sanitize_document_text(raw_native)
@@ -299,12 +337,34 @@ def extract_pdf(
                 records.append(_page_record(page_no, method="none", text="", status="NOT_CONFIGURED", warnings=[cap]))
                 failed.append(page_no)
                 continue
+            if ocr_attempts >= ocr_mod.MAX_OCR_PAGES:
+                skip_page(page_no, "PAGE_LIMIT_REACHED")
+                continue
+            if remaining() <= 0:
+                skip_page(page_no, "OCR_JOB_TIMEOUT")
+                continue
             with tempfile.TemporaryDirectory(prefix="ocbf-raster-") as raw:
                 dest = Path(raw)
                 try:
-                    raster = raster_pdf_page(path, page_no, dest)
-                    ocr_res = _ocr_page_image(raster, ocr_langs)
+                    raster = raster_pdf_page(
+                        path,
+                        page_no,
+                        dest,
+                        timeout=max(0.01, min(RASTER_TIMEOUT_SEC, remaining())),
+                    )
+                    if remaining() <= 0:
+                        skip_page(page_no, "OCR_JOB_TIMEOUT")
+                        continue
+                    ocr_attempts += 1
+                    ocr_res = _ocr_page_image(
+                        raster,
+                        ocr_langs,
+                        timeout=max(0.01, min(ocr_mod.OCR_TIMEOUT_PAGE_SEC, remaining())),
+                    )
                 except FileNotFoundError:
+                    if remaining() <= 0:
+                        skip_page(page_no, "OCR_JOB_TIMEOUT")
+                        continue
                     records.append(
                         _page_record(
                             page_no,
@@ -316,7 +376,7 @@ def extract_pdf(
                     )
                     failed.append(page_no)
                     continue
-            if ocr_res.get("status") == "READY":
+            if ocr_res.get("status") in {"READY", "PARTIAL"}:
                 records.append(
                     _page_record(
                         page_no,
@@ -327,6 +387,7 @@ def extract_pdf(
                         engine=ocr_res.get("engine") or "tesseract",
                         language=ocr_res.get("language"),
                         warnings=ocr_res.get("warnings") or [],
+                        status=str(ocr_res.get("status")),
                     )
                 )
                 sanitizers.append(ocr_res.get("sanitization") or {"zero_width": 0, "unicode_tags": 0, "controls": 0})
@@ -341,7 +402,15 @@ def extract_pdf(
                     )
                 )
                 failed.append(page_no)
-        return _pdf_result(records, sanitizers, failed, native_missing=False)
+        return _pdf_result(
+            records,
+            sanitizers,
+            failed,
+            native_missing=False,
+            pages_total=page_count,
+            skipped=skipped,
+            warnings=result_warnings,
+        )
 
     if policy == "NEVER":
         return _not_configured("pdf", "PDF_READ")
@@ -353,16 +422,32 @@ def extract_pdf(
     with tempfile.TemporaryDirectory(prefix="ocbf-raster-") as raw:
         dest = Path(raw)
         for page_no in range(1, ocr_mod.MAX_OCR_PAGES + 1):
+            if remaining() <= 0:
+                skip_page(page_no, "OCR_JOB_TIMEOUT")
+                break
             try:
-                raster = raster_pdf_page(path, page_no, dest)
+                raster = raster_pdf_page(
+                    path,
+                    page_no,
+                    dest,
+                    timeout=max(0.01, min(RASTER_TIMEOUT_SEC, remaining())),
+                )
             except FileNotFoundError:
                 break
-            ocr_res = _ocr_page_image(raster, ocr_langs)
+            if remaining() <= 0:
+                skip_page(page_no, "OCR_JOB_TIMEOUT")
+                break
+            ocr_attempts += 1
+            ocr_res = _ocr_page_image(
+                raster,
+                ocr_langs,
+                timeout=max(0.01, min(ocr_mod.OCR_TIMEOUT_PAGE_SEC, remaining())),
+            )
             try:
                 raster.unlink(missing_ok=True)
             except OSError:
                 pass
-            if ocr_res.get("status") == "READY":
+            if ocr_res.get("status") in {"READY", "PARTIAL"}:
                 records.append(
                     _page_record(
                         page_no,
@@ -373,6 +458,7 @@ def extract_pdf(
                         engine=ocr_res.get("engine") or "tesseract",
                         language=ocr_res.get("language"),
                         warnings=ocr_res.get("warnings") or [],
+                        status=str(ocr_res.get("status")),
                     )
                 )
                 sanitizers.append(ocr_res.get("sanitization") or {"zero_width": 0, "unicode_tags": 0, "controls": 0})
@@ -387,9 +473,31 @@ def extract_pdf(
                     )
                 )
                 failed.append(page_no)
+        if len(records) == ocr_mod.MAX_OCR_PAGES and remaining() > 0:
+            next_page = ocr_mod.MAX_OCR_PAGES + 1
+            try:
+                raster_pdf_page(
+                    path,
+                    next_page,
+                    dest,
+                    timeout=max(0.01, min(RASTER_TIMEOUT_SEC, remaining())),
+                ).unlink(missing_ok=True)
+            except FileNotFoundError:
+                pass
+            else:
+                skip_page(next_page, "PAGE_LIMIT_REACHED")
     if not records:
         return _not_configured("pdf", "OCR_PDF")
-    return _pdf_result(records, sanitizers, failed, native_missing=True)
+    total = None if skipped and skipped[-1] == ocr_mod.MAX_OCR_PAGES + 1 else len(records)
+    return _pdf_result(
+        records,
+        sanitizers,
+        failed,
+        native_missing=True,
+        pages_total=total,
+        skipped=skipped,
+        warnings=result_warnings,
+    )
 
 
 def _pdf_result(
@@ -398,9 +506,15 @@ def _pdf_result(
     failed: list[int],
     *,
     native_missing: bool,
+    pages_total: int | None = None,
+    skipped: list[int] | None = None,
+    warnings: list[str] | None = None,
 ) -> dict[str, Any]:
     texts = [r.get("text") or "" for r in records]
-    ready = sum(1 for r in records if r.get("status") == "READY" and r.get("method") != "none")
+    ready = sum(1 for r in records if r.get("status") in {"READY", "PARTIAL"} and r.get("method") != "none")
+    partial = any(r.get("status") == "PARTIAL" for r in records)
+    skipped_pages = list(skipped or [])
+    result_warnings = list(warnings or [])
     none_only = all(r.get("method") == "none" for r in records) if records else True
     if none_only and failed:
         cap = "PDF_RASTER_NOT_CONFIGURED"
@@ -414,8 +528,12 @@ def _pdf_result(
             "text": "",
             "capability": cap,
             "pages": len(records),
+            "pages_total": pages_total,
             "page_records": records,
             "pages_failed": failed,
+            "pages_skipped": len(skipped_pages),
+            "page_numbers_skipped": skipped_pages,
+            "warnings": result_warnings,
         }
     if none_only and not any((r.get("text") or "").strip() for r in records):
         cap = "PDF_READ" if native_missing else "PDF_RASTER_NOT_CONFIGURED"
@@ -425,9 +543,13 @@ def _pdf_result(
             "text": "",
             "capability": cap,
             "pages": len(records),
+            "pages_total": pages_total,
             "page_records": records,
+            "pages_skipped": len(skipped_pages),
+            "page_numbers_skipped": skipped_pages,
+            "warnings": result_warnings,
         }
-    status = "PARTIAL" if failed and ready else "READY"
+    status = "PARTIAL" if (failed or skipped_pages or partial) and ready else "READY"
     if failed and not ready:
         status = "NOT_CONFIGURED"
     return {
@@ -435,9 +557,13 @@ def _pdf_result(
         "format": "pdf",
         "text": "\f".join(texts),
         "pages": len(records),
+        "pages_total": pages_total,
         "page_records": records,
         "pages_ready": ready,
         "pages_failed": failed,
+        "pages_skipped": len(skipped_pages),
+        "page_numbers_skipped": skipped_pages,
+        "warnings": result_warnings,
         "sanitization": _merge_sanitization(sanitizers),
     }
 
@@ -457,18 +583,20 @@ def extract_image(
         return _not_configured(fmt, "IMAGE_READ")
     try:
         with Image.open(path) as img:
+            pixels = img.width * img.height
+            from .preprocess import MAX_IMAGE_PIXELS
+
+            if pixels > MAX_IMAGE_PIXELS:
+                raise ExtractError("IMAGE_TOO_LARGE")
             img.load()
             info = {"width": img.width, "height": img.height, "mode": img.mode}
-            pixels = img.width * img.height
+    except ExtractError:
+        raise
     except Exception as exc:
         name = type(exc).__name__
         if "DecompressionBomb" in name:
             raise ExtractError("IMAGE_DECOMPRESSION_RISK") from exc
         raise ExtractError("image_failed") from exc
-    from .preprocess import MAX_IMAGE_PIXELS
-
-    if pixels > MAX_IMAGE_PIXELS:
-        raise ExtractError("IMAGE_TOO_LARGE")
     base: dict[str, Any] = {
         "format": fmt,
         "image": info,
@@ -493,7 +621,7 @@ def extract_image(
             **base,
         }
     ocr_res = _ocr_page_image(path, ocr_langs)
-    if ocr_res.get("status") != "READY":
+    if ocr_res.get("status") not in {"READY", "PARTIAL"}:
         return {
             "status": ocr_res.get("status") or "OCR_FAILED",
             "text": "",
@@ -520,7 +648,7 @@ def extract_image(
         warnings=ocr_res.get("warnings") or [],
     )
     return {
-        "status": "READY",
+        "status": ocr_res.get("status") or "READY",
         "text": record["text"],
         "page_records": [record],
         "sanitization": ocr_res.get("sanitization"),

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import io
 import math
+import tempfile
 import textwrap
 from pathlib import Path
 from typing import Any
@@ -96,11 +97,44 @@ def assemble_pdf(pages: list[bytes], dest: Path) -> Path:
     if not images:
         raise RenderError("no pages")
     first, rest = images[0], images[1:]
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    first.save(dest, save_all=True, append_images=rest, format="PDF")
-    for img in images:
-        img.close()
+    buf = io.BytesIO()
+    try:
+        first.save(buf, save_all=True, append_images=rest, format="PDF")
+        atomic_write(dest, buf.getvalue(), mode=0o600)
+    finally:
+        for img in images:
+            img.close()
     return dest
+
+
+def verify_rendered_pdf(path: Path, expected_pages: int, matrix: dict[str, str]) -> dict[str, Any]:
+    warnings: list[str] = []
+    structural = "NOT_CONFIGURED"
+    if matrix.get("PDF_READ") == "READY":
+        try:
+            from pypdf import PdfReader  # type: ignore
+
+            structural = "PASS" if len(PdfReader(str(path)).pages) == expected_pages else "FAIL"
+        except Exception:
+            structural = "FAIL"
+        if structural == "FAIL":
+            warnings.append("STRUCTURAL_QA_FAILED")
+
+    raster = "NOT_CONFIGURED"
+    if matrix.get("POST_PDF_RASTER_QA") == "READY":
+        try:
+            from .extract import raster_pdf_page
+
+            with tempfile.TemporaryDirectory(prefix="ocbf-render-qa-") as raw:
+                work = Path(raw)
+                first = raster_pdf_page(path, 1, work)
+                last = first if expected_pages == 1 else raster_pdf_page(path, expected_pages, work)
+                raster = "PASS" if first.stat().st_size > 0 and last.stat().st_size > 0 else "FAIL"
+        except Exception:
+            raster = "FAIL"
+        if raster == "FAIL":
+            warnings.append("POST_PDF_RASTER_QA_FAILED")
+    return {"structural_qa": structural, "post_pdf_raster_qa": raster, "warnings": warnings}
 
 
 def render_handwriting(
@@ -132,10 +166,11 @@ def render_handwriting(
         preview_paths.append(str(preview))
     pdf_path = resolve_output_path(dest_dir, safe_filename(filename), overwrite=overwrite)
     assemble_pdf(pages, pdf_path)
+    verification = verify_rendered_pdf(pdf_path, len(pages), matrix)
     return {
-        "status": "READY",
+        "status": "PARTIAL" if verification["warnings"] else "READY",
         "pdf": str(pdf_path),
         "previews": preview_paths,
         "pages": len(pages),
-        "post_pdf_raster_qa": matrix["POST_PDF_RASTER_QA"],
+        **verification,
     }

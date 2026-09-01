@@ -26,7 +26,7 @@ Persistent writes go to the **resolved SmartDoc root** only (`CLI --root` → `O
 
 1. `opencode-bf smartdoc status --json` and `opencode-bf smartbook list`.
 2. Extract with `opencode-bf smartdoc extract PATH`. Scanned PDFs/photos use OCR AUTO when Tesseract is configured. If `NOT_CONFIGURED`, stop and report. Combined PDF text is page-delimited with form-feed so ingest keeps page sections.
-3. Ingest: `opencode-bf smartbook ingest PATH --slug <slug>`. Same source hash → `unchanged`.
+3. Ingest: `opencode-bf smartbook ingest PATH --slug <slug>`. Same source hash → `unchanged`. Failed/skipped pages keep source page numbers; they are not renumbered.
 4. Validate: `opencode-bf smartbook validate <slug>`.
 5. Later SmartDoc jobs retrieve with `opencode-bf smartbook retrieve <slug> "<query>"` — relevant sections only.
 

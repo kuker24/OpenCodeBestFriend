@@ -17,7 +17,7 @@ class VersionConsistencyTests(unittest.TestCase):
     def test_vendor_product_versions_match_version_file(self):
         ver = product_version()
         self.assertTrue(re.fullmatch(r"\d+\.\d+\.\d+", ver), ver)
-        for rel in ("vendor/provenance.json", "vendor/license-audit.json"):
+        for rel in ("vendor/provenance.json", "vendor/license-audit.json", "vendor/sources.json"):
             data = json.loads((ROOT / rel).read_text(encoding="utf-8"))
             self.assertEqual(data["productVersion"], ver, rel)
 

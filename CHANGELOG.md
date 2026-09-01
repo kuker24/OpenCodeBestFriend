@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.6.1 — 2026-09-02
+
+SmartDoc final stabilization. No new skills.
+
+- Remove silent PDF truncation: native pages are not constrained by the 200-page OCR budget; OCR limit/deadline results are explicit `PARTIAL` with page provenance.
+- Preserve SmartBook source page numbers, method, confidence, warnings, and unavailable-page markers through staged atomic ingest.
+- Fail Local Similarity Audit closed for unreadable source/corpus items and disclose partial extraction coverage.
+- Add public `smartdoc render --renderer handwriting` with content lock, atomic PDF output, structural QA, and real post-raster QA.
+- Guard image pixels before full decode, bound subprocess output, and mark truncated OCR TSV as `PARTIAL`.
+- Replace capability-only mixed doctor check with a real native-plus-OCR PDF probe.
+- Add a real OCR CI job and pin GitHub Actions to immutable commit SHAs.
+- Include `vendor/sources.json` in product version consistency checks.
+
 ## 1.6.0 — 2026-09-01
 
 SmartDoc mixed-document OCR. No new skills.

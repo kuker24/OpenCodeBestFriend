@@ -12,6 +12,7 @@ from .sanitize import sanitize_document_text
 OCR_TIMEOUT_PAGE_SEC = 30
 OCR_TIMEOUT_JOB_SEC = 600
 MAX_OCR_STDOUT = 2 * 1024 * 1024
+MAX_TOOL_OUTPUT = 64 * 1024
 MAX_OCR_PAGES = 200
 CONF_HIGH = 85.0
 CONF_MEDIUM = 60.0
@@ -48,17 +49,23 @@ def list_languages(*, tesseract: str | None = None, force: bool = False) -> list
     if not binary:
         return []
     try:
-        proc = subprocess.run(
-            [binary, "--list-langs"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            check=False,
-        )
+        with tempfile.TemporaryFile() as stdout:
+            proc = subprocess.run(
+                [binary, "--list-langs"],
+                stdout=stdout,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
+                check=False,
+            )
+            stdout.seek(0)
+            output = stdout.read(MAX_TOOL_OUTPUT).decode("utf-8", errors="replace")
+        mocked_output = getattr(proc, "stdout", None)
+        if not output and mocked_output:
+            output = mocked_output if isinstance(mocked_output, str) else mocked_output[:MAX_TOOL_OUTPUT].decode("utf-8", errors="replace")
     except Exception:
         return []
     langs: list[str] = []
-    for line in (proc.stdout or "").splitlines():
+    for line in output.splitlines():
         item = line.strip()
         if not item or " " in item or item.lower() == "osd":
             continue
@@ -220,7 +227,8 @@ def ocr_image(
         try:
             proc = subprocess.run(
                 cmd,
-                capture_output=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 timeout=timeout,
                 check=False,
             )
@@ -249,8 +257,10 @@ def ocr_image(
                 "tokens": [],
                 "confidence": None,
             }
-        data = tsv_path.read_bytes()
-        if len(data) > MAX_OCR_STDOUT:
+        with tsv_path.open("rb") as handle:
+            data = handle.read(MAX_OCR_STDOUT + 1)
+        truncated = len(data) > MAX_OCR_STDOUT
+        if truncated:
             data = data[:MAX_OCR_STDOUT]
             warnings.append("OCR_STDOUT_TRUNCATED")
         parsed = parse_tsv(data.decode("utf-8", errors="replace"))
@@ -258,7 +268,7 @@ def ocr_image(
     warns = warnings + token_warnings(parsed["tokens"], cleaned)
     mean = parsed["mean"]
     return {
-        "status": "READY",
+        "status": "PARTIAL" if truncated else "READY",
         "method": "ocr",
         "engine": "tesseract",
         "language": lang,

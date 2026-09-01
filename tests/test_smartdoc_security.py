@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 import unittest
 import zipfile
@@ -61,6 +62,8 @@ class SmartDocSecurityTests(IsolatedHome):
         def fake_run(cmd, **kwargs):
             captured.append(list(cmd))
             self.assertFalse(kwargs.get("shell"))
+            self.assertEqual(kwargs.get("stdout"), subprocess.DEVNULL)
+            self.assertEqual(kwargs.get("stderr"), subprocess.DEVNULL)
             raise TimeoutError
 
         with patch("lib.smartdoc.ocr.tesseract_bin", return_value="/usr/bin/tesseract"):

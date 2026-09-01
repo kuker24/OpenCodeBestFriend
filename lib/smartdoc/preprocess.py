@@ -23,10 +23,10 @@ def prepare_working_image(src: Path, dest: Path) -> dict[str, Any]:
         raise PreprocessError("IMAGE_READ") from exc
     try:
         with Image.open(src) as im:
-            im.load()
             src_w, src_h = im.size
             if src_w * src_h > MAX_IMAGE_PIXELS:
                 raise PreprocessError("IMAGE_TOO_LARGE")
+            im.load()
             work = ImageOps.exif_transpose(im)
             if work is None:
                 work = im

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.0.0",
+  "productVersion": "1.6.1",
   "adaptedFrom": {
     "product": "ClaudeBestFriend",
     "version": "1.4.2-claude.1",

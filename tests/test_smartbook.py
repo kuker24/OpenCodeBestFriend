@@ -4,11 +4,12 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from lib.smartdoc.smartbook import ingest, retrieve, validate_book  # noqa: E402
+from lib.smartdoc.smartbook import ingest, inspect_book, retrieve, validate_book  # noqa: E402
 from tests.support import IsolatedHome  # noqa: E402
 
 
@@ -61,6 +62,64 @@ class SmartBookTests(IsolatedHome):
         self.assertEqual(titles[0], "Subnetting")
         self.assertIn(titles[1], {"Contoh perhitungan subnet", "Apa itu subnetting?"})
         self.assertNotEqual(titles[0], "Apa itu subnetting?")
+
+    def test_partial_page_provenance_keeps_source_numbers(self):
+        root = self.tmp / "SmartDoc"
+        records = [
+            {"page": 6, "status": "READY", "method": "native_text", "text": "source page six"},
+            {
+                "page": 7,
+                "status": "OCR_TIMEOUT",
+                "method": "none",
+                "text": "",
+                "warnings": ["OCR_TIMEOUT"],
+            },
+            {
+                "page": 8,
+                "status": "READY",
+                "method": "ocr",
+                "text": "source page eight",
+                "confidence": 88.0,
+                "confidence_level": "HIGH",
+            },
+        ]
+        result = ingest(
+            root,
+            slug="partial",
+            source_name="partial.pdf",
+            text="source page six\f\fsource page eight",
+            page_records=records,
+        )
+        sections = result["index"]
+        self.assertEqual(result["manifest"]["source_status"], "PARTIAL")
+        self.assertEqual(result["manifest"]["source_pages_unavailable"], 1)
+        self.assertEqual([s["source_page"] for s in sections], [6, 7, 8])
+        self.assertEqual(sections[2]["title"], "page 8")
+        self.assertEqual(sections[2]["method"], "ocr")
+        self.assertEqual(sections[2]["confidence"], 88.0)
+        failed = (root / "books" / "partial" / sections[1]["path"]).read_text(encoding="utf-8")
+        self.assertIn("SOURCE_PAGE_UNAVAILABLE page=7", failed)
+        self.assertTrue(sections[1]["unavailable"])
+        provenance = inspect_book(root, "partial")["provenance"]
+        self.assertEqual([p["source_page"] for p in provenance["pages"]], [6, 7, 8])
+
+    def test_source_digest_preserves_page_boundaries(self):
+        root = self.tmp / "SmartDoc"
+        first = ingest(root, slug="paging", source_name="book.txt", text="alpha\fbravo")
+        second = ingest(root, slug="paging", source_name="book.txt", text="alpha\nbravo")
+        self.assertEqual(first["status"], "ingested")
+        self.assertEqual(second["status"], "ingested")
+        self.assertNotEqual(first["manifest"]["source_sha256"], second["manifest"]["source_sha256"])
+
+    def test_failed_staged_update_leaves_existing_book_intact(self):
+        root = self.tmp / "SmartDoc"
+        ingest(root, slug="atomic", source_name="book.txt", text="# Old\nstable content")
+        with patch("lib.smartdoc.smartbook.write_json_private", side_effect=OSError("boom")):
+            with self.assertRaises(OSError):
+                ingest(root, slug="atomic", source_name="book.txt", text="# New\npartial content")
+        data = inspect_book(root, "atomic")
+        self.assertEqual(data["index"]["sections"][0]["title"], "Old")
+        self.assertIn("stable content", retrieve(root, "atomic", "stable")[0]["text"])
 
 
 if __name__ == "__main__":

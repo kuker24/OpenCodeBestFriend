@@ -18,6 +18,6 @@
 - Model/provider names are opaque; do not print tokens or gateway maps
 - `vendor/license-audit.json` lists every skill license **as evidenced**. `not-stated-in-frontmatter` is not a grant. Nine snapshot skills remain unknown.
 
-CI: unittest matrix (3.10–3.13), shellcheck, gitleaks, semgrep (`.semgrep.yml`). OSV Scanner is `NOT_CONFIGURED` — this tree has no language lockfile. Release tarball/SBOM via `scripts/make-release-artifacts.sh` (no GitHub attestation wired).
+CI: unittest matrix (3.10–3.13), real OCR integration, shellcheck, gitleaks, semgrep (`.semgrep.yml`). Actions are pinned to commit SHAs. OSV Scanner is `NOT_CONFIGURED` — this tree has no language lockfile. Release tarball/SBOM via `scripts/make-release-artifacts.sh` (no GitHub attestation wired).
 
 Pre-push (maintainer): gitleaks, absolute personal-home path scan, active Claude-runtime scan.

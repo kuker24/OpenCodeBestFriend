@@ -149,11 +149,12 @@ Offline user-data bank at `OPENCODE_DESIGN_V2` or `~/DesignV2` (`GROK_DESIGN_V2`
 ```bash
 opencode-bf smartdoc status --json
 opencode-bf smartdoc doctor --json
+opencode-bf smartdoc render content.md --renderer handwriting --output tugas.pdf --json
 opencode-bf smartdoc profile create campus --field Nama=Budi --field NIM=12345
 opencode-bf smartbook ingest ./module.md --slug jaringan
 ```
 
-Local Similarity Audit compares against a named corpus. It is not Turnitin. Optional `pypdf`, Pillow, `pdftoppm`, and Tesseract (`eng`/`ind`) report `NOT_CONFIGURED` when absent. PDF extract uses native text when sufficient and OCR AUTO per page otherwise.
+Local Similarity Audit compares against a named corpus. It is not Turnitin and does not report `0.0` for unreadable evidence. Optional `pypdf`, Pillow, `pdftoppm`, and Tesseract (`eng`/`ind`) report `NOT_CONFIGURED` when absent. PDF extract uses native text when sufficient and OCR AUTO per page otherwise; OCR limits and partial pages are explicit.
 
 ```bash
 opencode-bf design import ~/Downloads/aura-export --provider aura

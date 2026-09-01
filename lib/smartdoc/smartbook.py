@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import shutil
+import tempfile
 from pathlib import Path
 from typing import Any
 
 from .paths import (
     PathEscape,
+    atomic_write,
     assert_skill_like_name,
     assert_under_root,
     ensure_dir,
@@ -39,13 +43,15 @@ def list_books(root: Path) -> list[str]:
     return sorted(p.name for p in d.iterdir() if p.is_dir() and (p / "manifest.json").is_file())
 
 
-def _section(i: int, title: str, raw: str) -> dict[str, str]:
+def _section(i: int, title: str, raw: str, **metadata: Any) -> dict[str, Any]:
     body, _ = sanitize_document_text(raw.strip())
     slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") or "section"
-    return {"id": f"{i:03d}-{slug[:40]}", "title": title, "text": body}
+    section = {"id": f"{i:03d}-{slug[:40]}", "title": title, "text": body}
+    section.update(metadata)
+    return section
 
 
-def _chunk_paragraphs(text: str) -> list[dict[str, str]]:
+def _chunk_paragraphs(text: str) -> list[dict[str, Any]]:
     paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
     if not paras:
         body, _ = sanitize_document_text(text.strip())
@@ -66,10 +72,10 @@ def _chunk_paragraphs(text: str) -> list[dict[str, str]]:
     return [_section(i, f"chunk {i}", chunk) for i, chunk in enumerate(chunks, start=1)]
 
 
-def _split_sections(text: str) -> list[dict[str, str]]:
+def _split_sections(text: str) -> list[dict[str, Any]]:
     matches = list(HEADING_RE.finditer(text))
     if matches:
-        sections: list[dict[str, str]] = []
+        sections: list[dict[str, Any]] = []
         for i, match in enumerate(matches):
             start = match.end()
             end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
@@ -78,8 +84,57 @@ def _split_sections(text: str) -> list[dict[str, str]]:
         return sections
     pages = [p.strip() for p in text.split("\f") if p.strip()]
     if len(pages) > 1:
-        return [_section(i, f"page {i}", page) for i, page in enumerate(pages, start=1)]
+        return [_section(i, f"page {i}", page, source_page=i) for i, page in enumerate(pages, start=1)]
     return _chunk_paragraphs(text)
+
+
+def _sections_from_page_records(page_records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    sections: list[dict[str, Any]] = []
+    for index, record in enumerate(page_records, start=1):
+        source_page = int(record.get("page") or index)
+        status = str(record.get("status") or "READY")
+        warnings = [str(w) for w in (record.get("warnings") or [])]
+        text = str(record.get("text") or "")
+        unavailable = not text.strip()
+        if unavailable:
+            warning_text = ",".join(warnings) or status
+            text = f"[SOURCE_PAGE_UNAVAILABLE page={source_page} status={status} warnings={warning_text}]"
+        sections.append(
+            _section(
+                source_page,
+                f"page {source_page}",
+                text,
+                source_page=source_page,
+                method=str(record.get("method") or "none"),
+                confidence=record.get("confidence"),
+                confidence_level=record.get("confidence_level"),
+                warnings=warnings,
+                source_status=status,
+                unavailable=unavailable,
+            )
+        )
+    return sections
+
+
+def _source_digest(text: str, page_records: list[dict[str, Any]] | None) -> str:
+    if page_records:
+        canonical = []
+        for index, record in enumerate(page_records, start=1):
+            cleaned, _ = sanitize_document_text(str(record.get("text") or ""))
+            canonical.append(
+                {
+                    "page": int(record.get("page") or index),
+                    "text": cleaned,
+                    "status": str(record.get("status") or "READY"),
+                    "method": str(record.get("method") or "none"),
+                    "confidence": record.get("confidence"),
+                    "warnings": [str(w) for w in (record.get("warnings") or [])],
+                }
+            )
+        payload = json.dumps(canonical, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    else:
+        payload = "\f".join(sanitize_document_text(page)[0] for page in text.split("\f"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def ingest(
@@ -89,60 +144,118 @@ def ingest(
     source_name: str,
     text: str,
     source_sha256: str | None = None,
+    page_records: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     if not SLUG_RE.fullmatch(slug):
         raise SmartBookError(f"INVALID_SLUG {slug}")
     cleaned, sanitization = sanitize_document_text(text)
     book = _book_dir(root, slug)
     manifest_path = book / "manifest.json"
-    digest = source_sha256 or hashlib.sha256(cleaned.encode("utf-8")).hexdigest()
+    digest = source_sha256 or _source_digest(text, page_records)
     if manifest_path.is_file():
         existing = json.loads(manifest_path.read_text(encoding="utf-8"))
         if existing.get("source_sha256") == digest:
             return {"status": "unchanged", "slug": slug, "manifest": existing}
-    sections = _split_sections(text)
-    ensure_dir(book)
-    sec_dir = ensure_dir(book / "sections")
+    sections = _sections_from_page_records(page_records) if page_records else _split_sections(text)
+    books = _books_dir(root)
+    stage = Path(tempfile.mkdtemp(prefix=f".{slug}-stage-", dir=str(books)))
+    backup = Path(tempfile.mkdtemp(prefix=f".{slug}-backup-", dir=str(books)))
+    backup.rmdir()
+    sec_dir = ensure_dir(stage / "sections")
     index: list[dict[str, Any]] = []
     flagged = 0
-    for section in sections:
-        injection = looks_like_instruction_injection(section["text"])
-        if injection:
-            flagged += 1
-        rel = f"{section['id']}.md"
-        body = section["text"]
-        if injection:
-            body = f"[UNTRUSTED_DOCUMENT_DATA]\n{body}"
-        (sec_dir / rel).write_text(body + "\n", encoding="utf-8")
-        try:
-            (sec_dir / rel).chmod(0o600)
-        except OSError:
-            pass
-        index.append(
-            {
-                "id": section["id"],
-                "title": section["title"],
-                "path": f"sections/{rel}",
-                "untrusted": injection,
+    try:
+        for section in sections:
+            injection = looks_like_instruction_injection(section["text"])
+            if injection:
+                flagged += 1
+            rel = f"{section['id']}.md"
+            body = section["text"]
+            if injection:
+                body = f"[UNTRUSTED_DOCUMENT_DATA]\n{body}"
+            atomic_write(sec_dir / rel, (body + "\n").encode("utf-8"), mode=0o600)
+            metadata = {
+                key: section[key]
+                for key in (
+                    "source_page",
+                    "method",
+                    "confidence",
+                    "confidence_level",
+                    "warnings",
+                    "source_status",
+                    "unavailable",
+                )
+                if key in section
             }
-        )
-    manifest = {
-        "slug": slug,
-        "source_name": source_name,
-        "source_sha256": digest,
-        "section_count": len(index),
-        "injection_flags": flagged,
-        "sanitization": sanitization,
-    }
-    provenance = {
-        "source_name": source_name,
-        "source_sha256": digest,
-        "authority": "document-content-is-data",
-    }
-    write_json_private(manifest_path, manifest)
-    write_json_private(book / "index.json", {"sections": index})
-    write_json_private(book / "provenance.json", provenance)
-    return {"status": "ingested", "slug": slug, "manifest": manifest, "index": index}
+            index.append(
+                {
+                    "id": section["id"],
+                    "title": section["title"],
+                    "path": f"sections/{rel}",
+                    "untrusted": injection,
+                    **metadata,
+                }
+            )
+        manifest = {
+            "slug": slug,
+            "source_name": source_name,
+            "source_sha256": digest,
+            "section_count": len(index),
+            "injection_flags": flagged,
+            "sanitization": sanitization,
+            "source_status": (
+                "PARTIAL"
+                if any(
+                    "source_page" in section
+                    and (section.get("source_status", "READY") != "READY" or section.get("unavailable"))
+                    for section in index
+                )
+                else "READY"
+            ),
+            "source_pages": len([section for section in index if "source_page" in section]),
+            "source_pages_unavailable": len([section for section in index if section.get("unavailable")]),
+        }
+        provenance = {
+            "source_name": source_name,
+            "source_sha256": digest,
+            "authority": "document-content-is-data",
+            "pages": [
+                {
+                    key: section[key]
+                    for key in (
+                        "id",
+                        "source_page",
+                        "method",
+                        "confidence",
+                        "confidence_level",
+                        "warnings",
+                        "source_status",
+                        "unavailable",
+                    )
+                    if key in section
+                }
+                for section in index
+                if "source_page" in section
+            ],
+        }
+        write_json_private(stage / "manifest.json", manifest)
+        write_json_private(stage / "index.json", {"sections": index})
+        write_json_private(stage / "provenance.json", provenance)
+
+        if book.exists():
+            os.replace(book, backup)
+        try:
+            os.replace(stage, book)
+        except Exception:
+            if backup.exists() and not book.exists():
+                os.replace(backup, book)
+            raise
+        shutil.rmtree(backup, ignore_errors=True)
+        return {"status": "ingested", "slug": slug, "manifest": manifest, "index": index}
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
+        if book.exists():
+            shutil.rmtree(backup, ignore_errors=True)
 
 
 def inspect_book(root: Path, slug: str) -> dict[str, Any]:

@@ -124,6 +124,20 @@ class OcrCoreTests(unittest.TestCase):
                 bad = ocr_image(png, languages=["eng"])
             self.assertEqual(bad["status"], "OCR_FAILED")
 
+    def test_truncated_tsv_is_partial_not_ready(self):
+        png = Path("/tmp/ocbf-input.png")
+
+        def fake_run(cmd, **_kwargs):
+            Path(str(cmd[2]) + ".tsv").write_text(SAMPLE_TSV * 4, encoding="utf-8")
+            return subprocess.CompletedProcess(args=cmd, returncode=0)
+
+        with patch("lib.smartdoc.ocr.tesseract_bin", return_value="/usr/bin/tesseract"):
+            with patch("lib.smartdoc.ocr.MAX_OCR_STDOUT", 160):
+                with patch("lib.smartdoc.ocr.subprocess.run", side_effect=fake_run):
+                    result = ocr_image(png, languages=["eng"])
+        self.assertEqual(result["status"], "PARTIAL")
+        self.assertIn("OCR_STDOUT_TRUNCATED", result["warnings"])
+
     def test_ocr_not_configured_without_binary_or_langs(self):
         png = Path("/tmp/ocbf-missing.png")
         with patch("lib.smartdoc.ocr.tesseract_bin", return_value=None):
@@ -267,6 +281,94 @@ class ExtractOcrTests(IsolatedHome):
         self.assertEqual([r["method"] for r in result["page_records"]], ["native_text", "native_text"])
         self.assertEqual(calls["ocr"], 0)
         self.assertIsInstance(result["pages"], int)
+
+    def test_native_pdf_over_ocr_limit_is_not_truncated(self):
+        pdf = self.tmp / "long-native.pdf"
+        pdf.write_bytes(b"%PDF-1.1\n%%EOF\n")
+        strong = "native text " * 10
+
+        class Page:
+            def extract_text(self):
+                return strong
+
+        class Reader:
+            pages = [Page() for _ in range(350)]
+
+        fake = type(sys)("pypdf")
+        fake.PdfReader = lambda *_a, **_k: Reader()
+        with patch.dict("sys.modules", {"pypdf": fake}):
+            result = extract_pdf(pdf, ocr="AUTO")
+        self.assertEqual(result["status"], "READY")
+        self.assertEqual(result["pages"], 350)
+        self.assertEqual(result["pages_total"], 350)
+        self.assertEqual(result["pages_skipped"], 0)
+
+    def test_ocr_page_limit_is_explicit_partial(self):
+        pdf = self.tmp / "long-scan.pdf"
+        pdf.write_bytes(b"%PDF-1.1\n%%EOF\n")
+
+        class Page:
+            def extract_text(self):
+                return ""
+
+        class Reader:
+            pages = [Page() for _ in range(202)]
+
+        fake = type(sys)("pypdf")
+        fake.PdfReader = lambda *_a, **_k: Reader()
+        ocr_result = {
+            "status": "READY",
+            "text": "scan page",
+            "confidence": 90.0,
+            "confidence_level": "HIGH",
+            "engine": "tesseract",
+            "language": "eng",
+            "warnings": [],
+            "sanitization": {"zero_width": 0, "unicode_tags": 0, "controls": 0},
+        }
+        with patch.dict("sys.modules", {"pypdf": fake}):
+            with patch("lib.smartdoc.extract.raster_pdf_page", return_value=self.tmp / "page.png"):
+                with patch("lib.smartdoc.extract._ocr_page_image", return_value=ocr_result) as run_ocr:
+                    with patch("lib.smartdoc.ocr.tesseract_bin", return_value="/usr/bin/tesseract"):
+                        with patch("lib.smartdoc.ocr.select_languages", return_value=["eng"]):
+                            with patch("lib.smartdoc.extract.shutil.which", return_value="/usr/bin/pdftoppm"):
+                                result = extract_pdf(pdf, ocr="AUTO")
+        self.assertEqual(result["status"], "PARTIAL")
+        self.assertEqual(result["pages"], 202)
+        self.assertEqual(result["pages_total"], 202)
+        self.assertEqual(result["pages_ready"], 200)
+        self.assertEqual(result["pages_skipped"], 2)
+        self.assertEqual(result["page_numbers_skipped"], [201, 202])
+        self.assertIn("PAGE_LIMIT_REACHED", result["warnings"])
+        self.assertEqual(run_ocr.call_count, 200)
+
+    def test_ocr_job_deadline_is_explicit_and_native_pages_continue(self):
+        pdf = self.tmp / "deadline.pdf"
+        pdf.write_bytes(b"%PDF-1.1\n%%EOF\n")
+        strong = "native text " * 10
+
+        class Page:
+            def __init__(self, text):
+                self.text = text
+
+            def extract_text(self):
+                return self.text
+
+        class Reader:
+            pages = [Page(""), Page(strong)]
+
+        fake = type(sys)("pypdf")
+        fake.PdfReader = lambda *_a, **_k: Reader()
+        with patch.dict("sys.modules", {"pypdf": fake}):
+            with patch("lib.smartdoc.ocr.OCR_TIMEOUT_JOB_SEC", 0):
+                with patch("lib.smartdoc.ocr.tesseract_bin", return_value="/usr/bin/tesseract"):
+                    with patch("lib.smartdoc.ocr.select_languages", return_value=["eng"]):
+                        with patch("lib.smartdoc.extract.shutil.which", return_value="/usr/bin/pdftoppm"):
+                            result = extract_pdf(pdf, ocr="AUTO")
+        self.assertEqual(result["status"], "PARTIAL")
+        self.assertEqual([r["method"] for r in result["page_records"]], ["none", "native_text"])
+        self.assertEqual(result["page_numbers_skipped"], [1])
+        self.assertIn("OCR_JOB_TIMEOUT", result["warnings"])
 
     def test_pdf_mixed_order_and_partial(self):
         pdf = self.tmp / "mixed.pdf"

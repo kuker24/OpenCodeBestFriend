@@ -15,10 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from lib.cli import main as cli_main  # noqa: E402
-from lib.smartdoc.contract import content_lock, goal_lock  # noqa: E402
 from lib.smartdoc.extract import ExtractError, extract_file  # noqa: E402
 from lib.smartdoc.originality import local_similarity_audit  # noqa: E402
-from lib.smartdoc.render import render_handwriting  # noqa: E402
 from lib.smartdoc.smartbook import ingest, retrieve  # noqa: E402
 from tests.support import IsolatedHome  # noqa: E402
 
@@ -96,26 +94,85 @@ class SmartDocGoldenE2E(IsolatedHome):
     def test_f_lock_handwriting_pages(self):
         path = self.tmp / "tugas.docx"
         _docx(path, ["1. Hitung 2^6.", "2. Tabel hasil.", "Rumus host = 2^(32-n)-2."] * 20)
-        extracted = extract_file(path)
-        contract = content_lock(
-            goal_lock(
-                {
-                    "intent": "TRANSFORM",
-                    "goal": {"description": "Handwriting"},
-                    "output": {"format": "pdf"},
-                    "language": {"primary": "id"},
-                }
-            ),
-            extracted["text"],
-        )
         dest = self.tmp / "out"
-        dest.mkdir()
-        result = render_handwriting(extracted["text"], dest, "jawaban.pdf", contract=contract)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cli_main(
+                [
+                    "smartdoc",
+                    "render",
+                    str(path),
+                    "--renderer",
+                    "handwriting",
+                    "--output",
+                    str(dest / "jawaban.pdf"),
+                    "--json",
+                ]
+            )
+        result = json.loads(buf.getvalue())
         if result.get("status") == "NOT_CONFIGURED":
             self.assertEqual(result.get("capability"), "HANDWRITING")
             return
+        self.assertEqual(rc, 0)
         self.assertEqual(result["status"], "READY")
         self.assertGreaterEqual(result["pages"], 2)
+        self.assertTrue(Path(result["pdf"]).is_file())
+
+    def test_originality_source_unreadable_does_not_report_zero(self):
+        source = self.tmp / "scan.pdf"
+        source.write_bytes(b"%PDF-1.1 scan\n%%EOF\n")
+        corpus = self.tmp / "corpus.txt"
+        corpus.write_text("readable corpus evidence", encoding="utf-8")
+        buf = io.StringIO()
+        with patch("lib.smartdoc.ocr.tesseract_bin", return_value=None):
+            with patch("lib.smartdoc.extract.shutil.which", return_value=None):
+                with redirect_stdout(buf):
+                    rc = cli_main(["smartdoc", "originality", str(source), "--against", str(corpus), "--json"])
+        payload = json.loads(buf.getvalue())
+        self.assertEqual(rc, 1)
+        self.assertEqual(payload["status"], "AUDIT_NOT_RUN")
+        self.assertNotIn("score", payload)
+
+    def test_originality_unreadable_corpus_is_incomplete_not_zero(self):
+        source = self.tmp / "source.txt"
+        source.write_text("readable source document with enough words for comparison", encoding="utf-8")
+        corpus = self.tmp / "scan.pdf"
+        corpus.write_bytes(b"%PDF-1.1 scan\n%%EOF\n")
+        buf = io.StringIO()
+        with patch("lib.smartdoc.ocr.tesseract_bin", return_value=None):
+            with patch("lib.smartdoc.extract.shutil.which", return_value=None):
+                with redirect_stdout(buf):
+                    rc = cli_main(["smartdoc", "originality", str(source), "--against", str(corpus), "--json"])
+        payload = json.loads(buf.getvalue())
+        self.assertEqual(rc, 1)
+        self.assertEqual(payload["status"], "CORPUS_INCOMPLETE")
+        self.assertNotIn("score", payload)
+
+    def test_originality_partial_source_discloses_coverage(self):
+        source = {
+            "status": "PARTIAL",
+            "format": "pdf",
+            "text": "source evidence with enough words for a local similarity comparison",
+            "pages": 2,
+            "pages_total": 3,
+            "pages_ready": 2,
+            "pages_failed": [2],
+            "warnings": ["OCR_TIMEOUT"],
+        }
+        corpus = {"status": "READY", "format": "txt", "text": "local similarity comparison evidence"}
+        buf = io.StringIO()
+        with patch("lib.smartdoc.commands.extract_file", side_effect=[source, corpus]):
+            with redirect_stdout(buf):
+                rc = cli_main(["smartdoc", "originality", "source.pdf", "--against", "corpus.txt", "--json"])
+        payload = json.loads(buf.getvalue())
+        self.assertEqual(rc, 0)
+        self.assertEqual(payload["status"], "PARTIAL")
+        self.assertEqual(payload["coverage"]["source"]["pages_failed"], [2])
+
+    def test_cli_rejects_invalid_ocr_policy(self):
+        with self.assertRaises(SystemExit) as raised:
+            cli_main(["smartdoc", "extract", "source.pdf", "--ocr", "SOMETIMES"])
+        self.assertEqual(raised.exception.code, 2)
 
     def test_mixed_pdf_page_records_and_form_feed(self):
         pdf = self.tmp / "mixed.pdf"
