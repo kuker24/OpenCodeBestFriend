@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.2 — 2026-09-02
+
+SmartDoc correctness micro-release. No new skills. v1.6.1 stays published.
+
+- Distinguish `PdfRasterEnd` from `PdfRasterFailed` so interior raster errors are `PARTIAL`, not silent truncation.
+- Empty Local Similarity Audit corpus is `AUDIT_NOT_RUN` / `EMPTY_CORPUS` with no score.
+- Image OCR `PARTIAL` reaches `page_record.status` and SmartBook `source_status`.
+- `smartbook retrieve` returns source page, method, confidence, warnings, and status.
+- `smartdoc render` stays `PARTIAL` when source extraction was partial.
+- Profile/style wiring to public render remains deferred.
+
 ## 1.6.1 — 2026-09-02
 
 SmartDoc final stabilization. No new skills.

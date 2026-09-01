@@ -61,6 +61,14 @@ def local_similarity_audit(
                 "sample": sample,
             }
         )
+    if not corpus:
+        return {
+            "label": "Local Similarity Audit",
+            "corpus": [],
+            "matches": [],
+            "status": "AUDIT_NOT_RUN",
+            "reason": "EMPTY_CORPUS",
+        }
     matches.sort(key=lambda row: row["ratio"], reverse=True)
     peak = matches[0]["ratio"] if matches else 0.0
     return {

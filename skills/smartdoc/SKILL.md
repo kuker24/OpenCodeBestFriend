@@ -47,7 +47,7 @@ Load [references/qa.md](references/qa.md) after content exists. Load [references
 - Never call a local score Turnitin. Never promise 0%. Never run a detector-evasion loop.
 - Handwriting is a renderer, not a skill.
 - Missing extractors/renderers are `NOT_CONFIGURED`, not success.
-- Native text first. OCR is AUTO fallback only. Page provenance (`page_records`) must survive. Low-confidence numbers/formulas are `OCR_CRITICAL_UNCERTAINTY` / `LOW_CONFIDENCE_FORMULA` — do not guess. Unreadable evidence is `AUDIT_NOT_RUN` / `CORPUS_INCOMPLETE`, never a fake 0.0 score. Handwriting uses `opencode-bf smartdoc render --renderer handwriting`.
+- Native text first. OCR is AUTO fallback only. Page provenance (`page_records`) must survive. Low-confidence numbers/formulas are `OCR_CRITICAL_UNCERTAINTY` / `LOW_CONFIDENCE_FORMULA` — do not guess. Unreadable evidence or an empty corpus is `AUDIT_NOT_RUN` / `CORPUS_INCOMPLETE`, never a fake 0.0 score. Handwriting uses `opencode-bf smartdoc render --renderer handwriting`.
 
 ## Run
 

@@ -170,6 +170,15 @@ def dispatch_smartdoc(args: Namespace) -> int:
         if action == "originality":
             langs = [str(x) for x in (getattr(args, "ocr_lang", None) or [])]
             ocr_policy = str(getattr(args, "ocr", "AUTO"))
+            if not args.against:
+                payload = {
+                    "status": "AUDIT_NOT_RUN",
+                    "label": "Local Similarity Audit",
+                    "reason": "EMPTY_CORPUS",
+                    "corpus": [],
+                }
+                _emit(payload, as_json=True)
+                return 1
             src = extract_file(Path(args.path), ocr=ocr_policy, languages=langs or None)
             source_coverage = _extraction_coverage(src, source_id=str(args.path))
             if not _is_readable(src):
@@ -235,6 +244,12 @@ def dispatch_smartdoc(args: Namespace) -> int:
                 overwrite=bool(args.overwrite),
             )
             rendered["source"] = _extraction_coverage(extracted, source_id=str(args.path))
+            if extracted.get("status") == "PARTIAL" and rendered.get("status") in {"READY", "PARTIAL"}:
+                warnings = [str(w) for w in (rendered.get("warnings") or [])]
+                if "SOURCE_EXTRACTION_PARTIAL" not in warnings:
+                    warnings.append("SOURCE_EXTRACTION_PARTIAL")
+                rendered["warnings"] = warnings
+                rendered["status"] = "PARTIAL"
             return _emit(rendered, as_json=True)
         if action == "profile":
             sub = args.profile_action

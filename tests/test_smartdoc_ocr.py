@@ -24,6 +24,8 @@ from lib.smartdoc.contract import (  # noqa: E402
     validate_contract,
 )
 from lib.smartdoc.extract import (  # noqa: E402
+    PdfRasterEnd,
+    PdfRasterFailed,
     native_text_sufficient,
     extract_file,
     extract_image,
@@ -422,7 +424,7 @@ class ExtractOcrTests(IsolatedHome):
 
         def fake_raster(_pdf, page, _dest, **_k):
             if page > 2:
-                raise FileNotFoundError("end")
+                raise PdfRasterEnd()
             n["page"] = page
             return self._png(f"s-{page}.png")
 
@@ -447,6 +449,7 @@ class ExtractOcrTests(IsolatedHome):
                             with patch("lib.smartdoc.extract.shutil.which", return_value="/usr/bin/pdftoppm"):
                                 result = extract_pdf(pdf, ocr="AUTO")
         self.assertEqual(result["pages"], 2)
+        self.assertEqual(result["pages_total"], 2)
         self.assertEqual([r["method"] for r in result["page_records"]], ["ocr", "ocr"])
         self.assertIn("\f", result["text"])
 
@@ -522,6 +525,80 @@ class ExtractOcrTests(IsolatedHome):
         self.assertEqual(result["pages_ready"], 1)
         self.assertEqual(result["pages_failed"], [2])
         self.assertIn("ok-page", result["text"])
+
+    def test_interior_raster_failure_without_pypdf_is_partial_not_silent(self):
+        pdf = self.tmp / "scan-gap.pdf"
+        pdf.write_bytes(b"%PDF-1.1\n%%EOF\n")
+
+        def fake_raster(_pdf, page, _dest, **_k):
+            if page == 2:
+                raise PdfRasterFailed("PDF_RASTER_FAILED")
+            if page > 3:
+                raise PdfRasterEnd()
+            return self._png(f"gap-{page}.png")
+
+        def fake_ocr(_path, **_k):
+            return {
+                "status": "READY",
+                "text": "scan-ok",
+                "confidence": 80.0,
+                "confidence_level": "MEDIUM",
+                "engine": "tesseract",
+                "language": "eng",
+                "warnings": [],
+                "tokens": [],
+                "sanitization": {"zero_width": 0, "unicode_tags": 0, "controls": 0},
+            }
+
+        with patch.dict("sys.modules", {"pypdf": None}):
+            with patch("lib.smartdoc.extract.raster_pdf_page", side_effect=fake_raster):
+                with patch("lib.smartdoc.ocr.ocr_image", side_effect=fake_ocr):
+                    with patch("lib.smartdoc.ocr.tesseract_bin", return_value="/usr/bin/tesseract"):
+                        with patch("lib.smartdoc.ocr.select_languages", return_value=["eng"]):
+                            with patch("lib.smartdoc.extract.shutil.which", return_value="/usr/bin/pdftoppm"):
+                                result = extract_pdf(pdf, ocr="AUTO")
+        self.assertEqual(result["status"], "PARTIAL")
+        self.assertEqual(result["pages"], 3)
+        self.assertEqual(result["pages_total"], 3)
+        self.assertEqual(result["pages_failed"], [2])
+        self.assertEqual([r["status"] for r in result["page_records"]], ["READY", "PDF_RASTER_FAILED", "READY"])
+        self.assertIn("PDF_RASTER_FAILED", result["page_records"][1]["warnings"])
+
+    def test_image_partial_reaches_page_record_and_smartbook(self):
+        path = self._png("partial.png")
+        ocr_result = {
+            "status": "PARTIAL",
+            "text": "partial ocr body",
+            "confidence": 70.0,
+            "confidence_level": "MEDIUM",
+            "engine": "tesseract",
+            "language": "eng",
+            "warnings": ["OCR_STDOUT_TRUNCATED"],
+            "tokens": [],
+            "sanitization": {"zero_width": 0, "unicode_tags": 0, "controls": 0},
+        }
+        with patch("lib.smartdoc.ocr.ocr_image", return_value=ocr_result):
+            with patch("lib.smartdoc.ocr.tesseract_bin", return_value="/usr/bin/tesseract"):
+                with patch("lib.smartdoc.ocr.select_languages", return_value=["eng"]):
+                    extracted = extract_image(path, ocr="AUTO")
+        self.assertEqual(extracted["status"], "PARTIAL")
+        self.assertEqual(extracted["page_records"][0]["status"], "PARTIAL")
+        self.assertIn("OCR_STDOUT_TRUNCATED", extracted["page_records"][0]["warnings"])
+        from lib.smartdoc.smartbook import ingest, retrieve
+
+        book = ingest(
+            self.tmp / "SmartDoc",
+            slug="partialimg",
+            source_name="partial.png",
+            text=extracted["text"],
+            page_records=extracted["page_records"],
+        )
+        self.assertEqual(book["manifest"]["source_status"], "PARTIAL")
+        hits = retrieve(self.tmp / "SmartDoc", "partialimg", "partial ocr body")
+        self.assertTrue(hits)
+        self.assertEqual(hits[0]["source_status"], "PARTIAL")
+        self.assertEqual(hits[0]["source_page"], 1)
+        self.assertIn("OCR_STDOUT_TRUNCATED", hits[0]["warnings"])
 
 
 class ContractExtractionTests(unittest.TestCase):

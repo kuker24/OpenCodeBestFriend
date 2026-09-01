@@ -203,6 +203,10 @@ class SmartDocManifestOriginalityTests(unittest.TestCase):
         self.assertGreater(report["score"], 0.5)
         self.assertEqual(contains_forbidden_product_language(json.dumps(report)), [])
         self.assertTrue(contains_forbidden_product_language("official Turnitin score 0%"))
+        empty = local_similarity_audit("the quick brown fox jumps over the lazy dog today", [])
+        self.assertEqual(empty["status"], "AUDIT_NOT_RUN")
+        self.assertEqual(empty["reason"], "EMPTY_CORPUS")
+        self.assertNotIn("score", empty)
 
 
 class SmartDocCliTests(IsolatedHome):

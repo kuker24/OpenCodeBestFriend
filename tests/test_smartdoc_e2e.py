@@ -118,6 +118,49 @@ class SmartDocGoldenE2E(IsolatedHome):
         self.assertGreaterEqual(result["pages"], 2)
         self.assertTrue(Path(result["pdf"]).is_file())
 
+    def test_render_partial_source_is_partial(self):
+        source = {
+            "status": "PARTIAL",
+            "format": "pdf",
+            "text": "partial source body with enough words for a handwriting render",
+            "pages": 2,
+            "pages_total": 3,
+            "pages_ready": 2,
+            "pages_failed": [3],
+            "warnings": ["PDF_RASTER_FAILED"],
+        }
+        rendered = {
+            "status": "READY",
+            "pdf": str(self.tmp / "out.pdf"),
+            "pages": 1,
+            "warnings": [],
+            "structural_qa": "PASS",
+            "post_pdf_raster_qa": "PASS",
+        }
+        buf = io.StringIO()
+        with patch("lib.smartdoc.commands.extract_file", return_value=source):
+            with patch("lib.smartdoc.commands.render_handwriting", return_value=rendered):
+                with patch("lib.smartdoc.commands.content_lock", side_effect=lambda c, _t: c):
+                    with patch("lib.smartdoc.commands.goal_lock", side_effect=lambda c: c):
+                        with redirect_stdout(buf):
+                            rc = cli_main(
+                                [
+                                    "smartdoc",
+                                    "render",
+                                    "source.pdf",
+                                    "--renderer",
+                                    "handwriting",
+                                    "--output",
+                                    str(self.tmp / "out.pdf"),
+                                    "--json",
+                                ]
+                            )
+        payload = json.loads(buf.getvalue())
+        self.assertEqual(rc, 0)
+        self.assertEqual(payload["status"], "PARTIAL")
+        self.assertIn("SOURCE_EXTRACTION_PARTIAL", payload["warnings"])
+        self.assertEqual(payload["source"]["status"], "PARTIAL")
+
     def test_originality_source_unreadable_does_not_report_zero(self):
         source = self.tmp / "scan.pdf"
         source.write_bytes(b"%PDF-1.1 scan\n%%EOF\n")
@@ -168,6 +211,18 @@ class SmartDocGoldenE2E(IsolatedHome):
         self.assertEqual(rc, 0)
         self.assertEqual(payload["status"], "PARTIAL")
         self.assertEqual(payload["coverage"]["source"]["pages_failed"], [2])
+
+    def test_originality_empty_corpus_does_not_report_zero(self):
+        source = self.tmp / "source.txt"
+        source.write_text("readable source document with enough words for comparison", encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cli_main(["smartdoc", "originality", str(source), "--json"])
+        payload = json.loads(buf.getvalue())
+        self.assertEqual(rc, 1)
+        self.assertEqual(payload["status"], "AUDIT_NOT_RUN")
+        self.assertEqual(payload["reason"], "EMPTY_CORPUS")
+        self.assertNotIn("score", payload)
 
     def test_cli_rejects_invalid_ocr_policy(self):
         with self.assertRaises(SystemExit) as raised:

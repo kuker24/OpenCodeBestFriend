@@ -32,6 +32,25 @@ class ExtractError(Exception):
     code = "EXTRACT"
 
 
+class PdfRasterError(Exception):
+    pass
+
+
+class PdfRasterEnd(PdfRasterError):
+    pass
+
+
+class PdfRasterFailed(PdfRasterError):
+    pass
+
+
+_RASTER_END_MARKERS = (
+    "wrong page range",
+    "after the last page",
+    "no pages in range",
+)
+
+
 def _status(fmt: str, text: str, *, extra: dict[str, Any] | None = None) -> dict[str, Any]:
     cleaned, record = sanitize_document_text(text)
     out: dict[str, Any] = {
@@ -107,24 +126,28 @@ def raster_pdf_page(
         str(prefix),
     ]
     try:
-        proc = subprocess.run(
-            cmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=timeout,
-            check=False,
-        )
+        with tempfile.TemporaryFile() as stderr:
+            proc = subprocess.run(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=stderr,
+                timeout=timeout,
+                check=False,
+            )
+            stderr.seek(0)
+            err = stderr.read(ocr_mod.MAX_TOOL_OUTPUT).decode("utf-8", errors="replace")
     except subprocess.TimeoutExpired as exc:
-        raise FileNotFoundError("PDF_RASTER_FAILED") from exc
+        raise PdfRasterFailed("PDF_RASTER_FAILED") from exc
     out = dest_dir / f"page-{page}.png"
-    if not out.is_file():
-        alt = dest_dir / f"page-{page}-1.png"
-        if alt.is_file():
-            return alt
-        if proc.returncode != 0:
-            raise FileNotFoundError("PDF_RASTER_FAILED")
-        raise FileNotFoundError("end")
-    return out
+    if out.is_file():
+        return out
+    alt = dest_dir / f"page-{page}-1.png"
+    if alt.is_file():
+        return alt
+    lowered = err.lower()
+    if any(marker in lowered for marker in _RASTER_END_MARKERS) or proc.returncode == 0:
+        raise PdfRasterEnd()
+    raise PdfRasterFailed("PDF_RASTER_FAILED")
 
 
 def extract_txt(path: Path) -> dict[str, Any]:
@@ -361,7 +384,7 @@ def extract_pdf(
                         ocr_langs,
                         timeout=max(0.01, min(ocr_mod.OCR_TIMEOUT_PAGE_SEC, remaining())),
                     )
-                except FileNotFoundError:
+                except (PdfRasterFailed, PdfRasterEnd, FileNotFoundError):
                     if remaining() <= 0:
                         skip_page(page_no, "OCR_JOB_TIMEOUT")
                         continue
@@ -419,6 +442,7 @@ def extract_pdf(
     if not shutil.which("pdftoppm"):
         return _not_configured("pdf", "PDF_RASTER_NOT_CONFIGURED")
 
+    hit_end = False
     with tempfile.TemporaryDirectory(prefix="ocbf-raster-") as raw:
         dest = Path(raw)
         for page_no in range(1, ocr_mod.MAX_OCR_PAGES + 1):
@@ -432,7 +456,32 @@ def extract_pdf(
                     dest,
                     timeout=max(0.01, min(RASTER_TIMEOUT_SEC, remaining())),
                 )
+            except PdfRasterEnd:
+                hit_end = True
+                break
+            except PdfRasterFailed:
+                records.append(
+                    _page_record(
+                        page_no,
+                        method="none",
+                        text="",
+                        status="PDF_RASTER_FAILED",
+                        warnings=["PDF_RASTER_FAILED"],
+                    )
+                )
+                failed.append(page_no)
+                continue
             except FileNotFoundError:
+                records.append(
+                    _page_record(
+                        page_no,
+                        method="none",
+                        text="",
+                        status="NOT_CONFIGURED",
+                        warnings=["PDF_RASTER_NOT_CONFIGURED"],
+                    )
+                )
+                failed.append(page_no)
                 break
             if remaining() <= 0:
                 skip_page(page_no, "OCR_JOB_TIMEOUT")
@@ -482,13 +531,15 @@ def extract_pdf(
                     dest,
                     timeout=max(0.01, min(RASTER_TIMEOUT_SEC, remaining())),
                 ).unlink(missing_ok=True)
-            except FileNotFoundError:
-                pass
+            except PdfRasterEnd:
+                hit_end = True
+            except (PdfRasterFailed, FileNotFoundError):
+                skip_page(next_page, "PAGE_LIMIT_REACHED")
             else:
                 skip_page(next_page, "PAGE_LIMIT_REACHED")
     if not records:
         return _not_configured("pdf", "OCR_PDF")
-    total = None if skipped and skipped[-1] == ocr_mod.MAX_OCR_PAGES + 1 else len(records)
+    total = len(records) if hit_end else None
     return _pdf_result(
         records,
         sanitizers,
@@ -646,6 +697,7 @@ def extract_image(
         engine=ocr_res.get("engine") or "tesseract",
         language=ocr_res.get("language"),
         warnings=ocr_res.get("warnings") or [],
+        status=str(ocr_res.get("status") or "READY"),
     )
     return {
         "status": ocr_res.get("status") or "READY",

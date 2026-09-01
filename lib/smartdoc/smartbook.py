@@ -281,6 +281,27 @@ def _retrieve_key(tokens: set[str], title: str, text: str) -> tuple[int, int, in
     return (score, body_hits, len(text))
 
 
+def _retrieve_hit(section: dict[str, Any], text: str, score: int) -> dict[str, Any]:
+    hit: dict[str, Any] = {
+        "id": section["id"],
+        "title": section["title"],
+        "text": text,
+        "score": score,
+    }
+    for key in (
+        "source_page",
+        "method",
+        "confidence",
+        "confidence_level",
+        "warnings",
+        "source_status",
+        "unavailable",
+    ):
+        if key in section:
+            hit[key] = section[key]
+    return hit
+
+
 def retrieve(root: Path, slug: str, query: str, *, limit: int = 5) -> list[dict[str, Any]]:
     data = inspect_book(root, slug)
     tokens = {t for t in re.findall(r"[a-z0-9]+", query.lower()) if len(t) > 2}
@@ -291,12 +312,12 @@ def retrieve(root: Path, slug: str, query: str, *, limit: int = 5) -> list[dict[
         text = path.read_text(encoding="utf-8")
         key = _retrieve_key(tokens, str(section.get("title") or ""), text)
         if key[0] > 0 or key[1] > 0:
-            scored.append((key, {"id": section["id"], "title": section["title"], "text": text, "score": key[0]}))
+            scored.append((key, _retrieve_hit(section, text, key[0])))
     scored.sort(key=lambda row: row[0], reverse=True)
     if not scored:
         for section in (data["index"].get("sections") or [])[:limit]:
             path = assert_under_root(root, book / section["path"])
-            scored.append(((0, 0, 0), {"id": section["id"], "title": section["title"], "text": path.read_text(encoding="utf-8"), "score": 0}))
+            scored.append(((0, 0, 0), _retrieve_hit(section, path.read_text(encoding="utf-8"), 0)))
     return [row for _, row in scored[:limit]]
 
 

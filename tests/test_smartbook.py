@@ -102,6 +102,17 @@ class SmartBookTests(IsolatedHome):
         self.assertTrue(sections[1]["unavailable"])
         provenance = inspect_book(root, "partial")["provenance"]
         self.assertEqual([p["source_page"] for p in provenance["pages"]], [6, 7, 8])
+        hits = retrieve(root, "partial", "source page eight")
+        self.assertTrue(hits)
+        self.assertEqual(hits[0]["source_page"], 8)
+        self.assertEqual(hits[0]["method"], "ocr")
+        self.assertEqual(hits[0]["confidence"], 88.0)
+        self.assertEqual(hits[0]["source_status"], "READY")
+        failed_hit = retrieve(root, "partial", "SOURCE_PAGE_UNAVAILABLE")
+        self.assertTrue(failed_hit)
+        self.assertEqual(failed_hit[0]["source_page"], 7)
+        self.assertEqual(failed_hit[0]["source_status"], "OCR_TIMEOUT")
+        self.assertTrue(failed_hit[0]["unavailable"])
 
     def test_source_digest_preserves_page_boundaries(self):
         root = self.tmp / "SmartDoc"
