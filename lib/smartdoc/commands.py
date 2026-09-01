@@ -5,7 +5,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
-from .capabilities import capability_matrix
+from .capabilities import capability_matrix, status_payload
 from .doctor import run_doctor
 from .extract import ExtractError, extract_file
 from .originality import local_similarity_audit
@@ -28,8 +28,12 @@ def add_smartdoc_cli(parser: ArgumentParser) -> None:
     _flags(actions.add_parser("doctor", help="smoke-test SmartDoc runtime"))
     pre = _flags(actions.add_parser("preflight", help="extract metadata from a file"))
     pre.add_argument("path")
+    pre.add_argument("--ocr", default="AUTO")
+    pre.add_argument("--ocr-lang", action="append", default=[])
     ext = _flags(actions.add_parser("extract", help="extract text from a file"))
     ext.add_argument("path")
+    ext.add_argument("--ocr", default="AUTO")
+    ext.add_argument("--ocr-lang", action="append", default=[])
     orig = _flags(actions.add_parser("originality", help="Local Similarity Audit against files"))
     orig.add_argument("path")
     orig.add_argument("--against", action="append", default=[])
@@ -67,6 +71,8 @@ def add_smartbook_cli(parser: ArgumentParser) -> None:
     ing = _flags(actions.add_parser("ingest"))
     ing.add_argument("path")
     ing.add_argument("--slug", required=True)
+    ing.add_argument("--ocr", default="AUTO")
+    ing.add_argument("--ocr-lang", action="append", default=[])
     ret = _flags(actions.add_parser("retrieve"))
     ret.add_argument("slug")
     ret.add_argument("query")
@@ -114,13 +120,14 @@ def dispatch_smartdoc(args: Namespace) -> int:
     action = args.smartdoc_action
     try:
         if action == "status":
-            return _emit({"root": str(root), "capabilities": capability_matrix()}, as_json=as_json)
+            return _emit(status_payload(root=str(root)), as_json=as_json)
         if action == "doctor":
             payload = run_doctor(root=root)
             _emit(payload, as_json=True)
             return 0 if payload.get("ok") else 1
         if action in {"preflight", "extract"}:
-            result = extract_file(Path(args.path))
+            langs = [str(x) for x in (getattr(args, "ocr_lang", None) or [])]
+            result = extract_file(Path(args.path), ocr=str(getattr(args, "ocr", "AUTO")), languages=langs or None)
             if action == "preflight":
                 result = {
                     "status": result.get("status"),
@@ -128,6 +135,7 @@ def dispatch_smartdoc(args: Namespace) -> int:
                     "capability": result.get("capability"),
                     "pages": result.get("pages"),
                     "has_text": bool(result.get("text")),
+                    "methods": [r.get("method") for r in (result.get("page_records") or [])],
                 }
             return _emit(result, as_json=True)
         if action == "originality":
@@ -181,8 +189,9 @@ def dispatch_smartbook(args: Namespace) -> int:
             return _emit(inspect_book(root, args.slug), as_json=True)
         if action == "ingest":
             path = Path(args.path)
-            extracted = extract_file(path)
-            if extracted.get("status") != "READY":
+            langs = [str(x) for x in (getattr(args, "ocr_lang", None) or [])]
+            extracted = extract_file(path, ocr=str(getattr(args, "ocr", "AUTO")), languages=langs or None)
+            if extracted.get("status") not in {"READY", "PARTIAL"}:
                 return _emit(extracted, as_json=True)
             return _emit(
                 ingest(root, slug=args.slug, source_name=path.name, text=extracted.get("text") or ""),

@@ -9,6 +9,7 @@ from typing import Any
 
 from .capabilities import capability_matrix
 from .extract import extract_file
+from .ocr import list_languages, tesseract_bin
 from .paths import resolve_smartdoc_root
 from .profiles import create_profile, delete_profile, load_profile
 from .render import assemble_pdf, render_page_images
@@ -50,7 +51,7 @@ def run_doctor(*, root: Path | None = None) -> dict[str, Any]:
             loaded = load_profile(probe, "doctor-probe")
             delete_profile(probe, "doctor-probe")
             gone = not (probe / "profiles" / "doctor-probe.json").is_file()
-            ok = created.get("name") == "doctor-probe" and loaded.get("name") == "doctor-probe" and gone
+            ok = created.get("profileName") == "doctor-probe" and loaded.get("profileName") == "doctor-probe" and gone
             checks.append(_check("profile_roundtrip", "PASS" if ok else "FAIL"))
         except Exception as exc:
             checks.append(_check("profile_roundtrip", "FAIL", detail=str(exc)))
@@ -80,13 +81,68 @@ def run_doctor(*, root: Path | None = None) -> dict[str, Any]:
             checks.append(_check("pillow_render", status, detail=str(exc)))
             checks.append(_check("pdf_assembly", status, detail=str(exc)))
 
+        raster_cap = matrix["POST_PDF_RASTER_QA"]
         checks.append(
             _check(
                 "pdftoppm_post_raster",
-                matrix["POST_PDF_RASTER_QA"],
+                "PASS" if raster_cap == "READY" else raster_cap,
                 dependency="pdftoppm",
             )
         )
+
+        tess = tesseract_bin()
+        if tess:
+            checks.append(_check("tesseract", "PASS", dependency="tesseract", path=tess))
+            langs = list_languages(force=True)
+            if langs:
+                checks.append(_check("ocr_languages", "PASS", languages=langs))
+            else:
+                checks.append(_check("ocr_languages", "NOT_CONFIGURED", reason="OCR_LANGUAGE_NOT_CONFIGURED"))
+        else:
+            checks.append(_check("tesseract", "NOT_CONFIGURED", dependency="tesseract"))
+            checks.append(_check("ocr_languages", "NOT_CONFIGURED"))
+
+        if matrix.get("OCR_IMAGE") == "READY":
+            try:
+                from PIL import Image, ImageDraw  # type: ignore
+
+                img_path = probe / "ocr-probe.png"
+                img = Image.new("RGB", (80, 24), "white")
+                ImageDraw.Draw(img).text((2, 2), "Hi", fill="black")
+                img.save(img_path)
+                extracted = extract_file(img_path, ocr="AUTO")
+                ok = extracted.get("status") in {"READY", "PARTIAL"} and extracted.get("page_records")
+                checks.append(_check("ocr_image", "PASS" if ok else "FAIL"))
+            except Exception as exc:
+                checks.append(_check("ocr_image", "FAIL", detail=str(exc)))
+        else:
+            checks.append(_check("ocr_image", "NOT_CONFIGURED"))
+
+        if matrix.get("OCR_PDF") == "READY":
+            try:
+                from PIL import Image  # type: ignore
+
+                pdf_path = probe / "ocr-probe.pdf"
+                Image.new("RGB", (80, 24), "white").save(pdf_path, "PDF")
+                extracted = extract_file(pdf_path, ocr="AUTO")
+                status = extracted.get("status")
+                if status in {"READY", "PARTIAL"}:
+                    checks.append(_check("ocr_pdf", "PASS"))
+                elif status == "NOT_CONFIGURED":
+                    checks.append(_check("ocr_pdf", "NOT_CONFIGURED", capability=extracted.get("capability")))
+                else:
+                    checks.append(_check("ocr_pdf", "FAIL", detail=str(status)))
+            except Exception as exc:
+                checks.append(_check("ocr_pdf", "FAIL", detail=str(exc)))
+        else:
+            checks.append(_check("ocr_pdf", "NOT_CONFIGURED"))
+
+        if matrix.get("PDF_READ") == "READY" and matrix.get("OCR_PDF") == "READY":
+            checks.append(_check("mixed_document", "PASS", detail="hybrid native/OCR path available"))
+        elif matrix.get("OCR_PDF") == "READY" or matrix.get("PDF_READ") == "READY":
+            checks.append(_check("mixed_document", "NOT_CONFIGURED", partial=True))
+        else:
+            checks.append(_check("mixed_document", "NOT_CONFIGURED"))
 
         try:
             book = ingest(probe, slug="doctor-book", source_name="probe.txt", text="# Probe\ndoctor fact.\n")

@@ -31,7 +31,17 @@ MODES = frozenset(
 )
 FIDELITY = frozenset({"STRICT", "BALANCED", "ADAPTIVE"})
 CONFIDENCE = frozenset({"HIGH", "MEDIUM", "LOW"})
-LOCKED_GOAL_FIELDS = ("intent", "goal", "audience", "language", "source_policy", "fidelity", "output")
+LOCKED_GOAL_FIELDS = (
+    "intent",
+    "goal",
+    "audience",
+    "language",
+    "source_policy",
+    "fidelity",
+    "output",
+    "extraction",
+)
+OCR_POLICIES = frozenset({"AUTO", "NEVER", "ALWAYS"})
 
 
 class ContractError(Exception):
@@ -53,6 +63,7 @@ def empty_contract() -> dict[str, Any]:
         "originality": {"mode": "OFF", "corpus": []},
         "verification": {},
         "confidence": None,
+        "extraction": {"ocr": "AUTO", "languages": []},
         "locks": {"goal": False, "content": False},
         "content_sha256": None,
     }
@@ -80,6 +91,13 @@ def normalize_contract(data: dict[str, Any] | None) -> dict[str, Any]:
         "smartbook": bool(policy.get("smartbook", False)),
         "web": bool(policy.get("web", False)),
     }
+    extraction = _as_dict(out.get("extraction"))
+    ocr = str(extraction.get("ocr") or "AUTO").upper()
+    if ocr not in OCR_POLICIES:
+        ocr = "AUTO"
+    raw_langs = extraction.get("languages")
+    lang_list = raw_langs if isinstance(raw_langs, list) else []
+    out["extraction"] = {"ocr": ocr, "languages": [str(x) for x in lang_list]}
     orig = _as_dict(out.get("originality"))
     mode = str(orig.get("mode") or "OFF").upper()
     if mode not in {"OFF", "LOCAL_AUDIT", "REPORT_ASSISTED"}:
@@ -117,6 +135,12 @@ def validate_contract(data: dict[str, Any] | None) -> list[str]:
         errors.append("fidelity")
     if c.get("confidence") is not None and c.get("confidence") not in CONFIDENCE:
         errors.append("confidence")
+    incoming = data if isinstance(data, dict) else {}
+    raw_ext = incoming.get("extraction")
+    if isinstance(raw_ext, dict):
+        raw_ocr = str(raw_ext.get("ocr") or "").upper()
+        if raw_ocr and raw_ocr not in OCR_POLICIES:
+            errors.append("extraction:ocr")
     return errors
 
 

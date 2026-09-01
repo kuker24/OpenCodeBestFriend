@@ -235,6 +235,10 @@ class SmartDocCliTests(IsolatedHome):
         if pypdf["status"] == "NOT_CONFIGURED":
             self.assertEqual(pypdf.get("dependency"), "pypdf")
             self.assertFalse(pypdf.get("partial"))
+        profile = next(c for c in payload["checks"] if c["name"] == "profile_roundtrip")
+        self.assertEqual(profile["status"], "PASS")
+        pdftoppm = next(c for c in payload["checks"] if c["name"] == "pdftoppm_post_raster")
+        self.assertIn(pdftoppm["status"], {"PASS", "NOT_CONFIGURED"})
 
     def test_status_matrix(self):
         os.environ["OPENCODE_SMARTDOC"] = str(self.tmp / "SmartDoc")
@@ -243,7 +247,10 @@ class SmartDocCliTests(IsolatedHome):
         matrix = capability_matrix()
         self.assertEqual(matrix["TXT_WRITE"], "READY")
         self.assertEqual(matrix["DOCX_READ"], "READY")
-        self.assertEqual(matrix["OCR"], "NOT_CONFIGURED")
+        self.assertIn(matrix["OCR"], {"READY", "NOT_CONFIGURED"})
+        self.assertIn(matrix["OCR_ENGINE"], {"READY", "NOT_CONFIGURED"})
+        self.assertIn(matrix["OCR_IMAGE"], {"READY", "NOT_CONFIGURED"})
+        self.assertIn(matrix["OCR_PDF"], {"READY", "NOT_CONFIGURED"})
         self.assertIn(matrix["PDF_READ"], {"READY", "NOT_CONFIGURED"})
         self.assertIn(matrix["HANDWRITING"], {"READY", "NOT_CONFIGURED"})
         self.assertIn(matrix["POST_PDF_RASTER_QA"], {"READY", "NOT_CONFIGURED"})

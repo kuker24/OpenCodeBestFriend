@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.6.0 — 2026-09-01
+
+SmartDoc mixed-document OCR. No new skills.
+
+- Hybrid extract: native PDF text when sufficient, Tesseract OCR AUTO fallback per page. Combined PDF text joins pages with form-feed.
+- Image OCR with EXIF-aware preprocess, confidence bands, and `OCR_CRITICAL_UNCERTAINTY` when numbers/units/formulas are weak. Never invent unread text.
+- Optional stack: `pypdf`, Pillow, `pdftoppm`, `tesseract` (`eng`/`ind`). Missing tools stay `NOT_CONFIGURED`.
+- Doctor checks tesseract, languages, OCR_IMAGE, OCR_PDF, mixed-document path, and profile roundtrip.
+- Unreadable PDFs fall through to OCR instead of crashing when pypdf cannot parse.
+
 ## 1.5.1 — 2026-09-01
 
 SmartDoc stabilization from real-document dogfood. No new skills.

@@ -47,9 +47,11 @@ class SmartDocGoldenE2E(IsolatedHome):
         pdf = self.tmp / "tugas.pdf"
         pdf.write_bytes(b"%PDF-1.1\n%\xe2\xe3\xcf\xd3\ntrailer\n%%EOF\n")
         with patch.dict("sys.modules", {"pypdf": None}):
-            result = extract_file(pdf)
+            with patch("lib.smartdoc.ocr.tesseract_bin", return_value=None):
+                with patch("lib.smartdoc.extract.shutil.which", return_value=None):
+                    result = extract_file(pdf)
         self.assertEqual(result["status"], "NOT_CONFIGURED")
-        self.assertEqual(result["capability"], "PDF_READ")
+        self.assertIn(result["capability"], {"PDF_READ", "OCR_ENGINE", "OCR_PDF", "PDF_RASTER_NOT_CONFIGURED"})
         self.assertEqual(result.get("text") or "", "")
 
     def test_b_docx_tables_and_bullets(self):
@@ -67,10 +69,10 @@ class SmartDocGoldenE2E(IsolatedHome):
     def test_c_scan_does_not_invent_text(self):
         pdf = self.tmp / "scan.pdf"
         pdf.write_bytes(b"%PDF-1.1 scan\n%%EOF\n")
-        result = extract_file(pdf)
-        if result["status"] == "NOT_CONFIGURED":
-            self.assertEqual(result.get("text") or "", "")
-            return
+        with patch("lib.smartdoc.ocr.tesseract_bin", return_value=None):
+            with patch("lib.smartdoc.extract.shutil.which", return_value=None):
+                result = extract_file(pdf)
+        self.assertIn(result["status"], {"NOT_CONFIGURED", "READY"})
         self.assertEqual(result.get("text") or "", "")
 
     def test_d_headingless_retrieve_middle(self):
@@ -114,6 +116,58 @@ class SmartDocGoldenE2E(IsolatedHome):
             return
         self.assertEqual(result["status"], "READY")
         self.assertGreaterEqual(result["pages"], 2)
+
+    def test_mixed_pdf_page_records_and_form_feed(self):
+        pdf = self.tmp / "mixed.pdf"
+        pdf.write_bytes(b"%PDF-1.1\n%%EOF\n")
+        strong = "N" * 40
+
+        class Page:
+            def __init__(self, text):
+                self._text = text
+
+            def extract_text(self):
+                return self._text
+
+        class Reader:
+            pages = [Page(strong), Page("")]
+
+        fake = type(sys)("pypdf")
+        fake.PdfReader = lambda *_a, **_k: Reader()
+        raster = self.tmp / "r.png"
+        try:
+            from PIL import Image  # type: ignore
+
+            Image.new("RGB", (8, 8), "white").save(raster)
+        except Exception:
+            self.skipTest("pillow")
+
+        def fake_ocr(_path, **_k):
+            return {
+                "status": "READY",
+                "text": "ocr-body",
+                "confidence": 90.0,
+                "confidence_level": "HIGH",
+                "engine": "tesseract",
+                "language": "eng",
+                "warnings": [],
+                "tokens": [],
+                "sanitization": {"zero_width": 0, "unicode_tags": 0, "controls": 0},
+            }
+
+        with patch.dict("sys.modules", {"pypdf": fake}):
+            with patch("lib.smartdoc.extract.raster_pdf_page", return_value=raster):
+                with patch("lib.smartdoc.ocr.ocr_image", side_effect=fake_ocr):
+                    with patch("lib.smartdoc.ocr.tesseract_bin", return_value="/usr/bin/tesseract"):
+                        with patch("lib.smartdoc.ocr.select_languages", return_value=["eng"]):
+                            with patch("lib.smartdoc.extract.shutil.which", return_value="/usr/bin/pdftoppm"):
+                                result = extract_file(pdf)
+        self.assertEqual(result["pages"], 2)
+        self.assertIsInstance(result["pages"], int)
+        self.assertEqual([r["method"] for r in result["page_records"]], ["native_text", "ocr"])
+        self.assertEqual(result["text"], strong + "\f" + "ocr-body")
+        book = ingest(self.tmp / "SmartDoc", slug="mixed", source_name="mixed.pdf", text=result["text"])
+        self.assertEqual(book["manifest"]["section_count"], 2)
 
     def test_hostile_zip_fails_closed(self):
         path = self.tmp / "evil.docx"

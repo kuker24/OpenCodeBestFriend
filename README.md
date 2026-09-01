@@ -153,7 +153,7 @@ opencode-bf smartdoc profile create campus --field Nama=Budi --field NIM=12345
 opencode-bf smartbook ingest ./module.md --slug jaringan
 ```
 
-Local Similarity Audit compares against a named corpus. It is not Turnitin. Optional `pypdf`, Pillow, and `pdftoppm` report `NOT_CONFIGURED` when absent.
+Local Similarity Audit compares against a named corpus. It is not Turnitin. Optional `pypdf`, Pillow, `pdftoppm`, and Tesseract (`eng`/`ind`) report `NOT_CONFIGURED` when absent. PDF extract uses native text when sufficient and OCR AUTO per page otherwise.
 
 ```bash
 opencode-bf design import ~/Downloads/aura-export --provider aura
