@@ -18,6 +18,7 @@ from .sanitize import looks_like_instruction_injection, sanitize_document_text
 
 SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 HEADING_RE = re.compile(r"^(#{1,3})\s+(.+)$", re.M)
+CHUNK_CHARS = 1800
 
 
 class SmartBookError(Exception):
@@ -38,20 +39,47 @@ def list_books(root: Path) -> list[str]:
     return sorted(p.name for p in d.iterdir() if p.is_dir() and (p / "manifest.json").is_file())
 
 
-def _split_sections(text: str) -> list[dict[str, str]]:
-    matches = list(HEADING_RE.finditer(text))
-    if not matches:
+def _section(i: int, title: str, raw: str) -> dict[str, str]:
+    body, _ = sanitize_document_text(raw.strip())
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") or "section"
+    return {"id": f"{i:03d}-{slug[:40]}", "title": title, "text": body}
+
+
+def _chunk_paragraphs(text: str) -> list[dict[str, str]]:
+    paras = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    if not paras:
         body, _ = sanitize_document_text(text.strip())
         return [{"id": "001-body", "title": "body", "text": body}]
-    sections: list[dict[str, str]] = []
-    for i, match in enumerate(matches):
-        start = match.end()
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        title = match.group(2).strip()
-        body, _ = sanitize_document_text(text[start:end].strip())
-        slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") or "section"
-        sections.append({"id": f"{i + 1:03d}-{slug[:40]}", "title": title, "text": body})
-    return sections
+    chunks: list[str] = []
+    buf: list[str] = []
+    size = 0
+    for para in paras:
+        if buf and size + len(para) > CHUNK_CHARS:
+            chunks.append("\n\n".join(buf))
+            buf = [para]
+            size = len(para)
+        else:
+            buf.append(para)
+            size += len(para) + 2
+    if buf:
+        chunks.append("\n\n".join(buf))
+    return [_section(i, f"chunk {i}", chunk) for i, chunk in enumerate(chunks, start=1)]
+
+
+def _split_sections(text: str) -> list[dict[str, str]]:
+    matches = list(HEADING_RE.finditer(text))
+    if matches:
+        sections: list[dict[str, str]] = []
+        for i, match in enumerate(matches):
+            start = match.end()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+            title = match.group(2).strip()
+            sections.append(_section(i + 1, title, text[start:end]))
+        return sections
+    pages = [p.strip() for p in text.split("\f") if p.strip()]
+    if len(pages) > 1:
+        return [_section(i, f"page {i}", page) for i, page in enumerate(pages, start=1)]
+    return _chunk_paragraphs(text)
 
 
 def ingest(
@@ -72,7 +100,7 @@ def ingest(
         existing = json.loads(manifest_path.read_text(encoding="utf-8"))
         if existing.get("source_sha256") == digest:
             return {"status": "unchanged", "slug": slug, "manifest": existing}
-    sections = _split_sections(cleaned)
+    sections = _split_sections(text)
     ensure_dir(book)
     sec_dir = ensure_dir(book / "sections")
     index: list[dict[str, Any]] = []
@@ -129,23 +157,33 @@ def inspect_book(root: Path, slug: str) -> dict[str, Any]:
     }
 
 
+def _retrieve_key(tokens: set[str], title: str, text: str) -> tuple[int, int, int]:
+    title_l = (title or "").lower()
+    body_l = (text or "").lower()
+    title_hits = sum(1 for t in tokens if t in title_l)
+    body_hits = sum(1 for t in tokens if t in body_l)
+    score = body_hits * 3 + title_hits
+    if title_l.rstrip().endswith("?"):
+        score -= 2
+    return (score, body_hits, len(text))
+
+
 def retrieve(root: Path, slug: str, query: str, *, limit: int = 5) -> list[dict[str, Any]]:
     data = inspect_book(root, slug)
     tokens = {t for t in re.findall(r"[a-z0-9]+", query.lower()) if len(t) > 2}
-    scored: list[tuple[int, dict[str, Any]]] = []
+    scored: list[tuple[tuple[int, int, int], dict[str, Any]]] = []
     book = _book_dir(root, slug)
     for section in data["index"].get("sections") or []:
         path = assert_under_root(root, book / section["path"])
         text = path.read_text(encoding="utf-8")
-        hay = f"{section.get('title') or ''} {text}".lower()
-        score = sum(1 for t in tokens if t in hay)
-        if score:
-            scored.append((score, {"id": section["id"], "title": section["title"], "text": text, "score": score}))
+        key = _retrieve_key(tokens, str(section.get("title") or ""), text)
+        if key[0] > 0 or key[1] > 0:
+            scored.append((key, {"id": section["id"], "title": section["title"], "text": text, "score": key[0]}))
     scored.sort(key=lambda row: row[0], reverse=True)
     if not scored:
         for section in (data["index"].get("sections") or [])[:limit]:
             path = assert_under_root(root, book / section["path"])
-            scored.append((0, {"id": section["id"], "title": section["title"], "text": path.read_text(encoding="utf-8"), "score": 0}))
+            scored.append(((0, 0, 0), {"id": section["id"], "title": section["title"], "text": path.read_text(encoding="utf-8"), "score": 0}))
     return [row for _, row in scored[:limit]]
 
 

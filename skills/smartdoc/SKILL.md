@@ -50,7 +50,7 @@ Load [references/qa.md](references/qa.md) after content exists. Load [references
 
 ## Run
 
-1. `opencode-bf smartdoc status --json` for the capability matrix and resolved root (`CLI --root` → `OPENCODE_SMARTDOC` → `~/SmartDoc`).
+1. `opencode-bf smartdoc status --json` for the capability matrix and resolved root (`CLI --root` → `OPENCODE_SMARTDOC` → `~/SmartDoc`). Smoke-test with `opencode-bf smartdoc doctor --json`.
 2. Preflight each input with `opencode-bf smartdoc preflight PATH`. Classify roles: instruction, source, draft, template, style_reference, data, audit_report, output_reference.
 3. Fill a contract. Validate with schema in `references/contract.md`. Compute confidence from present fields. LOW → one frontier question. HIGH → no redundant questions.
 4. GOAL_LOCK. Do not silently change intent, sources, language, or output.

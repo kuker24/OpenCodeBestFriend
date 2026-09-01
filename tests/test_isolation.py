@@ -15,7 +15,7 @@ ACTIVE = (
     "claude mcp",
 )
 SKIP_NAMES = {"THIRD_PARTY_NOTICES.md", "provenance.json", "sources.json", "README.md", "CHANGELOG.md", "security.md"}
-SKIP_PARTS = {"docs", "licenses", ".git", "tests"}
+SKIP_PARTS = {"docs", "licenses", ".git", "tests", ".scratch"}
 SKIP_FILES = {("lib", "install.py"), ("lib", "doctor.py")}
 
 
@@ -46,7 +46,7 @@ class IsolationTests(unittest.TestCase):
     def test_no_personal_path(self):
         hits = []
         for path in ROOT.rglob("*"):
-            if not path.is_file() or ".git" in path.parts:
+            if not path.is_file() or any(p in {".git", ".scratch"} for p in path.parts):
                 continue
             if path.suffix not in {".md", ".json", ".jsonc", ".mjs", ".js", ".py", ".sh", ".yml", ""}:
                 continue

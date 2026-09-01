@@ -33,6 +33,35 @@ class SmartBookTests(IsolatedHome):
         hits = retrieve(root, "notes", "vlan")
         self.assertTrue(any("UNTRUSTED_DOCUMENT_DATA" in h["text"] for h in hits))
 
+    def test_headingless_book_splits_on_form_feed(self):
+        root = self.tmp / "SmartDoc"
+        pages = [f"Halaman {i} bahas bus data dan arsitektur cpu." for i in range(1, 6)]
+        pages[2] = "Bagian tengah buku: arsitektur mikroprosesor dan bus data internal."
+        text = "\f".join(pages)
+        result = ingest(root, slug="mikro", source_name="buku.txt", text=text)
+        self.assertGreaterEqual(result["manifest"]["section_count"], 5)
+        hits = retrieve(root, "mikro", "arsitektur mikroprosesor bus data")
+        self.assertTrue(hits)
+        self.assertIn("tengah", hits[0]["text"])
+
+    def test_retrieve_ranks_definition_before_question(self):
+        root = self.tmp / "SmartDoc"
+        text = (
+            "# Apa itu subnetting?\n\n"
+            "# Subnetting\n"
+            "Subnetting adalah teknik membagi jaringan IP. "
+            "Cara menghitung host: 2 pangkat (32 minus prefix) minus 2.\n\n"
+            "# Contoh perhitungan subnet\n"
+            "Contoh menghitungnya: prefix /26 punya 64 alamat dan 62 host.\n"
+        )
+        ingest(root, slug="jaringan", source_name="modul.md", text=text)
+        hits = retrieve(root, "jaringan", "Jelaskan subnetting dan berikan cara menghitungnya.")
+        titles = [h["title"] for h in hits]
+        self.assertGreaterEqual(len(titles), 2)
+        self.assertEqual(titles[0], "Subnetting")
+        self.assertIn(titles[1], {"Contoh perhitungan subnet", "Apa itu subnetting?"})
+        self.assertNotEqual(titles[0], "Apa itu subnetting?")
+
 
 if __name__ == "__main__":
     unittest.main()

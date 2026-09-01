@@ -6,6 +6,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from .capabilities import capability_matrix
+from .doctor import run_doctor
 from .extract import ExtractError, extract_file
 from .originality import local_similarity_audit
 from .paths import PathEscape, resolve_smartdoc_root
@@ -24,6 +25,7 @@ def add_smartdoc_cli(parser: ArgumentParser) -> None:
     parser.description = "SmartDoc profiles, extraction, and status"
     actions = parser.add_subparsers(dest="smartdoc_action", required=True)
     _flags(actions.add_parser("status", help="capability matrix and resolved root"))
+    _flags(actions.add_parser("doctor", help="smoke-test SmartDoc runtime"))
     pre = _flags(actions.add_parser("preflight", help="extract metadata from a file"))
     pre.add_argument("path")
     ext = _flags(actions.add_parser("extract", help="extract text from a file"))
@@ -113,6 +115,10 @@ def dispatch_smartdoc(args: Namespace) -> int:
     try:
         if action == "status":
             return _emit({"root": str(root), "capabilities": capability_matrix()}, as_json=as_json)
+        if action == "doctor":
+            payload = run_doctor(root=root)
+            _emit(payload, as_json=True)
+            return 0 if payload.get("ok") else 1
         if action in {"preflight", "extract"}:
             result = extract_file(Path(args.path))
             if action == "preflight":

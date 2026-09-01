@@ -148,6 +148,7 @@ Offline user-data bank at `OPENCODE_DESIGN_V2` or `~/DesignV2` (`GROK_DESIGN_V2`
 
 ```bash
 opencode-bf smartdoc status --json
+opencode-bf smartdoc doctor --json
 opencode-bf smartdoc profile create campus --field Nama=Budi --field NIM=12345
 opencode-bf smartbook ingest ./module.md --slug jaringan
 ```

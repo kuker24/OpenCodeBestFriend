@@ -5,11 +5,11 @@
 `doctor --deep` = is live runtime proven?
 `doctor --strict` = treat DEGRADED/WARN as failure.
 
-A successful 1.5.0 install should report approximately:
+A successful 1.5.1 install should report approximately:
 
 ```text
 PASS INSTALLED_PRODUCT opencode-bestfriend
-PASS INSTALLED_VERSION 1.5.0
+PASS INSTALLED_VERSION 1.5.1
 PASS SOURCE_REPOSITORY https://github.com/kuker24/OpenCodeBestFriend
 
 PASS OpenCode

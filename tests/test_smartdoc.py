@@ -206,6 +206,36 @@ class SmartDocManifestOriginalityTests(unittest.TestCase):
 
 
 class SmartDocCliTests(IsolatedHome):
+    def test_doctor_json_smoke(self):
+        os.environ["OPENCODE_SMARTDOC"] = str(self.tmp / "SmartDoc")
+        import io
+        from contextlib import redirect_stdout
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cli_main(["smartdoc", "doctor", "--json"])
+        payload = json.loads(buf.getvalue())
+        names = [c["name"] for c in payload["checks"]]
+        for required in (
+            "root_writable",
+            "profile_roundtrip",
+            "docx_extraction",
+            "pypdf_import",
+            "pillow_render",
+            "pdf_assembly",
+            "pdftoppm_post_raster",
+            "smartbook_read_write",
+            "temp_cleanup",
+        ):
+            self.assertIn(required, names)
+        self.assertIn(rc, {0, 1})
+        self.assertTrue(payload["ok"] or any(c["status"] == "FAIL" for c in payload["checks"]))
+        pypdf = next(c for c in payload["checks"] if c["name"] == "pypdf_import")
+        self.assertIn(pypdf["status"], {"PASS", "NOT_CONFIGURED"})
+        if pypdf["status"] == "NOT_CONFIGURED":
+            self.assertEqual(pypdf.get("dependency"), "pypdf")
+            self.assertFalse(pypdf.get("partial"))
+
     def test_status_matrix(self):
         os.environ["OPENCODE_SMARTDOC"] = str(self.tmp / "SmartDoc")
         rc = cli_main(["smartdoc", "status", "--json"])

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.1 — 2026-09-01
+
+SmartDoc stabilization from real-document dogfood. No new skills.
+
+- Add `opencode-bf smartdoc doctor --json` smoke tests (root, profile, DOCX, pypdf, Pillow, PDF assembly, pdftoppm, SmartBook, temp cleanup).
+- Split heading-less SmartBooks on form-feed pages or paragraph windows so retrieve can hit the middle of a book.
+- Weight retrieve scores toward section bodies; question-only titles lose.
+- Golden E2E coverage for the six dogfood attack points. PDF_READ remains optional `NOT_CONFIGURED`.
+
 ## 1.5.0 — 2026-09-01
 
 SmartDoc and SmartBook.
