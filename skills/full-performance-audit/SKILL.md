@@ -2,6 +2,7 @@
 name: full-performance-audit
 description: Audit application performance including latency, throughput, memory, and bundle size. Use when profiling applications, identifying bottlenecks, or optimizing performance.
 compatibility: opencode
+license: MIT
 ---
 
 # Full Performance Audit

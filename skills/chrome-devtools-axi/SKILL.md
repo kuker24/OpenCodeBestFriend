@@ -2,6 +2,7 @@
 name: chrome-devtools-axi
 description: Control a Chromium session through chrome-devtools-axi after opencode-chromium-cdp start. Use when an observed browser issue needs diagnostics (click, form, console, network). Skip if curl or web_fetch is enough. Not for exploratory multi-role QA (use browser-act).
 compatibility: opencode
+license: MIT
 ---
 
 ## OpenCode browser contract

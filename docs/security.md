@@ -16,7 +16,8 @@
 - Design V2 import rejects common API tokens, private-key headers, credential-bearing database URLs, unsafe links, traversal, and oversized input; normalized assets replace rather than merge prior destinations.
 - Design V2 doctor checks catalog JSONL and SQLite hashes against the canonical lock.
 - Model/provider names are opaque; do not print tokens or gateway maps
-- `vendor/license-audit.json` lists every skill license **as evidenced**. `not-stated-in-frontmatter` is not a grant. Nine snapshot skills remain unknown.
+- `vendor/license-audit.json` lists every skill license **as evidenced**. Snapshot skills inherit GrokBestFriend MIT (`vendor/licenses/GROKBESTFRIEND-MIT.txt`). Design-bank media remains not-cleared.
+- GitHub rulesets: `main` and `v*` tags cannot be force-pushed or deleted. Signed commits/tags are not required until a maintainer signing key exists. Releases remain mutable; no GitHub attestation wired.
 
 CI: unittest matrix (3.10–3.13), real OCR integration, shellcheck, gitleaks, semgrep (`.semgrep.yml`). Actions are pinned to commit SHAs. OSV Scanner is `NOT_CONFIGURED` — this tree has no language lockfile. Release tarball/SBOM via `scripts/make-release-artifacts.sh` (no GitHub attestation wired).
 

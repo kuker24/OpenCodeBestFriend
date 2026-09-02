@@ -102,73 +102,73 @@
       "component": "browser-act",
       "path": "skills/browser-act",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot; CLI is a separate host package",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "chrome-devtools-axi",
       "path": "skills/chrome-devtools-axi",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "emil-design-eng",
       "path": "skills/emil-design-eng",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "found-this-design",
       "path": "skills/found-this-design",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "full-audit-keamanan",
       "path": "skills/full-audit-keamanan",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "full-performance-audit",
       "path": "skills/full-performance-audit",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "gh-axi",
       "path": "skills/gh-axi",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot; gh-axi CLI is a separate npm package",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "scroll-world",
       "path": "skills/scroll-world",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "visual-studio",
       "path": "skills/visual-studio",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot",
-      "license": "not-stated-in-frontmatter",
+      "license": "MIT",
       "modified": true,
-      "redistribution": "unknown"
+      "redistribution": "mit"
     },
     {
       "component": "design-bank",

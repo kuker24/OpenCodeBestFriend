@@ -2,6 +2,7 @@
 name: gh-axi
 description: "Operate GitHub through the gh-axi CLI - issues, pull requests, workflow runs, workflows, releases, repositories, labels, gists, Projects (v2), Actions secrets and variables, search, and raw API access. Use whenever a task touches GitHub: listing or filing issues, reviewing or merging PRs, checking CI runs, triggering workflows, cutting releases, managing Projects boards, managing Actions secrets/variables, or working with gists via `gist list`, `gist view`, `gist edit`, `gist rename`, `gist create`, `gist delete`, or `gist clone`."
 compatibility: opencode
+license: MIT
 ---
 
 # gh-axi

@@ -2,6 +2,7 @@
 name: emil-design-eng
 description: UI motion, transition, and interaction feel after Impeccable. Use when polishing animation, easing, press/hover, or interruptible chrome motion. Do not use for static UI, photoreal video, or scroll-world camera chains.
 compatibility: opencode
+license: MIT
 ---
 
 # Design Engineering

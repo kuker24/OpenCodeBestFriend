@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+Repo-level supply-chain. SmartDoc/SmartBook core stays frozen.
+
+- Snapshot skill wrappers inherit GrokBestFriend MIT (`vendor/licenses/GROKBESTFRIEND-MIT.txt`); frontmatter now states `license: MIT`. Separate CLIs stay their own packages.
+- GitHub rulesets protect `main` and `v*` tags from force-push and deletion. Signed tags remain deferred until a maintainer signing key exists.
+
 ## 1.6.2 — 2026-09-02
 
 SmartDoc correctness micro-release. No new skills. v1.6.1 stays published.

@@ -2,6 +2,7 @@
 name: found-this-design
 description: "Find 3 or 5 matching UI designs from the local design bank at `$OPENCODE_DESIGN_BANK` or `~/Design` (Refero styles + Motionsites sections) for the current web project or a redesign brief, then generate a high-fidelity first-viewport photo of this product in each recommended world. Use when the user runs /found-this-design or /found_this_design, or asks to find a design, cari desain, rekomendasi desain, design yang cocok, preview desain, prototype visual, design bank, Refero, Motionsites, or which visual direction fits this site. Not for implementing UI (use impeccable after a pick) or photoreal product/ad video (use visual-studio)."
 compatibility: opencode
+license: MIT
 ---
 
 # Found This Design

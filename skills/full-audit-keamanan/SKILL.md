@@ -2,6 +2,7 @@
 name: full-audit-keamanan
 description: Use for broad defensive security audits across code, config, auth, secrets, supply chain, AI/LLM integrations, and deployment.
 compatibility: opencode
+license: MIT
 ---
 
 # full-audit-keamanan

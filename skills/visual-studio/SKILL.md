@@ -2,6 +2,7 @@
 name: visual-studio
 description: "Produce photoreal product stills, reusable identity packs, UGC/ad videos, cinematic VFX shots, and video thumbnails with GrokBuild image_gen, image_edit, image_to_video, and reference_to_video. Use when: product photo, studio shot, lifestyle, Pinterest pin, hero banner, carousel, ad pack, virtual try-on, UGC, unboxing, product review, TV spot, cinematic video, VFX, character sheet, size-ref, face-lock, YouTube thumbnail, Shorts cover, or the user runs /visual-studio. Load OpenCode native image tools if present, else DEGRADED before any generate/edit/video call. Not for UI/frontend (use impeccable), game sprites or tiles (use game-asset-core), or UI motion (use emil-design-eng)."
 compatibility: opencode
+license: MIT
 ---
 
 # Visual Studio

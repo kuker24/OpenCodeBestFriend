@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, str(ROOT))
 from lib.common import load_policy, product_version  # noqa: E402
 
-UNKNOWN = {
+SNAPSHOT = {
     "browser-act",
     "chrome-devtools-axi",
     "emil-design-eng",
@@ -30,16 +30,20 @@ class LicenseAuditTests(unittest.TestCase):
         audit = json.loads((ROOT / "vendor" / "license-audit.json").read_text(encoding="utf-8"))
         self.assertEqual(set(allow), set(audit["skills"]))
         unknown = {k for k, v in audit["skills"].items() if v.get("redistribution") == "unknown"}
-        self.assertEqual(unknown, UNKNOWN)
-        for name in unknown:
-            self.assertEqual(audit["skills"][name]["license"], "not-stated-in-frontmatter")
+        self.assertEqual(unknown, set())
+        for name in SNAPSHOT:
+            self.assertEqual(audit["skills"][name]["license"], "MIT")
+            self.assertEqual(audit["skills"][name]["redistribution"], "mit")
+        grok = ROOT / "vendor" / "licenses" / "GROKBESTFRIEND-MIT.txt"
+        self.assertTrue(grok.is_file())
+        self.assertIn("GrokBestFriend contributors", grok.read_text(encoding="utf-8"))
 
     def test_provenance_version_matches_product(self):
         prov = json.loads((ROOT / "vendor" / "provenance.json").read_text(encoding="utf-8"))
         self.assertEqual(prov["productVersion"], product_version())
         names = {c["component"] for c in prov["components"]}
         self.assertNotIn("other-user-skills", names)
-        self.assertTrue(UNKNOWN <= names)
+        self.assertTrue(SNAPSHOT <= names)
 
 
 if __name__ == "__main__":
