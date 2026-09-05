@@ -198,7 +198,7 @@ cmd_start() {
     >"$LOG_FILE" 2>&1 &
   printf '%s\n' "$!" >"$PID_FILE"
   local n=0
-  while [ "$n" -lt 60 ]; do
+  while [ "$n" -lt 150 ]; do
     if our_cdp_ok; then
       printf 'started url=http://%s:%s binary=%s profile=%s\n' "$CDP_HOST" "$CDP_PORT" "$bin" "$profile"
       return 0

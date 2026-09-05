@@ -174,6 +174,7 @@ class ScrollCraftContractTests(unittest.TestCase):
         self.assertIn('chrome-version: "1692935"', workflow)
         self.assertIn('OPENCODE_CHROMIUM_NO_SANDBOX: "1"', workflow)
         self.assertIn("sandbox_args+=(--no-sandbox)", helper)
+        self.assertIn('while [ "$n" -lt 150 ]', helper)
 
     def test_license_inventory(self):
         audit = json.loads((ROOT / "vendor" / "license-audit.json").read_text(encoding="utf-8"))
