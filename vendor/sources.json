@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.6.2",
+  "productVersion": "1.7.0",
   "adaptedFrom": {
     "product": "ClaudeBestFriend",
     "version": "1.4.2-claude.1",
@@ -80,7 +80,7 @@
       "license": "MIT",
       "copyright": "Copyright (c) 2026 Nate Herk",
       "licenseFile": "vendor/licenses/NATEHERK-SCROLL-CRAFT-MIT.txt",
-      "note": "Adapted skill and engine. No KIE/Higgsfield/Playwright core path. Continuous World handed to scroll-world."
+      "note": "Adapted skill and engine with deterministic cleanup and split mechanism/theme CSS. No KIE/Higgsfield/Playwright core path. Worldflight runtime removed; Continuous World handed to scroll-world."
     },
     "pstack": {
       "repository": "https://github.com/cursor/plugins",

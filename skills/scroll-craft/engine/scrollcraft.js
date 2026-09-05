@@ -65,48 +65,6 @@
                               while the act is on screen.
 
    ---------------------------------------------------------------------------
-   WORLDFLIGHT: the page mode for one continuous flight
-   ---------------------------------------------------------------------------
-     <div data-sc-mode="worldflight" data-sc-seam="0.12">
-       <div data-sc-world>
-         <div data-sc-segment data-sc-w="1.4" data-sc-linger="0.3"
-              data-sc-waypoint="Approach">
-           <img class="sc-world__poster" src="p1.webp" alt="">
-           <video data-sc-src="leg1.mp4" data-sc-src-mobile="leg1-m.mp4"></video>
-         </div>
-         ... more segments, in flight order ...
-       </div>
-       <div data-sc-world-copy>
-         <div class="sc-world__scrim sc-scrim sc-scrim--band"></div>
-         <div data-sc-copy data-sc-window="hero"> ... </div>
-         <div data-sc-copy data-sc-window="0.34 0.56"> ... </div>
-         <div data-sc-copy data-sc-window="finale"> ... </div>
-       </div>
-       <div data-sc-spacer aria-hidden="true"></div>
-     </div>
-
-   Acts cut the page into pinned blocks, which is the right shape for a page of
-   chapters and the wrong shape for one continuous camera move: the reader hits
-   the end of an act, the stage unsticks, a static page slides past, and the next
-   act starts the whole thing again. Worldflight removes the seams by removing
-   the blocks. There is ONE fixed stage for the entire page. The only element in
-   document flow is a spacer, whose height the engine sets to the sum of the
-   segment weights plus one viewport so the last flight can finish. Scroll drives
-   the film timeline and the overlay opacity. Nothing else moves.
-
-     data-sc-w        viewport-heights this segment owns. Default 1.3.
-     data-sc-linger   dwell remap for this leg only (see lingerEase). Max 0.6.
-     data-sc-seam     crossfade band, in viewport-heights of scroll. Default 0.12.
-     data-sc-waypoint label published on --sc-seg / the sc:waypoint event, so a
-                      page can draw its own route rail. The engine draws none.
-     data-sc-window   on a copy block: "hero" | "finale" | "from to [in [out]]"
-                      as fractions of the WHOLE track.
-
-   Every clip stays mounted for the life of the page. Segments crossfade by
-   opacity over the seam band; nothing ever swaps a src, because a src swap is a
-   black frame and a black frame is the cut this mode exists to avoid.
-
-   ---------------------------------------------------------------------------
    POINTER: interactivity that isn't scroll
    ---------------------------------------------------------------------------
      data-sc-tilt="8"         3D tilt toward the pointer, spring-damped, degrees.
@@ -121,13 +79,12 @@
    ---------------------------------------------------------------------------
    Fewer and gentler, not zero. Cues still fade (comprehension survives), but
    translation collapses, video clips are never fetched (the poster holds), and
-   pointer devices are inert. A worldflight still tells its whole story: the
-   posters cross-dissolve through the same seams and the same copy windows.
+   pointer devices are inert.
 
    ---------------------------------------------------------------------------
    THE PLAYHEAD
    ---------------------------------------------------------------------------
-   Every scrub clip on the page, act or worldflight, is driven by one smoothed
+   Every scrub clip on the page is driven by one smoothed
    playhead. Scroll only ever writes a TARGET; a standalone rAF loop walks the
    current time toward it at a fixed fraction per frame (data-sc-lerp, default
    0.18; 1.0 under reduced motion, which is no smoothing at all). Writes are
@@ -163,19 +120,6 @@
   function dwell(x, L) {
     if (!L) return x;
     L = clamp01(L);
-    var c = x - 0.5;
-    return (1 - L) * x + L * (4 * c * c * c + 0.5);
-  }
-
-  // Same curve, capped harder, and used per worldflight segment. Above ~0.6 the
-  // derivative at the midpoint gets low enough that the camera visibly stops
-  // dead mid-leg, which reads as a stall rather than a hold. The endpoints are
-  // fixed by construction: f(0)=0, f(1)=1, so the first and last frames of every
-  // leg are still exactly the frames the seam law matched, and the chain between
-  // legs stays invisible no matter how much dwell a leg asks for.
-  function lingerEase(x, L) {
-    if (!L) return x;
-    L = clamp(L, 0, 0.6);
     var c = x - 0.5;
     return (1 - L) * x + L * (4 * c * c * c + 0.5);
   }
@@ -292,14 +236,20 @@
     var dead = false;
 
     var acts = [];
-    var worlds = [];
     var drifts = [];
     var playheads = [];
-    var scrollEls = [];
+    var listeners = [];
+    var observers = [];
+    var rafs = new Set();
+    var timers = new Set();
     var vh = innerHeight, vw = innerWidth;
     var y = 0, needsLayout = true;
     var progressBar = root.querySelector('[data-sc-progress]');
     var docEl = document.documentElement;
+    var readyRoot = root.nodeType === 9 ? docEl : root;
+    var originalCanvas = docEl.style.getPropertyValue('--sc-canvas');
+    var originalCanvasPriority = docEl.style.getPropertyPriority('--sc-canvas');
+    var originalProgressTransform = progressBar ? progressBar.style.transform : '';
 
     // One rate for the page, overridable per clip. Read from the mount root, the
     // document element, or the option bag, in that order.
@@ -308,14 +258,43 @@
                (opts.lerp > 0 ? clamp(opts.lerp, 0.02, 1) : 0) ||
                0.18;
 
-    // Every scrub clip on the page lives here, whatever drives it. tick() walks
-    // this one list, so an act clip and a worldflight leg get the same playhead.
+    function listen(target, type, handler, options) {
+      target.addEventListener(type, handler, options);
+      listeners.push({ target: target, type: type, handler: handler, options: options });
+    }
+
+    function scheduleFrame(handler) {
+      if (dead) return 0;
+      var id = requestAnimationFrame(function (now) {
+        rafs.delete(id);
+        if (!dead) handler(now);
+      });
+      rafs.add(id);
+      return id;
+    }
+
+    function scheduleTimeout(handler, delay) {
+      if (dead) return 0;
+      var id = setTimeout(function () {
+        timers.delete(id);
+        if (!dead) handler();
+      }, delay);
+      timers.add(id);
+      return id;
+    }
+
+    // Every scrub clip on the page lives here. tick() walks this one list.
     function makeClip(v, host) {
       var rec = {
         el: v, host: host || v,
         ready: false, loading: false, painted: false,
         cur: 0, target: 0, live: false, stuckAt: 0,
-        lerp: lerpRate(v) || LERP
+        lerp: lerpRate(v) || LERP,
+        controller: null, objectURL: null,
+        originalSrc: v.getAttribute('src'),
+        originalPreload: v.getAttribute('preload'),
+        originalMuted: v.muted,
+        originalPlaysInline: v.playsInline
       };
       v.muted = true; v.playsInline = true; v.preload = 'none';
       v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
@@ -338,10 +317,16 @@
         cues: [], parallax: [], reveals: [], counts: [],
         video: null, seq: null, rail: null
       };
+      act.originalHeight = el.style.height;
+      act.originalProgress = el.style.getPropertyValue('--sc-p');
+      act.hadPinnedClass = el.classList.contains('sc-act--pinned');
 
       if (pinned) {
         act.stage = el.querySelector('[data-sc-stage]') || el.querySelector('.sc-stage');
-        if (act.stage) act.stage.classList.add('sc-stage');
+        if (act.stage) {
+          act.stageHadClass = act.stage.classList.contains('sc-stage');
+          act.stage.classList.add('sc-stage');
+        }
         el.classList.add('sc-act--pinned');
       }
 
@@ -362,7 +347,10 @@
 
       // horizontal rail
       act.rail = el.querySelector('[data-sc-pan]');
-      if (act.rail) act.railExtra = parseFloat(act.rail.getAttribute('data-sc-pan')) || 0;
+      if (act.rail) {
+        act.railExtra = parseFloat(act.rail.getAttribute('data-sc-pan')) || 0;
+        act.railOriginalTransform = act.rail.style.transform;
+      }
 
       // cues
       Array.prototype.forEach.call(el.querySelectorAll('[data-sc-cue]'), function (c) {
@@ -381,7 +369,10 @@
           rOut: nums.length > 3 && !isNaN(nums[3]) ? clamp01(nums[3]) : null,
           rise: parseFloat(c.getAttribute('data-sc-rise')),
           kinetic: c.getAttribute('data-sc-kinetic'),
-          units: null, state: -1
+          units: null, state: -1,
+          originalOpacity: c.style.opacity,
+          originalTransform: c.style.transform,
+          originalPointerEvents: c.style.pointerEvents
         };
         if (cue.rOut === null) cue.rOut = (nums.length > 2 && !isNaN(nums[2])) ? 0.3 : 0.3;
         if (isNaN(cue.rise)) cue.rise = 1;
@@ -390,13 +381,23 @@
 
       // parallax
       Array.prototype.forEach.call(el.querySelectorAll('[data-sc-parallax]'), function (c) {
-        act.parallax.push({ el: c, rate: parseFloat(c.getAttribute('data-sc-parallax')) || 0 });
+        act.parallax.push({
+          el: c,
+          rate: parseFloat(c.getAttribute('data-sc-parallax')) || 0,
+          originalTransform: c.style.transform
+        });
       });
 
       // reveals
       Array.prototype.forEach.call(el.querySelectorAll('[data-sc-reveal]'), function (c) {
         var nums = (c.getAttribute('data-sc-reveal-at') || '0 0.5').trim().split(/\s+/).map(parseFloat);
-        act.reveals.push({ el: c, dir: c.getAttribute('data-sc-reveal') || 'up', from: nums[0] || 0, to: nums[1] || 0.5 });
+        act.reveals.push({
+          el: c,
+          dir: c.getAttribute('data-sc-reveal') || 'up',
+          from: nums[0] || 0,
+          to: nums[1] || 0.5,
+          originalClipPath: c.style.clipPath
+        });
       });
 
       // counters
@@ -422,81 +423,11 @@
       if (d) { var rgb = parseColor(d); if (rgb) drifts.push({ act: act, rgb: rgb }); }
     });
 
-    // ---- collect worldflights --------------------------------------------
-    Array.prototype.forEach.call(root.querySelectorAll('[data-sc-mode="worldflight"]'), function (el) {
-      var W = {
-        el: el,
-        stage: el.querySelector('[data-sc-world]') || el.querySelector('.sc-world'),
-        copyLayer: el.querySelector('[data-sc-world-copy]') || el.querySelector('.sc-world__copy'),
-        spacer: el.querySelector('[data-sc-spacer]') || el.querySelector('.sc-world__spacer'),
-        seam: 0, segs: [], copies: [], total: 0, top: 0, index: -1, checked: false
-      };
-      var seam = parseFloat(el.getAttribute('data-sc-seam'));
-      // A seam wider than the shortest leg would have three clips dissolving at
-      // once and no leg ever fully present. Cap it well under that.
-      W.seam = isNaN(seam) || seam <= 0 ? 0.12 : clamp(seam, 0.02, 0.4);
-      if (W.stage) W.stage.classList.add('sc-world');
-      if (W.copyLayer) W.copyLayer.classList.add('sc-world__copy');
-      if (W.spacer) W.spacer.classList.add('sc-world__spacer');
-
-      Array.prototype.forEach.call(el.querySelectorAll('[data-sc-segment]'), function (s) {
-        var seg = {
-          el: s,
-          w: parseFloat(s.getAttribute('data-sc-w')) || 1.3,
-          linger: clamp(parseFloat(s.getAttribute('data-sc-linger')) || 0, 0, 0.6),
-          label: s.getAttribute('data-sc-waypoint') || '',
-          poster: s.querySelector('[data-sc-poster]') || s.querySelector('.sc-world__poster') || s.querySelector('img'),
-          c0: 0, c1: 0, local: 0, op: -1, z: -1, clip: null
-        };
-        s.classList.add('sc-world__seg');
-        if (seg.poster) seg.poster.classList.add('sc-world__poster');
-        var v = s.querySelector('video');
-        if (v) {
-          // Mark it as a scrub clip whether or not the author did. Everything
-          // downstream, the stylesheet and the verification harness included,
-          // finds scrub media by this attribute.
-          v.setAttribute('data-sc-scrub', '');
-          seg.clip = makeClip(v, s);
-        }
-        W.segs.push(seg);
-      });
-
-      var run = 0;
-      W.segs.forEach(function (s) { s.c0 = run; run += Math.max(s.w, 0.1); s.c1 = run; });
-      W.total = Math.max(run, 0.001);
-
-      Array.prototype.forEach.call(el.querySelectorAll('[data-sc-copy]'), function (cEl) {
-        var spec = (cEl.getAttribute('data-sc-window') || '').trim();
-        var q = { el: cEl, from: 0, to: 1, rIn: 0.3, rOut: 0.3, state: -1 };
-        var first = W.segs[0], last = W.segs[W.segs.length - 1];
-        if (spec === 'hero') {
-          // Present the instant the reader lands. A hero that fades IN has to
-          // fade in from nothing over an empty first screen, which is the one
-          // moment on the page where there is nothing else to look at.
-          q.from = 0;
-          q.to = first ? (0.62 * first.w) / W.total : 0.3;
-          q.rIn = 0; q.rOut = 0.65;
-        } else if (spec === 'finale') {
-          q.from = last ? (last.c0 + 0.4 * last.w) / W.total : 0.7;
-          q.to = 1; q.rIn = 0.55; q.rOut = 0;
-        } else {
-          var n = spec.split(/\s+/).map(parseFloat);
-          q.from = isNaN(n[0]) ? 0 : clamp01(n[0]);
-          q.to = (n.length > 1 && !isNaN(n[1])) ? clamp01(n[1]) : clamp01(q.from + 0.18);
-          if (n.length > 2 && !isNaN(n[2])) q.rIn = clamp01(n[2]);
-          if (n.length > 3 && !isNaN(n[3])) q.rOut = clamp01(n[3]);
-        }
-        if (q.to <= q.from) q.to = clamp01(q.from + 0.05);
-        W.copies.push(q);
-      });
-
-      worlds.push(W);
-    });
-
     // ---- flow reveals (fire once) ----------------------------------------
     var io = null;
     if ('IntersectionObserver' in window) {
       io = new IntersectionObserver(function (entries) {
+        if (dead) return;
         entries.forEach(function (e) {
           if (!e.isIntersecting) return;
           var el = e.target;
@@ -511,6 +442,7 @@
           io.unobserve(el);
         });
       }, { rootMargin: '0px 0px -12% 0px', threshold: 0.01 });
+      observers.push(io);
       Array.prototype.forEach.call(root.querySelectorAll('[data-sc-in]'), function (el) { io.observe(el); });
     } else {
       Array.prototype.forEach.call(root.querySelectorAll('[data-sc-in]'), function (el) { el.classList.add('sc-in'); });
@@ -540,18 +472,20 @@
           var t = Math.min((now - t0) / ms, 1);
           var out = formatNum(a + (b - a) * ease(t), tpl);
           if (out !== last) { c.textContent = out; last = out; }
-          if (t < 1) requestAnimationFrame(frame);
+          if (t < 1) scheduleFrame(frame);
         }
-        requestAnimationFrame(frame);
+        scheduleFrame(frame);
       }
       els.forEach(function (c) { var n = spec(c); c.textContent = formatNum(num(n[0]), n[1] || '0'); });
       if ('IntersectionObserver' in window) {
         var cio = new IntersectionObserver(function (entries) {
+          if (dead) return;
           entries.forEach(function (e) {
             if (!e.isIntersecting) return;
             run(e.target); cio.unobserve(e.target);
           });
         }, { rootMargin: '0px 0px -10% 0px', threshold: 0.5 });
+        observers.push(cio);
         els.forEach(function (c) { cio.observe(c); });
       } else {
         els.forEach(run);
@@ -563,15 +497,6 @@
       vh = innerHeight; vw = innerWidth;
       acts.forEach(function (a) {
         if (a.pinned) a.el.style.height = (a.span * 100) + 'vh';
-      });
-      // The spacer is the whole document flow of a worldflight. Its height is
-      // the sum of the leg weights plus one viewport: without that extra screen
-      // the track runs out at the moment the last leg reaches p=1, so the last
-      // leg's final second is a place the reader can never actually stop.
-      // Set in pixels, not vh, because .sc-world is sized in svh on phones and a
-      // vh/svh mismatch would put the track and the stage on different rulers.
-      worlds.forEach(function (W) {
-        if (W.spacer) W.spacer.style.height = Math.round((W.total + 1) * vh) + 'px';
       });
       acts.forEach(function (a) {
         var r = a.el.getBoundingClientRect();
@@ -602,28 +527,6 @@
             'position:' + pos + ', not sticky. Something is overriding .sc-stage.', a.stage);
         }
       });
-
-      worlds.forEach(function (W) {
-        W.top = W.el.getBoundingClientRect().top + scrollY;
-        if (W.checked) return;
-        W.checked = true;
-        if (!W.stage) {
-          console.warn('[scrollcraft] worldflight has no [data-sc-world] stage; nothing will fly.', W.el);
-          return;
-        }
-        if (!W.spacer) {
-          console.warn('[scrollcraft] worldflight has no [data-sc-spacer]; the page has no scroll track.', W.el);
-        }
-        // The same silent failure as an unpinned act, one level worse: a stage
-        // that is not fixed scrolls away and takes the whole page with it, while
-        // every progress number still reads correctly.
-        var wp = getComputedStyle(W.stage).position;
-        if (wp !== 'fixed') {
-          console.warn('[scrollcraft] worldflight stage computes position:' + wp + ', not fixed. ' +
-            'Something is overriding .sc-world, and the flight will scroll off screen.', W.stage);
-        }
-      });
-
       needsLayout = false;
       read();
     }
@@ -633,19 +536,27 @@
     function loadClip(V) {
       // Under reduced motion the clip is never fetched. The poster holds the
       // frame and the copy still cues, so the page reads without the decode.
-      if (reduce || !V || V.loading) return;
+      if (dead || reduce || !V || V.loading) return;
       var src = V.el.getAttribute('data-sc-src') ||
                 (isMobile() && V.el.getAttribute('data-sc-src-mobile')) ||
                 V.el.currentSrc || V.el.src;
       if (isMobile() && V.el.getAttribute('data-sc-src-mobile')) src = V.el.getAttribute('data-sc-src-mobile');
       if (!src) return;
       V.loading = true;
-      fetch(src).then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+      V.controller = typeof AbortController === 'function' ? new AbortController() : null;
+      var fetchOpts = V.controller ? { signal: V.controller.signal } : undefined;
+      fetch(src, fetchOpts).then(function (r) {
+        if (dead) throw new Error('destroyed');
+        if (!r.ok) throw new Error(r.status);
+        return r.blob();
+      })
         .then(function (blob) {
+          if (dead) return;
           // Listeners and preload BEFORE src. Assigning src starts the load, so
           // attaching afterwards and then calling load() restarts it and aborts
           // the first request (visible as ERR_ABORTED on the blob URL).
-          V.el.addEventListener('loadedmetadata', function () {
+          listen(V.el, 'loadedmetadata', function () {
+            if (dead) return;
             V.ready = true;
             // Force one seek even when the target is already 0. The reveal is
             // gated on a 'seeked' event, and the raf loop only seeks when the
@@ -665,12 +576,12 @@
           // never-played muted video blank, so hiding the poster on metadata
           // alone flashes an empty stage.
           var reveal = function () {
-            if (V.painted) return;
+            if (dead || V.painted) return;
             V.painted = true;
             V.host.classList.add('sc-has-clip');
             V.el.classList.add('sc-has-clip');
           };
-          V.el.addEventListener('seeked', reveal, { once: true });
+          listen(V.el, 'seeked', reveal, { once: true });
           // Never let visibility depend only on an event that may not arrive.
           // On iOS a clip that has not been played can accept a seek and never
           // fire 'seeked', which leaves the element at opacity 0 for the life of
@@ -678,13 +589,14 @@
           // act is fine because by then the reader has touched the screen and
           // the decoder is live. Reveal on a timer as well. A stage that is
           // briefly blank is a smaller fault than one that never shows its clip.
-          setTimeout(reveal, 2500);
+          scheduleTimeout(reveal, 2500);
           V.el.preload = 'auto';
           V.el.muted = true;            // as a property, not only an attribute
           V.el.playsInline = true;
-          V.el.src = URL.createObjectURL(blob);
+          V.objectURL = URL.createObjectURL(blob);
+          V.el.src = V.objectURL;
         })
-        .catch(function () { V.loading = false; });
+        .catch(function () { if (!dead) V.loading = false; });
     }
 
     // ---- image sequence ---------------------------------------------------
@@ -695,11 +607,15 @@
         (function (i) {
           var img = new Image();
           img.decoding = 'async';
+          img.onload = function () {
+            if (dead) return;
+            S.loaded++;
+            if (S.loaded === 1) S.drawn = -1;
+          };
           img.src = S.tpl.replace('{i}', String(S.start + i))
                          .replace('{ii}', String(S.start + i).padStart(2, '0'))
                          .replace('{iii}', String(S.start + i).padStart(3, '0'))
                          .replace('{iiii}', String(S.start + i).padStart(4, '0'));
-          img.onload = function () { S.loaded++; if (S.loaded === 1) S.drawn = -1; };
           S.frames[i] = img;
         })(i);
       }
@@ -717,108 +633,6 @@
       var w = img.naturalWidth * scale, h = img.naturalHeight * scale;
       S.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
       S.drawn = idx;
-    }
-
-    // ---- worldflight ------------------------------------------------------
-    // t is the position along the flight, measured in viewport-heights of
-    // scroll, so every number here is in the same unit the author wrote the
-    // weights in. There is no per-segment geometry to read: the stage never
-    // moves, so nothing needs measuring on scroll.
-    function readWorld(W) {
-      if (!W.segs.length) return;
-      var S = W.seam;
-      var t = clamp((y - W.top) / Math.max(vh, 1), 0, W.total);
-      var pr = t / W.total;
-      var i, s;
-
-      // The current leg is the last one whose crossfade has begun.
-      var k = 0;
-      for (i = 0; i < W.segs.length; i++) if (t >= W.segs[i].c0 - S / 2) k = i;
-
-      for (i = 0; i < W.segs.length; i++) {
-        s = W.segs[i];
-        var local = clamp01((t - s.c0) / Math.max(s.w, 0.001));
-        s.local = local;
-
-        // Fetch a leg only while it is within reach. Loading the whole flight up
-        // front is tens of megabytes before the first frame paints; loading it
-        // on arrival means arriving at a poster.
-        if (s.clip && t > s.c0 - 1.6 && t < s.c1 + 1.6) loadClip(s.clip);
-
-        // Opacity. The incoming leg fades UP over the outgoing one, which holds
-        // at full strength underneath until it is completely covered. Fading
-        // both halves of a crossfade is what puts the page ground through the
-        // middle of the seam and reads as a flash.
-        var op;
-        if (i > k) op = 0;
-        else if (i === k) op = i === 0 ? 1 : smooth((t - (s.c0 - S / 2)) / S);
-        else op = t < s.c1 + S / 2 ? 1 : 0;
-
-        var z = i === k ? 120 : Math.round(100 + op * 10);
-        if (op !== s.op) {
-          s.el.style.opacity = op.toFixed(3);
-          // A leg at zero must stop compositing entirely. Six full-bleed video
-          // layers all painting at opacity 0 costs the same as painting them.
-          s.el.style.visibility = op > 0.002 ? 'visible' : 'hidden';
-          s.op = op;
-        }
-        if (z !== s.z) { s.el.style.zIndex = String(z); s.z = z; }
-
-        if (s.clip) {
-          s.clip.live = op > 0.002;
-          s.clip.target = lingerEase(local, s.linger);
-        }
-        // Until a real frame has painted, the poster carries the move. A still
-        // that sits perfectly still while the page scrolls announces itself as a
-        // placeholder; a slow push in reads as the camera already flying.
-        if (s.poster && !reduce && !(s.clip && s.clip.painted) && op > 0.002) {
-          s.poster.style.transform = 'scale(' + (1.03 + local * 0.14).toFixed(4) + ')';
-        }
-      }
-
-      for (var c = 0; c < W.copies.length; c++) {
-        var q = W.copies[c];
-        var win = Math.max(q.to - q.from, 0.001);
-        var inEnd = q.from + win * q.rIn;
-        var outStart = q.to - win * q.rOut;
-        var vis;
-        // A hero declares rIn 0, so inEnd sits exactly on `from` and the ramp
-        // branch is skipped: the block is simply present from the first pixel.
-        if (pr < q.from) vis = 0;
-        else if (pr < inEnd) vis = smooth((pr - q.from) / Math.max(inEnd - q.from, 0.001));
-        else if (pr <= outStart) vis = 1;
-        else vis = smooth(1 - (pr - outStart) / Math.max(q.to - outStart, 0.001));
-        vis = clamp01(vis);
-
-        // The ONLY transform on the copy side, and it is capped at 4vh across
-        // the whole window. Anything larger stops reading as a parallax layer
-        // over a moving world and starts reading as a second page scrolling at a
-        // different speed, which is the exact cheapness this mode replaces.
-        var wp = clamp01((pr - q.from) / win);
-        q.el.style.opacity = vis.toFixed(3);
-        q.el.style.transform = reduce ? 'none'
-          : 'translate3d(0,' + ((0.5 - wp) * 4).toFixed(2) + 'vh,0)';
-        var on = vis > 0.5;
-        if (on !== (q.state === 1)) { q.state = on ? 1 : 0; q.el.style.pointerEvents = on ? 'auto' : 'none'; }
-      }
-
-      // Publish the route, draw none of it. A gauge, a map, a leg counter and a
-      // set of chapter dots are all the same two numbers, and a runtime that
-      // ships one of them ships it to every page that uses this mode.
-      var cur = W.segs[k];
-      W.el.style.setProperty('--sc-seg', String(k));
-      W.el.style.setProperty('--sc-segp', cur.local.toFixed(4));
-      docEl.style.setProperty('--sc-seg', String(k));
-      docEl.style.setProperty('--sc-segp', cur.local.toFixed(4));
-      if (k !== W.index) {
-        W.index = k;
-        try {
-          W.el.dispatchEvent(new CustomEvent('sc:waypoint', {
-            bubbles: true,
-            detail: { index: k, count: W.segs.length, label: cur.label, el: cur.el, progress: pr }
-          }));
-        } catch (e) {}
-      }
     }
 
     // ---- per-frame scroll read -------------------------------------------
@@ -972,8 +786,6 @@
         }
       }
 
-      for (var w = 0; w < worlds.length; w++) readWorld(worlds[w]);
-
       // background drift
       for (var d = 0; d < drifts.length; d++) {
         var D = drifts[d];
@@ -1029,7 +841,7 @@
         var t = clamp(V.cur, 0, 0.999) * dur;
         if (Math.abs(V.el.currentTime - t) > eps) { try { V.el.currentTime = t; } catch (e) {} }
       }
-      requestAnimationFrame(tick);
+      scheduleFrame(tick);
     }
 
     // iOS will not paint a muted video that has never been handed a user
@@ -1057,6 +869,7 @@
       if (V.primed || V.priming || !V.el.src) return;
       V.priming = true;
       var done = function () {
+        if (dead) return;
         V.priming = false;
         if (!V.primed) { V.primed = true; primedCount++; }
         try { V.el.pause(); } catch (e) {}
@@ -1067,13 +880,13 @@
           V.el.currentTime = clamp(V.cur * dur + 0.05, 0, dur * 0.999);
         } catch (e) {}
       };
-      var fail = function () { V.priming = false; };
+      var fail = function () { if (!dead) V.priming = false; };
       // A play() promise is allowed to stay pending forever (iOS does this to a
       // video it has decided not to start). If that happened here, `priming`
       // would jam and no gesture could ever retry, so the flag is released on a
       // timer as well. A late resolution after the release still lands in
       // done(), which is idempotent.
-      setTimeout(function () { if (V.priming) fail(); }, 2000);
+      scheduleTimeout(function () { if (V.priming) fail(); }, 2000);
       var pr;
       try { pr = V.el.play(); } catch (e) { fail(); return; }
       if (pr && pr.then) pr.then(done, fail);
@@ -1093,11 +906,11 @@
     // triggering events includes touchend but NOT touchstart. A restricted
     // device (Low Power Mode) that rejects the touchstart prime for lacking
     // activation gets a second, valid chance the moment the finger lifts.
-    addEventListener('touchstart', prime, { passive: true });
-    addEventListener('touchend', prime, { passive: true });
-    addEventListener('pointerdown', prime, { passive: true });
-    addEventListener('click', prime, { passive: true });
-    addEventListener('scroll', prime, { passive: true });
+    listen(global, 'touchstart', prime, { passive: true });
+    listen(global, 'touchend', prime, { passive: true });
+    listen(global, 'pointerdown', prime, { passive: true });
+    listen(global, 'click', prime, { passive: true });
+    listen(global, 'scroll', prime, { passive: true });
 
     // ---- pointer devices --------------------------------------------------
     var tilts = [], magnets = [], spots = [];
@@ -1114,7 +927,7 @@
       });
       if (!tilts.length && !magnets.length && !spots.length) return;
 
-      addEventListener('pointermove', function (e) {
+      listen(global, 'pointermove', function (e) {
         if (e.pointerType !== 'mouse') return;
         for (var i = 0; i < tilts.length; i++) {
           var T = tilts[i], r = T.el.getBoundingClientRect();
@@ -1157,7 +970,7 @@
           M.x += (M.tx - M.x) * 0.12; M.y += (M.ty - M.y) * 0.12;
           M.el.style.transform = 'translate3d(' + M.x.toFixed(2) + 'px,' + M.y.toFixed(2) + 'px,0)';
         }
-        requestAnimationFrame(pointerTick);
+        scheduleFrame(pointerTick);
       })();
     }
 
@@ -1165,18 +978,32 @@
     var ticking = false;
     function onScroll() {
       if (dead) return;
-      if (!ticking) { ticking = true; requestAnimationFrame(function () { if (!dead) read(); ticking = false; }); }
+      if (!ticking) { ticking = true; scheduleFrame(function () { read(); ticking = false; }); }
     }
-    addEventListener('scroll', onScroll, { passive: true });
+    listen(global, 'scroll', onScroll, { passive: true });
 
     // Keyboard focus on a pinned or panning act. The browser's own
     // scroll-into-view parks the focused element barely on screen, which is
     // exactly the scroll position at which its cue has not opened yet, so focus
-    // lands on a control nobody can see and every automated opacity check still
-    // passes. Centring the act instead is a position where the cue is lit by
-    // definition. behavior:'instant' on purpose: scrollcraft.css sets
-    // scroll-behavior:smooth, so the default animates the jump and focus sits
-    // off screen for the whole of a multi-screen glide.
+    // lands on a control nobody can see. Move to the middle of that cue's
+    // visible window instead. The same rule makes hash jumps into pinned acts
+    // land on readable content rather than the act's hidden first frame.
+    function showAct(actEl, cueEl) {
+      for (var i = 0; i < acts.length; i++) {
+        var a = acts[i];
+        if (a.el !== actEl || !a.pinned) continue;
+        var p = 0.5;
+        for (var c = 0; c < a.cues.length; c++) {
+          var q = a.cues[c];
+          if (cueEl && q.el !== cueEl) continue;
+          p = q.to === null ? clamp01(q.from + 0.22) : clamp01((q.from + q.to) / 2);
+          break;
+        }
+        global.scrollTo({ top: a.top + Math.max(a.height - vh, 1) * p, behavior: 'instant' });
+        return;
+      }
+    }
+
     function onFocusIn(e) {
       if (dead) return;
       var el = e.target;
@@ -1186,9 +1013,20 @@
       var cue = el.closest('[data-sc-cue]');
       if (!cue) return;
       if (parseFloat(getComputedStyle(cue).opacity || '1') > 0.85) return;
-      el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+      showAct(act, cue);
     }
-    addEventListener('focusin', onFocusIn);
+    listen(global, 'focusin', onFocusIn);
+
+    function onHashChange() {
+      if (dead || !location.hash) return;
+      var target;
+      try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (e) { return; }
+      if (!target) return;
+      var act = target.matches('[data-sc-act]') ? target : target.closest('[data-sc-act]');
+      if (!act || !root.contains(act)) return;
+      showAct(act, act.querySelector('[data-sc-cue]'));
+    }
+    listen(global, 'hashchange', onHashChange);
 
     var lastW = innerWidth;
     function onResize() {
@@ -1199,38 +1037,94 @@
       lastW = innerWidth;
       layout();
     }
-    addEventListener('resize', onResize, { passive: true });
+    listen(global, 'resize', onResize, { passive: true });
 
     if (document.fonts && document.fonts.ready) {
       // Line splitting measures line boxes, so it has to wait for the real face.
       document.fonts.ready.then(function () {
+        if (dead) return;
         acts.forEach(function (a) { a.cues.forEach(function (q) { if (q.kinetic && q.units) { q.el.__scSplit = null; q.units = null; } }); });
         layout();
       });
     }
 
     layout();
+    if (location.hash) scheduleFrame(onHashChange);
     initPointer();
-    requestAnimationFrame(tick);
-    document.documentElement.classList.add('sc-ready');
+    scheduleFrame(tick);
+    readyRoot.classList.add('sc-ready');
 
     function destroy() {
       if (dead) return;
       dead = true;
-      if (io) io.disconnect();
-      removeEventListener('scroll', onScroll);
-      removeEventListener('focusin', onFocusIn);
-      removeEventListener('resize', onResize);
-      removeEventListener('touchstart', prime);
-      removeEventListener('touchend', prime);
-      removeEventListener('pointerdown', prime);
-      removeEventListener('click', prime);
+      observers.forEach(function (observer) { observer.disconnect(); });
+      observers.length = 0;
+      listeners.forEach(function (item) {
+        item.target.removeEventListener(item.type, item.handler, item.options);
+      });
+      listeners.length = 0;
+      rafs.forEach(function (id) { cancelAnimationFrame(id); });
+      rafs.clear();
+      timers.forEach(function (id) { clearTimeout(id); });
+      timers.clear();
+      acts.forEach(function (act) {
+        act.el.style.height = act.originalHeight;
+        if (act.originalProgress) act.el.style.setProperty('--sc-p', act.originalProgress);
+        else act.el.style.removeProperty('--sc-p');
+        if (!act.hadPinnedClass) act.el.classList.remove('sc-act--pinned');
+        if (act.stage && !act.stageHadClass) act.stage.classList.remove('sc-stage');
+        if (act.rail) act.rail.style.transform = act.railOriginalTransform;
+        act.cues.forEach(function (cue) {
+          cue.el.style.opacity = cue.originalOpacity;
+          cue.el.style.transform = cue.originalTransform;
+          cue.el.style.pointerEvents = cue.originalPointerEvents;
+          if (cue.units) cue.units.forEach(function (unit) {
+            unit.style.opacity = '';
+            unit.style.transform = '';
+          });
+        });
+        act.parallax.forEach(function (item) { item.el.style.transform = item.originalTransform; });
+        act.reveals.forEach(function (item) { item.el.style.clipPath = item.originalClipPath; });
+        if (act.seq) {
+          act.seq.frames.forEach(function (img) {
+            if (!img) return;
+            img.onload = null;
+            img.onerror = null;
+            img.src = '';
+          });
+          act.seq.frames.length = 0;
+        }
+      });
+      playheads.forEach(function (V) {
+        if (V.controller) V.controller.abort();
+        try { V.el.pause(); } catch (e) {}
+        V.el.removeAttribute('src');
+        try { V.el.load(); } catch (e) {}
+        if (V.objectURL) URL.revokeObjectURL(V.objectURL);
+        if (V.originalSrc !== null) V.el.setAttribute('src', V.originalSrc);
+        if (V.originalPreload === null) V.el.removeAttribute('preload');
+        else V.el.setAttribute('preload', V.originalPreload);
+        V.el.muted = V.originalMuted;
+        V.el.playsInline = V.originalPlaysInline;
+        if (V.originalMuted) V.el.setAttribute('muted', '');
+        else V.el.removeAttribute('muted');
+        if (V.originalPlaysInline) V.el.setAttribute('playsinline', '');
+        else V.el.removeAttribute('playsinline');
+        V.el.classList.remove('sc-has-clip');
+        V.host.classList.remove('sc-has-clip');
+        V.controller = null;
+        V.objectURL = null;
+      });
       var list = global.ScrollCraft.instances;
       var ix = list.indexOf(api);
       if (ix > -1) list.splice(ix, 1);
+      readyRoot.classList.remove('sc-ready');
+      if (originalCanvas) docEl.style.setProperty('--sc-canvas', originalCanvas, originalCanvasPriority);
+      else docEl.style.removeProperty('--sc-canvas');
+      if (progressBar) progressBar.style.transform = originalProgressTransform;
     }
 
-    var api = { layout: layout, read: read, destroy: destroy, acts: acts, worlds: worlds, clips: playheads, lerp: LERP };
+    var api = { layout: layout, read: read, destroy: destroy, acts: acts, clips: playheads, lerp: LERP };
     global.ScrollCraft.instances.push(api);
     return api;
   }

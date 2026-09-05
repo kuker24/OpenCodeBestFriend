@@ -7,8 +7,10 @@ Every act publishes `--sc-p` (0..1) on its element. Prefer CSS against that
 variable before inventing a new device.
 
 Copy `engine/scrollcraft.js` and `engine/scrollcraft.css` into the project.
-Theme tokens; do not fork the engine. Call `ScrollCraft.mount(root)` and
-`instance.destroy()` on teardown/remount.
+For a greenfield page, optionally copy `engine/scrollcraft-theme.css` and add
+`class="sc-theme"` to the themed root. Existing design systems should keep only
+the mechanism CSS and set the `--sc-*` tokens they need. Call
+`ScrollCraft.mount(root)` and `instance.destroy()` on teardown/remount.
 
 ## Kit
 
@@ -35,7 +37,8 @@ only, off under reduced motion, never the only way to get the information.
   on every scroll event.
 - Skip expensive work offscreen and when the document is hidden.
 - Handle resize, orientation, and late-loading assets.
-- Destroy listeners, observers, and animation frames on teardown.
+- `destroy()` releases listeners, observers, animation frames, timers, pending
+  clip fetches, image callbacks, and Blob URLs. It is idempotent and remountable.
 - Support forward, reverse, anchor jump, and mid-page load.
 - No global scroll hijack. No network on init (video `fetch` only if a clip is
   present and motion is allowed).

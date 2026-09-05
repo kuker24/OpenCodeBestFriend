@@ -43,6 +43,25 @@ class RoutingTests(unittest.TestCase):
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)
 
+    def test_scroll_routes_have_explicit_boundaries(self):
+        self.assertIn(
+            "Scroll-led storytelling (scroll is the timeline, scrollytelling, signature interaction): `/scroll-craft`.",
+            self.routing,
+        )
+        self.assertIn("Ordinary scrollable UI stays `/impeccable`.", self.routing)
+        self.assertIn(
+            "Continuous camera fly-through, diorama, or 3D-world landing: `/scroll-world` even if the request says scroll.",
+            self.routing,
+        )
+        self.assertIn(
+            "`/scroll-craft` plus Continuous World: Scroll Craft writes the brief, then `/scroll-world`.",
+            self.routing,
+        )
+        skill = (ROOT / "skills" / "scroll-craft" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Words like `premium`, `cinematic`,", skill)
+        self.assertIn("alone are not enough", skill)
+        self.assertIn("Do not implement worldflight here.", skill)
+
     def test_no_context_guard_rule(self):
         self.assertFalse((ROOT / "rules" / "04-context-guard.md").exists())
 

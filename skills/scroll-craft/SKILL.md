@@ -26,8 +26,10 @@ a meaningful interaction, not video, pinning, or effects.
 
 Do not read every reference on every request. Engine:
 [scrollcraft.js](engine/scrollcraft.js), [scrollcraft.css](engine/scrollcraft.css).
-Copy into the project; do not edit the engine per page. Drive bespoke behaviour
-from `--sc-p`. Attribution: [NOTICE.md](NOTICE.md).
+The mechanism CSS is safe for an existing design system; the scoped
+[starter theme](engine/scrollcraft-theme.css) is optional. Copy what the project
+needs; do not edit the mechanism per page. Drive bespoke behaviour from
+`--sc-p`. Attribution: [NOTICE.md](NOTICE.md).
 
 ## Hard rules
 

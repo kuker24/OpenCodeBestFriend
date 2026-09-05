@@ -2,9 +2,16 @@
 
 ## Unreleased
 
-Repo-level supply-chain. SmartDoc/SmartBook core stays frozen.
+No unreleased changes.
 
-- Add model-invoked `scroll-craft` (scroll-led storytelling). Continuous camera worlds stay `scroll-world`. Skills 43 total, 27 model, 16 manual. VERSION stays 1.6.2 until release policy bumps.
+## 1.7.0 — 2026-09-05
+
+- Add model-invoked `scroll-craft` for scroll-led storytelling. Continuous camera worlds stay `scroll-world`. Skills remain 43 total, 27 model, 16 manual.
+- Remove worldflight from the ScrollCraft runtime and CSS, and hand that responsibility to `scroll-world` without a dormant alternative implementation.
+- Make `destroy()` release per-mount listeners, observers, animation frames, timers, image callbacks, pending clip fetches, and Blob URLs; anchor jumps and keyboard focus now land on readable pinned content.
+- Split the safe mechanism CSS from the optional scoped starter theme.
+- Add dependency-free Chromium/CDP interaction and lifecycle regression coverage for desktop, mobile, reverse scroll, reduced motion, keyboard, anchors, network isolation, and remounting.
+- Upgrade GitHub JavaScript Actions to immutable Node 24 releases and require the complete CI suite before merging `main`.
 - Snapshot skill wrappers inherit GrokBestFriend MIT (`vendor/licenses/GROKBESTFRIEND-MIT.txt`); frontmatter now states `license: MIT`. Separate CLIs stay their own packages.
 - GitHub rulesets protect `main` and `v*` tags from force-push and deletion. Signed tags remain deferred until a maintainer signing key exists.
 
