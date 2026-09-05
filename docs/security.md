@@ -17,8 +17,8 @@
 - Design V2 doctor checks catalog JSONL and SQLite hashes against the canonical lock.
 - Model/provider names are opaque; do not print tokens or gateway maps
 - `vendor/license-audit.json` lists every skill license **as evidenced**. Snapshot skills inherit GrokBestFriend MIT (`vendor/licenses/GROKBESTFRIEND-MIT.txt`). Design-bank media remains not-cleared.
-- GitHub rulesets: `main` and `v*` tags cannot be force-pushed or deleted. Signed commits/tags are not required until a maintainer signing key exists. Releases remain mutable; no GitHub attestation wired.
+- GitHub rulesets: `main` and `v*` tags cannot be force-pushed or deleted. Signed commits/tags are `DEFERRED` until a maintainer signing key exists. GitHub release immutability is `NOT_CONFIGURED`. Integrity baseline is tag protection plus SHA256SUMS, SPDX SBOM, and `release-provenance.json`.
 
-CI: unittest matrix (3.10–3.13), real OCR integration, shellcheck, gitleaks, semgrep (`.semgrep.yml`). Actions are pinned to commit SHAs. OSV Scanner is `NOT_CONFIGURED` — this tree has no language lockfile. Release tarball/SBOM via `scripts/make-release-artifacts.sh` (no GitHub attestation wired).
+CI: unittest matrix (3.10–3.13), real OCR integration, shellcheck, gitleaks, semgrep (`.semgrep.yml`), release-artifact build/verify. Actions are pinned to commit SHAs. OSV Scanner is `NOT_CONFIGURED` — this tree has no language lockfile. Release tarball, SPDX SBOM, and provenance via `scripts/make-release-artifacts.sh`; verify with `scripts/verify-release-artifacts.sh`.
 
 Pre-push (maintainer): gitleaks, absolute personal-home path scan, active Claude-runtime scan.

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "product": "OpenCodeBestFriend",
+  "sourceRepository": "https://github.com/kuker24/OpenCodeBestFriend",
+  "promptSha256": "93b05df84606b96472ecdb54306e8a5586d0b968940f81575c18097be29913db",
+  "signedTag": "DEFERRED",
+  "releaseImmutability": "NOT_CONFIGURED"
+}

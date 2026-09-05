@@ -29,7 +29,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Shell syntax
         run: |
-          bash -n install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp
+          bash -n install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp \
+            scripts/make-release-artifacts.sh scripts/verify-release-artifacts.sh
       - name: Compileall
         run: python3 -m compileall -q lib tests
       - name: Unit and installer tests
@@ -45,7 +46,8 @@ jobs:
       - name: Install shellcheck
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
       - name: Shellcheck
-        run: shellcheck -x install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp
+        run: shellcheck -x install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp \
+          scripts/make-release-artifacts.sh scripts/verify-release-artifacts.sh
 
   gitleaks:
     runs-on: ubuntu-latest
@@ -111,3 +113,30 @@ jobs:
           OPENCODE_CHROMIUM_BIN: ${{ steps.chromium.outputs.chrome-path }}
           OPENCODE_CHROMIUM_NO_SANDBOX: "1"
         run: node tests/scroll_craft_browser_smoke.mjs
+
+  release-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Build release artifacts from explicit HEAD
+        run: |
+          ./scripts/make-release-artifacts.sh --sha "$(git rev-parse HEAD)" --allow-untagged
+      - name: Verify release artifacts
+        run: |
+          ./scripts/verify-release-artifacts.sh dist "$(git rev-parse HEAD)"
+      - name: Reproducible second build
+        run: |
+          first="$(sha256sum dist/SHA256SUMS)"
+          ./scripts/make-release-artifacts.sh --sha "$(git rev-parse HEAD)" --allow-untagged
+          second="$(sha256sum dist/SHA256SUMS)"
+          test "$first" = "$second"
+          (cd dist && sha256sum -c SHA256SUMS)
+      - name: Extract smoke
+        run: |
+          VER="$(tr -d '[:space:]' < VERSION)"
+          python3 -m lib.release smoke-extract dist --dest "$RUNNER_TEMP/ocbf-extract" --version "$VER"
+          python3 -m compileall -q "$RUNNER_TEMP/ocbf-extract/OpenCodeBestFriend-v${VER}/lib"
