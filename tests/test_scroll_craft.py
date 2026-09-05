@@ -168,10 +168,12 @@ class ScrollCraftContractTests(unittest.TestCase):
         self.assertIn("revokedUrls", text)
         self.assertNotIn("playwright", text.lower())
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        helper = (ROOT / "bin" / "opencode-chromium-cdp").read_text(encoding="utf-8")
         self.assertIn("browser-smoke:", workflow)
         self.assertIn("node tests/scroll_craft_browser_smoke.mjs", workflow)
         self.assertIn('chrome-version: "1692935"', workflow)
-        self.assertIn("CHROME_DEVEL_SANDBOX", workflow)
+        self.assertIn('OPENCODE_CHROMIUM_NO_SANDBOX: "1"', workflow)
+        self.assertIn("sandbox_args+=(--no-sandbox)", helper)
 
     def test_license_inventory(self):
         audit = json.loads((ROOT / "vendor" / "license-audit.json").read_text(encoding="utf-8"))

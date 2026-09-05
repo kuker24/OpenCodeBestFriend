@@ -160,6 +160,7 @@ cmd_status() {
 
 cmd_start() {
   local bin pid profile
+  local -a sandbox_args=()
   if our_cdp_ok; then
     printf 'already running url=http://%s:%s\n' "$CDP_HOST" "$CDP_PORT"
     return 0
@@ -172,7 +173,16 @@ cmd_start() {
   bin="$(resolve_chromium)" || return 2
   profile="$(profile_dir_for "$bin")"
   mkdir -p -- "$STATE_DIR" "$profile"
+  case "${OPENCODE_CHROMIUM_NO_SANDBOX:-0}" in
+    0) ;;
+    1) sandbox_args+=(--no-sandbox) ;;
+    *)
+      printf 'NOT_CONFIGURED: OPENCODE_CHROMIUM_NO_SANDBOX must be 0 or 1\n' >&2
+      return 2
+      ;;
+  esac
   nohup "$bin" \
+    "${sandbox_args[@]}" \
     --headless=new \
     --remote-debugging-address="$CDP_HOST" \
     --remote-debugging-port="$CDP_PORT" \
