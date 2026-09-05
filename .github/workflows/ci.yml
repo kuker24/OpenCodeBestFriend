@@ -106,6 +106,15 @@ jobs:
         with:
           chrome-version: "1692935"
           install-dependencies: true
+      - name: Configure Chromium sandbox
+        env:
+          CHROMIUM_BIN: ${{ steps.chromium.outputs.chrome-path }}
+        run: |
+          sandbox="$(dirname "$CHROMIUM_BIN")/chrome_sandbox"
+          test -x "$sandbox"
+          sudo chown root:root "$sandbox"
+          sudo chmod 4755 "$sandbox"
+          printf 'CHROME_DEVEL_SANDBOX=%s\n' "$sandbox" >> "$GITHUB_ENV"
       - name: ScrollCraft browser lifecycle and interaction smoke
         env:
           OPENCODE_CHROMIUM_BIN: ${{ steps.chromium.outputs.chrome-path }}
