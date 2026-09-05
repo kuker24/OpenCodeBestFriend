@@ -4,6 +4,18 @@
 
 No unreleased changes.
 
+## 1.7.1 — 2026-09-05
+
+Release provenance hardening. No new skills. `scroll-craft` runtime is unchanged.
+
+- Build release artifacts from an explicit immutable git commit. HEAD mismatch, dirty worktree, and VERSION/tag mismatch fail closed.
+- SHA256SUMS covers the tarball, SPDX 2.3 SBOM, and release provenance. The sums file is not self-hashed.
+- Record product, version, source repository, source tag, source commit, prompt SHA-256, and tarball identity in `release-provenance.json`.
+- Pin the canonical prompt SHA-256 in `vendor/release-contract.json`.
+- SBOM packages now include license, version/commit when known, download location, and CONTAINS relationships.
+- Add `scripts/verify-release-artifacts.sh` and a `release-artifact` CI job with extract smoke and a second-build reproducibility check.
+- GitHub release immutability remains `NOT_CONFIGURED`. Signed tags remain `DEFERRED`.
+
 ## 1.7.0 — 2026-09-05
 
 - Add model-invoked `scroll-craft` for scroll-led storytelling. Continuous camera worlds stay `scroll-world`. Skills remain 43 total, 27 model, 16 manual.
