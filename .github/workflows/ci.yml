@@ -46,8 +46,9 @@ jobs:
       - name: Install shellcheck
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
       - name: Shellcheck
-        run: shellcheck -x install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp \
-          scripts/make-release-artifacts.sh scripts/verify-release-artifacts.sh
+        run: |
+          shellcheck -x install.sh uninstall.sh restore.sh opencode-bf bin/opencode-chromium-cdp \
+            scripts/make-release-artifacts.sh scripts/verify-release-artifacts.sh
 
   gitleaks:
     runs-on: ubuntu-latest
