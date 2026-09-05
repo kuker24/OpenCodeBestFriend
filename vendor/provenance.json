@@ -155,6 +155,19 @@
       "redistribution": "mit"
     },
     {
+      "component": "scroll-craft",
+      "path": "skills/scroll-craft",
+      "upstream": "https://github.com/nateherkai/scroll-craft",
+      "commit": "0b816225945e45380397d6a0487efa3c98916858",
+      "originalPath": "plugins/nateherk-design/skills/scroll-craft",
+      "upstreamSkillMdSha256": "5713182b56a94423ee2f3eb8f13dfa381c20821ba04ba7d005623bfda100b19e",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Nate Herk",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "OpenCode overlay. Engine ported with destroy + reduced-motion listener. No KIE/Playwright/ffmpeg core path. Worldflight not used as implementation; Continuous World hands off to scroll-world. Fingerprint is comparison, not a 4-of-6 hard gate."
+    },
+    {
       "component": "scroll-world",
       "path": "skills/scroll-world",
       "upstream": "GrokBestFriend 1.3.1 skill snapshot",

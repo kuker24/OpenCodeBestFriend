@@ -2,7 +2,7 @@
 
 Policy: `vendor/skill-policy.json` plus `vendor/skill-allowlist.txt`.
 
-- 26 model-invoked skills live under `skills/` and install to `~/.config/opencode/skills/`
+- 27 model-invoked skills live under `skills/` and install to `~/.config/opencode/skills/`
 - 16 manual skills live under `manual-skills/` and install to `~/.config/opencode/bestfriend/skills/` plus `commands/`
 
 `smartdoc` is per-job document intelligence. `smartbook-ingest` compiles reusable local knowledge. Handwriting is a SmartDoc renderer, not a skill.

@@ -40,6 +40,7 @@ live there. Do not restate them here.
 | Request | Skill |
 |---|---|
 | UI, landing, dashboard, design system | `impeccable` |
+| Scroll-led storytelling / scrollytelling | `scroll-craft` |
 | Scroll-scrub fly-through, diorama, 3D-world landing | `scroll-world` |
 | Website/app whose UI needs designed photos or videos | `impeccable` leads the surface; this skill produces the media |
 | Game sprites, tiles, icon sets, animation sheets | `game-asset-core` |

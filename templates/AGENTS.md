@@ -33,7 +33,7 @@ repo/file → Codebase Memory MCP first (skip if no project for cwd) → Serena 
 
 ## Specialists (load one)
 
-UI direction → skill `found-this-design` then `impeccable`. Motion → `emil-design-eng`. Media → `visual-studio`. Scroll/3D → `scroll-world`. Registry → shadcn MCP. Design Intelligence and Design V2 are internal to Impeccable `new-work`, never a route.
+UI direction → skill `found-this-design` then `impeccable`. Motion → `emil-design-eng`. Media → `visual-studio`. Scroll-led story → `scroll-craft`. Camera/3D world → `scroll-world`. Registry → shadcn MCP. Design Intelligence and Design V2 are internal to Impeccable `new-work`, never a route.
 
 Browser QA → skill `browser-act`. Observed cause → `chrome-devtools-axi` after `opencode-chromium-cdp` (`127.0.0.1:9223`). Never Google Chrome. Project Playwright only if the project already has it.
 

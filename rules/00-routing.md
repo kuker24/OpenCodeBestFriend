@@ -45,7 +45,8 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Design Intelligence is an internal, lazy retrieval stage of Impeccable `new-work`, never a primary route or specialist. Design V2 is the same: an offline user bank, never a specialist.
 - Installable UI components: MCP `shadcn` only. Do not add Magic UI, Kibo, 21st.dev, or community UI MCP servers.
 - Use the hub only when cwd has `components.json`. Never silent `shadcn init` on this adapter, a backend or Python tree, or a non-UI cwd.
-- Scroll-scrub fly-through or 3D-world landing: `/scroll-world`.
+- Scroll-led storytelling (scroll is the timeline, scrollytelling, signature interaction): `/scroll-craft`. Ordinary scrollable UI stays `/impeccable`. `/scroll-craft` plus Continuous World: Scroll Craft writes the brief, then `/scroll-world`.
+- Continuous camera fly-through, diorama, or 3D-world landing: `/scroll-world` even if the request says scroll.
 - Photoreal stills / ads / identity with no UI surface: `/visual-studio`.
 - Motion after Impeccable: `/emil-design-eng`.
 - Image/video generation: use OpenCode native image tools if the session exposes them. Otherwise write prompt files and mark DEGRADED. Do not invent `image_gen`.
@@ -74,7 +75,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 | `/design` `/execute-plan` | Plan mode, then in-session write |
 | `/implement` | in-session write (no user skill) |
 | `/review` `/code-review` | in-session review; `/matt-code-review` if two-axis |
-| `/imagine` | NOT_APPLICABLE; directors stay visual-studio / scroll-world |
+| `/imagine` | NOT_APPLICABLE; directors stay visual-studio / scroll-craft / scroll-world |
 | `/docx` `/pdf` | missing alias; nearest = `smartdoc` (do not add `commands/pdf.md` or `commands/docx.md`) |
 | `/pptx` | NOT_APPLICABLE |
 | `/pr-babysit` | `/gh-axi` |

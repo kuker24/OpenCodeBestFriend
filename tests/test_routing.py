@@ -21,6 +21,8 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("CONSIDERED_NOT_USED", self.agents)
         self.assertIn("MANUAL_NOT_INVOKED", self.agents)
         self.assertTrue(self.routing.startswith("# OpenCode specialist routing (opencode-bestfriend)"))
+        self.assertNotIn("Scroll/3D → `scroll-world`", self.agents)
+        self.assertIn("scroll-craft", self.agents)
 
     def test_mappings(self):
         blob = self.agents + "\n" + self.routing
@@ -36,6 +38,7 @@ class RoutingTests(unittest.TestCase):
             "codebase-memory": "codebase-memory",
             "smartdoc": "smartdoc",
             "smartbook-ingest": "smartbook-ingest",
+            "scroll-craft": "scroll-craft",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)

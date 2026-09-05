@@ -31,6 +31,7 @@
     "prototype": {"invocation": "model"},
     "reflect": {"invocation": "manual"},
     "research": {"invocation": "model"},
+    "scroll-craft": {"invocation": "model"},
     "scroll-world": {"invocation": "model"},
     "smartdoc": {"invocation": "model"},
     "smartbook-ingest": {"invocation": "model"},

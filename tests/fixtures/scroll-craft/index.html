@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trace Ledger — synthetic scroll story</title>
+  <link rel="stylesheet" href="../../../skills/scroll-craft/engine/scrollcraft.css">
+  <link rel="stylesheet" href="page.css">
+</head>
+<body>
+  <p class="demo-banner">Synthetic demonstration. No live detection, payment, or network calls.</p>
+  <a class="skip" href="#cta">Skip to commitment</a>
+  <header>
+    <p>Trace Ledger</p>
+    <nav class="site-nav" aria-label="Sections">
+      <a href="#open">Open</a>
+      <a href="#proof">Proof</a>
+      <a href="#range">Range</a>
+      <a href="#cta">Commit</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="open" data-sc-act="pin" data-sc-span="2.2" aria-labelledby="open-title">
+      <div data-sc-stage class="sc-stage">
+        <div class="hero-planes" aria-hidden="true">
+          <img src="assets/bg.svg" alt="" data-sc-parallax="-0.18">
+          <img src="assets/mid.svg" alt="" data-sc-parallax="-0.06">
+          <img src="assets/fg.svg" alt="" data-sc-parallax="0.12">
+        </div>
+        <div class="sc-copy" data-sc-cue="0.08 0.72">
+          <h1 id="open-title">A message lands. The story is in the links.</h1>
+          <p>Scroll to watch a labelled sample unravel — not a live scanner.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="proof" data-sc-act="pin" data-sc-span="2" aria-labelledby="proof-title">
+      <div data-sc-stage class="sc-stage">
+        <div class="sc-copy" data-sc-cue="0.1 0.8" data-sc-reveal="up">
+          <h2 id="proof-title">Indicators peel back</h2>
+          <p>The sample uses three public-looking fields: a URL, an account label, and a repeated amount. Nothing here is fetched.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="evidence" data-sc-act="flow" aria-labelledby="map-title">
+      <h2 id="map-title">Evidence map</h2>
+      <p>Signature interaction: nodes light as this act’s <code>--sc-p</code> rises. Keyboard users can tab the legend.</p>
+      <svg viewBox="0 0 400 160" role="img" aria-labelledby="map-title map-desc">
+        <desc id="map-desc">Three nodes: message, URL, ledger. Synthetic.</desc>
+        <circle class="node" id="n-msg" cx="60" cy="80" r="18" fill="#7cffc4"></circle>
+        <circle class="node" id="n-url" cx="200" cy="80" r="18" fill="#7cffc4"></circle>
+        <circle class="node" id="n-led" cx="340" cy="80" r="18" fill="#7cffc4"></circle>
+        <line x1="78" y1="80" x2="182" y2="80" stroke="#5c6b80"></line>
+        <line x1="218" y1="80" x2="322" y2="80" stroke="#5c6b80"></line>
+      </svg>
+      <ol>
+        <li><a href="#n-msg">Message</a></li>
+        <li><a href="#n-url">URL</a></li>
+        <li><a href="#n-led">Ledger</a></li>
+      </ol>
+    </section>
+
+    <section id="range" data-sc-act="pan" data-sc-span="2" aria-labelledby="range-title">
+      <div data-sc-stage class="sc-stage">
+        <h2 id="range-title">Pattern cards</h2>
+        <div class="sc-rail" data-sc-pan="0.2">
+          <article>
+            <h3>URL shape</h3>
+            <p>example.test/pay/invoice — local sample string.</p>
+          </article>
+          <article>
+            <h3>Account label</h3>
+            <p>Ops-ledger-04 — not a real account.</p>
+          </article>
+          <article>
+            <h3>Amount repeat</h3>
+            <p>The brief supplied 1,240 twice. No extra statistic.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="cta" class="cta-panel" data-sc-act="pin" data-sc-span="1.4" aria-labelledby="cta-title">
+      <div data-sc-stage class="sc-stage">
+        <div data-sc-cue="0.15 0.9">
+          <h2 id="cta-title">Read the sample pack</h2>
+          <p>One action. No form pretends to submit.</p>
+          <a href="#open">Back to the open</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../../../skills/scroll-craft/engine/scrollcraft.js"></script>
+  <script>
+    var inst = window.ScrollCraft.mount(document);
+    var map = document.querySelector('.evidence');
+    function syncMap() {
+      var p = parseFloat(getComputedStyle(map).getPropertyValue('--sc-p')) || 0;
+      if (p > 0.2) map.classList.add('is-on');
+      else map.classList.remove('is-on');
+    }
+    addEventListener('scroll', syncMap, { passive: true });
+    syncMap();
+    window.__scrollCraftFixture = inst;
+  </script>
+</body>
+</html>

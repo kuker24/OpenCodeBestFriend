@@ -73,6 +73,15 @@
       "copyright": "Copyright (c) 2026 Matt Pocock",
       "licenseFile": "vendor/licenses/MATT-POCOCK-MIT.txt"
     },
+    "scroll-craft": {
+      "repository": "https://github.com/nateherkai/scroll-craft",
+      "commit": "0b816225945e45380397d6a0487efa3c98916858",
+      "originalPath": "plugins/nateherk-design/skills/scroll-craft",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Nate Herk",
+      "licenseFile": "vendor/licenses/NATEHERK-SCROLL-CRAFT-MIT.txt",
+      "note": "Adapted skill and engine. No KIE/Higgsfield/Playwright core path. Continuous World handed to scroll-world."
+    },
     "pstack": {
       "repository": "https://github.com/cursor/plugins",
       "commit": "60c641e4fad674784b30abcf9f8915dea39df38d",

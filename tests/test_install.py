@@ -107,7 +107,7 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(sha256(self.sentinel), self.sentinel_hash)
         self.assertEqual({p.name for p in (self.tmp / ".claude").iterdir()}, {"sentinel.txt"})
         skills = list((self.tmp / ".config" / "opencode" / "skills").iterdir())
-        self.assertEqual(len([p for p in skills if p.is_dir()]), 26)
+        self.assertEqual(len([p for p in skills if p.is_dir()]), 27)
         cmds = list((self.tmp / ".config" / "opencode" / "commands").glob("*.md"))
         self.assertEqual(len(cmds), 16)
         self.assertEqual(cmd_skills_verify(), 0)
@@ -122,7 +122,7 @@ class InstallTests(unittest.TestCase):
 
         rc2 = cmd_install()
         self.assertEqual(rc2, 0)
-        self.assertEqual(len([p for p in (self.tmp / ".config" / "opencode" / "skills").iterdir() if p.is_dir()]), 26)
+        self.assertEqual(len([p for p in (self.tmp / ".config" / "opencode" / "skills").iterdir() if p.is_dir()]), 27)
         self.assertEqual(len(list((self.tmp / ".config" / "opencode" / "commands").glob("*.md"))), 16)
         bashrc = (self.tmp / ".bashrc").read_text(encoding="utf-8")
         self.assertEqual(bashrc.count("OPENCODEBESTFRIEND:BEGIN"), 1)

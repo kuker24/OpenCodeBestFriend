@@ -18,7 +18,7 @@ Follow the thin router in `~/.config/opencode/AGENTS.md`. If routing is non-obvi
 
 **Review:** in-session (default). `matt-code-review` if they asked two-axis Standards + Spec. `/interrogate` for adversarial multi-review (manual).
 
-**Design:** `found-this-design` `impeccable` `visual-studio` `scroll-world` `emil-design-eng`
+**Design:** `found-this-design` `impeccable` `scroll-craft` `visual-studio` `scroll-world` `emil-design-eng`
 
 **Documents:** `smartdoc` (per-job). `smartbook-ingest` only to compile/update reusable knowledge.
 

@@ -4,6 +4,7 @@
 
 Repo-level supply-chain. SmartDoc/SmartBook core stays frozen.
 
+- Add model-invoked `scroll-craft` (scroll-led storytelling). Continuous camera worlds stay `scroll-world`. Skills 43 total, 27 model, 16 manual. VERSION stays 1.6.2 until release policy bumps.
 - Snapshot skill wrappers inherit GrokBestFriend MIT (`vendor/licenses/GROKBESTFRIEND-MIT.txt`); frontmatter now states `license: MIT`. Separate CLIs stay their own packages.
 - GitHub rulesets protect `main` and `v*` tags from force-push and deletion. Signed tags remain deferred until a maintainer signing key exists.
 

@@ -27,6 +27,7 @@ matt-implement
 prototype
 reflect
 research
+scroll-craft
 scroll-world
 smartbook-ingest
 smartdoc

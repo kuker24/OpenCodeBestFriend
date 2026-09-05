@@ -1,6 +1,6 @@
 ---
 name: scroll-world
-description: "Build a scroll-scrubbed fly-through landing: as the visitor scrolls, a pre-rendered camera flies into each scene and on to the next with no cuts. Use when: 3D world landing, diorama site, Emons-style isometric world, scroll cinematic, browse-through-the-industry hero, camera-scrub page, or the user runs /scroll-world. Uses GrokBuild image_gen, image_edit, and image_to_video plus a portable vanilla-JS scrub engine. Load OpenCode native image tools if present, else DEGRADED before any generate/edit/video call. Not for an ordinary landing without a camera world (use impeccable), photoreal ads/identity with no world page (use visual-studio), or UI chrome motion (use emil-design-eng after Impeccable)."
+description: "Build a scroll-scrubbed fly-through landing: as the visitor scrolls, a pre-rendered camera flies into each scene and on to the next with no cuts. Use when: 3D world landing, diorama site, Emons-style isometric world, scroll cinematic, browse-through-the-industry hero, camera-scrub page, or the user runs /scroll-world. Uses GrokBuild image_gen, image_edit, and image_to_video plus a portable vanilla-JS scrub engine. Load OpenCode native image tools if present, else DEGRADED before any generate/edit/video call. Not for scroll-led storytelling without a camera world (use scroll-craft), an ordinary landing (use impeccable), photoreal ads/identity with no world page (use visual-studio), or UI chrome motion (use emil-design-eng after Impeccable)."
 compatibility: opencode
 license: MIT
 ---
@@ -40,6 +40,7 @@ not restate them here.
 |---|---|
 | Fly-through, diorama, 3D world, camera-scrub landing | this skill |
 | Existing site; world is the hero | this skill produces world + engine; `impeccable` owns chrome, tokens, copy system |
+| Scroll-led storytelling without a camera world | `scroll-craft` |
 | Ordinary landing without a camera world | `impeccable` |
 | Photoreal stills, ads, cinematic, identity, thumbnails (no world page) | `visual-studio` |
 | Photoreal person/creature inside this world | this skill owns the chain + page; load `visual-studio` cinematic for those stills/clips |

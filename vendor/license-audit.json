@@ -42,6 +42,7 @@
     "full-audit-keamanan": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
     "full-performance-audit": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
     "gh-axi": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt. gh-axi CLI is a separate npm package.", "redistribution": "mit"},
+    "scroll-craft": {"license": "MIT", "evidence": "nateherkai/scroll-craft 0b81622 + vendor/licenses/NATEHERK-SCROLL-CRAFT-MIT.txt; NOTICE.md", "redistribution": "mit"},
     "scroll-world": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
     "visual-studio": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
     "smartdoc": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE", "redistribution": "mit"},
