@@ -10,9 +10,9 @@ in the OpenCodeBestFriend repository, and is reproduced below.
 
 OCBF changes: OpenCode frontmatter and routing; lazy references; no KIE /
 Higgsfield / Playwright / ffmpeg core path; Continuous World handed to
-`scroll-world`; fingerprint is a comparison, not a 4-of-6 hard gate; engine
-gains `destroy` and a reduced-motion change listener. Worldflight code remains
-in the engine but must not be used as the implementation path here.
+`scroll-world`; fingerprint is a comparison, not a 4-of-6 hard gate; scoped
+optional theme; deterministic `destroy()` cleanup and a reduced-motion change
+listener. Worldflight runtime and CSS were removed from this distribution.
 
 ---
 

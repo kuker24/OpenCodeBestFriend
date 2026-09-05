@@ -47,6 +47,7 @@ class ScrollCraftContractTests(unittest.TestCase):
         text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
         fm = FM.match(text)
         self.assertIsNotNone(fm)
+        assert fm is not None
         block = fm.group(1)
         self.assertIn("name: scroll-craft", block)
         self.assertIn("compatibility: opencode", block)
@@ -65,7 +66,9 @@ class ScrollCraftContractTests(unittest.TestCase):
     def test_engine_contract(self):
         js = (SKILL / "engine" / "scrollcraft.js").read_text(encoding="utf-8")
         css = (SKILL / "engine" / "scrollcraft.css").read_text(encoding="utf-8")
+        theme = (SKILL / "engine" / "scrollcraft-theme.css").read_text(encoding="utf-8")
         self.assertTrue(css)
+        self.assertTrue(theme)
         self.assertIn("function mount(", js)
         self.assertIn("function destroy()", js)
         self.assertIn("--sc-p", js)
@@ -75,13 +78,33 @@ class ScrollCraftContractTests(unittest.TestCase):
         fetch_at = js.find("fetch(")
         self.assertGreater(fetch_at, 0)
         self.assertGreater(fetch_at, js.find("function loadClip"))
+        self.assertIn("new AbortController()", js)
+        self.assertIn("URL.revokeObjectURL", js)
+        self.assertIn("cancelAnimationFrame", js)
+        self.assertIn("clearTimeout", js)
+        self.assertIn("observers.forEach", js)
+        self.assertIn("readyRoot.classList.remove('sc-ready')", js)
+        self.assertIn("[data-sc-cue] { opacity: 1", css)
+        self.assertNotIn("worldflight", (js + css).lower())
+        self.assertNotIn("worlds:", js)
+        self.assertIn('.sc-theme :focus-visible', theme)
+        for selector in ("html", "body", "*", "a", "button", "input", "select", "textarea", "table"):
+            self.assertIsNone(
+                re.search(rf"(?m)^\s*{re.escape(selector)}(?:\b|\s*[,{{:*])", css),
+                f"global {selector} selector in mechanism CSS",
+            )
         self.assertNotIn("KIE_AI_API_KEY", js)
         self.assertNotIn("playwright-core", js)
         self.assertNotIn("higgsfield", js.lower())
 
     def test_no_runtime_provider_coupling(self):
         runtime = ""
-        for rel in ("SKILL.md", "engine/scrollcraft.js", "engine/scrollcraft.css"):
+        for rel in (
+            "SKILL.md",
+            "engine/scrollcraft.js",
+            "engine/scrollcraft.css",
+            "engine/scrollcraft-theme.css",
+        ):
             runtime += (SKILL / rel).read_text(encoding="utf-8") + "\n"
         self.assertNotIn("KIE_AI_API_KEY", runtime)
         self.assertNotIn("playwright-core", runtime)
@@ -129,8 +152,28 @@ class ScrollCraftContractTests(unittest.TestCase):
         self.assertNotIn("http://", html)
         self.assertNotIn("https://", css)
         self.assertIn("scrollcraft.js", html)
+        self.assertIn("scrollcraft-theme.css", html)
+        self.assertIn('class="sc-theme"', html)
         self.assertIn("ScrollCraft.mount", html)
         self.assertNotIn("<video", html)
+
+    def test_real_browser_gate_is_wired(self):
+        smoke = ROOT / "tests" / "scroll_craft_browser_smoke.mjs"
+        self.assertTrue(smoke.is_file())
+        text = smoke.read_text(encoding="utf-8")
+        self.assertIn("Emulation.setDeviceMetricsOverride", text)
+        self.assertIn("prefers-reduced-motion", text)
+        self.assertIn("Input.dispatchKeyEvent", text)
+        self.assertIn("fetchSignals", text)
+        self.assertIn("revokedUrls", text)
+        self.assertNotIn("playwright", text.lower())
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        helper = (ROOT / "bin" / "opencode-chromium-cdp").read_text(encoding="utf-8")
+        self.assertIn("browser-smoke:", workflow)
+        self.assertIn("node tests/scroll_craft_browser_smoke.mjs", workflow)
+        self.assertIn('chrome-version: "1692935"', workflow)
+        self.assertIn('OPENCODE_CHROMIUM_NO_SANDBOX: "1"', workflow)
+        self.assertIn("sandbox_args+=(--no-sandbox)", helper)
 
     def test_license_inventory(self):
         audit = json.loads((ROOT / "vendor" / "license-audit.json").read_text(encoding="utf-8"))
