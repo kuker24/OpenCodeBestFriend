@@ -622,6 +622,56 @@
       "modified": true,
       "redistribution": "mit",
       "notes": "Adapted from affaan-m/ECC. OpenCodeBestFriend skill catalog hygiene, frontmatter schema validation, and boundary verification."
+    },
+    {
+      "component": "api-design",
+      "path": "skills/api-design",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. REST resource, status, pagination, error, and versioning design. No framework tutorial dump."
+    },
+    {
+      "component": "automation-audit-ops",
+      "path": "skills/automation-audit-ops",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. Evidence-first inventory of cron, CI, hooks, MCP, and wrappers with keep/merge/cut recommendations."
+    },
+    {
+      "component": "click-path-audit",
+      "path": "skills/click-path-audit",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. Handler vs shared-store sequential-undo and final-state mismatch audit."
+    },
+    {
+      "component": "code-tour",
+      "path": "skills/code-tour",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. CodeTour .tour walkthroughs with verified file and line anchors."
+    },
+    {
+      "component": "contract-first",
+      "path": "skills/contract-first",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. Consumer/provider collaboration around one machine-checkable contract artifact."
     }
   ],
   "adaptedFrom": {

@@ -28,6 +28,7 @@ Machine-readable copy: `vendor/license-audit.json`.
 | `hyperframes` | [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes); skill `NOTICE.md` | Apache-2.0 | follow Apache-2.0 |
 | `diagram-design` | [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design); skill `NOTICE.md` | MIT © 2024-2026 Cathryn Lavery contributors | follow MIT |
 | Warehouse Batch 2a (`agent-architecture-audit`, `cost-aware-llm-pipeline`, `eval-harness`, `prompt-optimizer`, `skill-stocktake`) | Adapted from [affaan-m/ECC](https://github.com/affaan-m/ECC); respective skill `NOTICE.md` files | MIT © 2024-2026 affaan-m and ECC contributors | follow MIT |
+| Warehouse Batch 3a (`api-design`, `automation-audit-ops`, `click-path-audit`, `code-tour`, `contract-first`) | Adapted from [affaan-m/ECC](https://github.com/affaan-m/ECC); respective skill `NOTICE.md` files | MIT © 2024-2026 affaan-m and ECC contributors | follow MIT |
 | Design bank media | User-provided public bootstrap artifact or existing local bank | **not cleared** | not in git; normal install does not download it |
 | Codebase Memory, serena, browser-act CLI, semgrep, gitleaks, osv-scanner | `vendor/sources.json` | upstream | follow upstream |
 

@@ -11,6 +11,9 @@
     "agent-architecture-audit": {
       "invocation": "model"
     },
+    "api-design": {
+      "invocation": "model"
+    },
     "architect": {
       "invocation": "manual"
     },
@@ -18,6 +21,9 @@
       "invocation": "manual"
     },
     "ask-matt": {
+      "invocation": "model"
+    },
+    "automation-audit-ops": {
       "invocation": "model"
     },
     "blast-radius": {
@@ -29,7 +35,16 @@
     "chrome-devtools-axi": {
       "invocation": "model"
     },
+    "click-path-audit": {
+      "invocation": "model"
+    },
+    "code-tour": {
+      "invocation": "model"
+    },
     "codebase-design": {
+      "invocation": "model"
+    },
+    "contract-first": {
       "invocation": "model"
     },
     "cost-aware-llm-pipeline": {

@@ -44,3 +44,9 @@ Primary Core Web Vitals: LCP, INP, CLS. FID is legacy. Do not claim improvement 
 ## RELEASE
 
 Run every configured release gate: typecheck, full tests, coverage, build, E2E, dependency or export checks, Semgrep, OSV-Scanner, Gitleaks, and pre-commit. Record unconfigured gates explicitly. Do not declare release success while a required configured gate fails.
+
+## Mechanical completion
+
+Do not claim done while a required configured gate is unrun. Missing project command = `NOT_CONFIGURED`, not PASS.
+
+Distinguish mechanical facts (typecheck, tests, build actually ran) from reasoning quality (in-session review or `/matt-code-review`). Do not install Claude Code Stop hooks, learning-library mtime gates, or disk-space blockers. Those remain `FOREIGN_ON_DEMAND`.

@@ -273,6 +273,31 @@
       "license": "MIT",
       "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
       "redistribution": "mit"
+    },
+    "api-design": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "automation-audit-ops": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "click-path-audit": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "code-tour": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "contract-first": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
     }
   }
 }

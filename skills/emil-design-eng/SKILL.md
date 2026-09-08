@@ -1,6 +1,6 @@
 ---
 name: emil-design-eng
-description: UI motion, transition, and interaction feel after Impeccable. Use when polishing animation, easing, press/hover, or interruptible chrome motion. Do not use for static UI, photoreal video, scroll-craft stories, scroll-world camera chains, or deterministic HTML-to-video compositions (hyperframes).
+description: UI motion, transition, and interaction feel after Impeccable. Use when polishing animation, easing, press/hover, or interruptible chrome motion. Do not use for static UI, photoreal video, scroll-craft stories, scroll-world camera chains, or deterministic HTML-to-video compositions (hyperframes). Easing, seam timing, and pointer chrome already live here — do not load a separate cut-the-curve, motion-doctrine, oversized-cursor, or seam-craft specialist.
 compatibility: opencode
 license: MIT
 ---
