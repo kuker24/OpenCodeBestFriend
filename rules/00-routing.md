@@ -45,6 +45,11 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Cost-aware LLM architectures, complexity model tiering, token budgets, prompt caching: `/cost-aware-llm-pipeline`. Application bundle and page latency profiling stay `/full-performance-audit`.
 - Prompt critique, structural optimization, negative constraints, format locks: `/prompt-optimizer`. General prose polishing stays `/humanizer`.
 - OpenCodeBestFriend skill catalog hygiene, frontmatter validation, boundary integrity: `/skill-stocktake`. Code standards review stays `/matt-code-review`.
+- REST resource, status, pagination, and versioning design: `/api-design`. Library docs stay Context7. Shared schema ownership stays `/contract-first`.
+- Consumer/provider OpenAPI, AsyncAPI, or Protobuf contracts: `/contract-first`. Module seams stay `/codebase-design`.
+- Live cron, CI, hook, MCP, and wrapper inventory (keep/merge/cut): `/automation-audit-ops`. Catalog hygiene stays `/skill-stocktake`.
+- CodeTour `.tour` walkthroughs with verified file anchors: `/code-tour`. Prose docs stay `/technical-writing`.
+- Button/handler sequential-undo and shared-store side effects: `/click-path-audit`. Exploratory browser QA stays `/playwright-qa`.
 
 ## UI and browser
 
@@ -96,7 +101,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 
 - No extra marketplace plugins. Foundation = skills + MCP + thin AGENTS.md + runtime helpers.
 - User MCP: `codebase-memory-mcp`, `context7`, and `shadcn` on; `serena` absent until a human enables it; `exa` foreign.
-- ECC / other harness overlays: `FOREIGN_ON_DEMAND`. Never add, remove, or merge foreign harness control planes or continuous-learning runtimes. Individual warehouse procedures ported in Wave 2 (agent-architecture-audit, cost-aware-llm-pipeline, eval-harness, prompt-optimizer, skill-stocktake) are first-party MIT skills. If external ECC is already present in user environment, do not merge and do not shadow.
+- ECC / other harness overlays: `FOREIGN_ON_DEMAND`. Never add, remove, or merge foreign harness control planes or continuous-learning runtimes. Individual warehouse procedures ported in Wave 2 (agent-architecture-audit, cost-aware-llm-pipeline, eval-harness, prompt-optimizer, skill-stocktake) and Wave 3 (api-design, contract-first, automation-audit-ops, code-tour, click-path-audit) are first-party MIT skills. If external ECC is already present in user environment, do not merge and do not shadow.
 - Never auto-edit rules or skills from a learning log (no `/learn`, `/evolve`, or session-end skill writers).
 
 ## Do not
