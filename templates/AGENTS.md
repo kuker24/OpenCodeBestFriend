@@ -39,7 +39,7 @@ Browser QA → skill `playwright-qa`. Explicit/session BrowserAct → `browser-a
 
 Auth/secret/payment/upload/webhook/privileged/public API → `full-audit-keamanan`. Measured LCP/INP/CLS/latency/bundle → `full-performance-audit`. GitHub → `gh-axi`. Hard unknown bug → `diagnosing-bugs`. Documents (answer/create/transform/extract/review/PDF/DOCX) → `smartdoc`. Reusable book/module knowledge → `smartbook-ingest`.
 
-Prose AI-tells / humanize → skill `humanizer`. Slash `/unslop` is the same specialist, manual only. Academic literature / manuscript / peer-critique → skill `academic` (not `research`, not `smartdoc` unless file extract/render). Deterministic HTML video / render HTML to MP4 → skill `hyperframes` (not `visual-studio`, not `emil-design-eng`). Editorial diagram HTML/SVG → skill `diagram-design` (not `impeccable`).
+Prose AI-tells / humanize → skill `humanizer`. Slash `/unslop` is the same specialist, manual only. Academic literature / manuscript / peer-critique → skill `academic` (not `research`, not `smartdoc` unless file extract/render). Deterministic HTML video / render HTML to MP4 → skill `hyperframes` (not `visual-studio`, not `emil-design-eng`). Editorial diagram HTML/SVG → skill `diagram-design` (not `impeccable`). Agent stack diagnostics / eval benchmarks → skill `agent-architecture-audit` or `eval-harness`.
 
 ## When routing is non-obvious
 

@@ -21,7 +21,7 @@ Checklist for evaluating skill quality and catalog integrity.
 - Does not bundle multi-domain monolithic instructions.
 
 ## 5. Path Sanitation
-- Zero hardcoded foreign paths (`~/.claude/`, `~/.cursor/`).
+- Zero hardcoded foreign host paths (legacy or third-party dot-directories).
 - Standardized paths use `~/.config/opencode/`.
 
 ## 6. Procedural Determinism

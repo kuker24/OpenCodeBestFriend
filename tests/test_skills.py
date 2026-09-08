@@ -18,8 +18,8 @@ FM = re.compile(r"\A---\n(.*?\n)---\n", re.DOTALL)
 class SkillPolicyTests(unittest.TestCase):
     def test_counts(self):
         allow, skills, model, manual = load_policy(ROOT)
-        self.assertEqual(len(allow), 49)
-        self.assertEqual(len(model), 33)
+        self.assertEqual(len(allow), 54)
+        self.assertEqual(len(model), 38)
         self.assertEqual(len(manual), 16)
         self.assertEqual(set(allow), set(skills))
 

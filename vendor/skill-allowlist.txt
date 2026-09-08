@@ -1,5 +1,6 @@
 academic
 adhd
+agent-architecture-audit
 architect
 arena
 ask-matt
@@ -7,12 +8,14 @@ blast-radius
 browser-act
 chrome-devtools-axi
 codebase-design
+cost-aware-llm-pipeline
 create-verification-skill
 decision-log
-diagram-design
 diagnosing-bugs
+diagram-design
 domain-modeling
 emil-design-eng
+eval-harness
 figure-it-out
 found-this-design
 full-audit-keamanan
@@ -30,11 +33,13 @@ maintain-verification-skill
 matt-code-review
 matt-implement
 playwright-qa
+prompt-optimizer
 prototype
 reflect
 research
 scroll-craft
 scroll-world
+skill-stocktake
 smartbook-ingest
 smartdoc
 tdd
