@@ -62,6 +62,7 @@ needs; do not edit the mechanism per page. Drive bespoke behaviour from
 | Dashboard, ordinary landing, design system | `impeccable` |
 | Hover/press/easing after the surface exists | `emil-design-eng` |
 | Standalone photoreal / ads / identity | `visual-studio` |
+| Deterministic HTML composition rendered to video | `hyperframes` |
 | Exploratory QA | `browser-act` |
 | Observed browser cause | `opencode-chromium-cdp` then `chrome-devtools-axi` |
 

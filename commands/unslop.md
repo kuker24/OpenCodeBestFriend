@@ -2,9 +2,9 @@
 description: "Manual specialist: unslop"
 ---
 
-Load and follow the OpenCode-adapted manual specialist `unslop`.
+Load and follow the OpenCode-adapted manual specialist `unslop` (alias for `humanizer`).
 
-Read the file `~/.config/opencode/bestfriend/skills/unslop/SKILL.md` with the Read tool and follow it exactly.
+Read the file `~/.config/opencode/skills/humanizer/SKILL.md` (or in repository tree: `skills/humanizer/SKILL.md`) with the Read tool and follow it exactly.
 
 User arguments:
 

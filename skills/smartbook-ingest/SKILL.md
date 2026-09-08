@@ -1,6 +1,6 @@
 ---
 name: smartbook-ingest
-description: Compile reusable books, semester modules, manuals, or documentation into a local SmartBook under the resolved SmartDoc root. Use to create, update, inspect, rebuild, or validate persistent knowledge. Triggers: SmartBook, jadikan buku, pelajari modul, knowledge pack, ingest book. Not for one-off homework, invoices, letters, or answering a current assignment (smartdoc).
+description: Compile reusable books, semester modules, manuals, or documentation into a local SmartBook under the resolved SmartDoc root. Use to create, update, inspect, rebuild, or validate persistent knowledge. Triggers: SmartBook, jadikan buku, pelajari modul, knowledge pack, ingest book. Not for one-off homework, invoices, letters, or answering a current assignment (smartdoc) or academic literature surveys/manuscripts (academic).
 compatibility: opencode
 license: MIT
 ---
@@ -9,7 +9,7 @@ license: MIT
 
 Primary only when the job is create / update / inspect / rebuild / validate a reusable SmartBook.
 
-Do not ingest one-off homework, invoices, letters, or short forms. Suggest ingest from SmartDoc when a source looks reusable; wait for intent.
+Do not ingest one-off homework, invoices, letters, or short forms. Suggest ingest from SmartDoc when a source looks reusable; wait for intent. Academic literature surveys, scholarly papers, and peer review route to `academic`.
 
 ```text
 safe extract → structure/index → provenance → persist under resolved SmartDoc root → validate

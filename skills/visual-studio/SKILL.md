@@ -44,6 +44,7 @@ live there. Do not restate them here.
 | Scroll-scrub fly-through, diorama, 3D-world landing | `scroll-world` |
 | Website/app whose UI needs designed photos or videos | `impeccable` leads the surface; this skill produces the media |
 | Game sprites, tiles, icon sets, animation sheets | `game-asset-core` |
+| Deterministic HTML composition rendered to video | `hyperframes` |
 | UI motion / interaction feel | `emil-design-eng` after Impeccable |
 | Photoreal stills, ads, cinematic, identity, thumbnails (no UI) | this skill |
 | Photoreal person/creature inside a world page | `scroll-world` owns the chain + page; this skill cinematic for those stills/clips |
