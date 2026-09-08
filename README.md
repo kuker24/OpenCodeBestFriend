@@ -1,14 +1,14 @@
 # OpenCodeBestFriend
 
 Production-ready capability layer for OpenCode:
-49 routed skills, MCP, Codebase Memory,
+54 routed skills (core + Wave 2 warehouse specialists), MCP, Codebase Memory,
 Design Bank, Design Intelligence, SmartDoc, browser and verification tooling.
 
 OpenCodeBestFriend is an installer and runtime overlay for [OpenCode](https://opencode.ai). It is **not** Claude Code, **not** a model provider, and **not** a dump of a developer home directory.
 
 ## What it is
 
-- 49 skills: 33 model-invoked, 16 manual slash commands
+- 54 skills: 38 model-invoked, 16 manual slash commands
 - A thin `AGENTS.md` router (lazy, one primary specialist)
 - Core MCP: Codebase Memory, Context7, shadcn
 - Design Bank discovery or download (media is **not** in git)
@@ -61,7 +61,7 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-    33 automatic       Codebase Memory        Verification
+    38 automatic       Codebase Memory        Verification
     16 manual          Context7              Engineering
                        shadcn
         │
