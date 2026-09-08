@@ -2,7 +2,12 @@
 
 ## Unreleased
 
-No unreleased changes.
+- Add model-invoked `humanizer` specialist for removing AI prose tells; `/unslop` is updated to a manual alias delegating to it.
+- Add original first-party `academic` specialist (literature survey, scholarly drafting, peer critique, revision ledger) without copying CC-BY-NC material.
+- Add model-invoked `hyperframes` specialist for deterministic HTML/CSS-to-MP4 video composition via headless Chromium and FFmpeg.
+- Add model-invoked `diagram-design` specialist for editorial HTML and inline SVG technical diagrams (anti-Mermaid slop).
+- Reject ECC pack; foreign harnesses remain `FOREIGN_ON_DEMAND` and are not vendored or auto-merged.
+- Update routing, allowlists, provenance, and tests. Skills now total 49 owned names (33 model-invoked, 16 manual slash commands).
 
 ## 1.7.1 — 2026-09-05
 

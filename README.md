@@ -1,14 +1,14 @@
 # OpenCodeBestFriend
 
 Production-ready capability layer for OpenCode:
-45 routed skills, MCP, Codebase Memory,
+49 routed skills, MCP, Codebase Memory,
 Design Bank, Design Intelligence, SmartDoc, browser and verification tooling.
 
 OpenCodeBestFriend is an installer and runtime overlay for [OpenCode](https://opencode.ai). It is **not** Claude Code, **not** a model provider, and **not** a dump of a developer home directory.
 
 ## What it is
 
-- 45 skills: 29 model-invoked, 16 manual slash commands
+- 49 skills: 33 model-invoked, 16 manual slash commands
 - A thin `AGENTS.md` router (lazy, one primary specialist)
 - Core MCP: Codebase Memory, Context7, shadcn
 - Design Bank discovery or download (media is **not** in git)
@@ -61,7 +61,7 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-    29 automatic       Codebase Memory        Verification
+    33 automatic       Codebase Memory        Verification
     16 manual          Context7              Engineering
                        shadcn
         │
@@ -97,8 +97,12 @@ Default: repository evidence first. Then at most one specialist.
 | Photoreal / media | `visual-studio` |
 | Scroll-led storytelling | `scroll-craft` |
 | Scroll-driven 3D / camera world | `scroll-world` |
+| Deterministic HTML composition video | `hyperframes` |
 | Documents (PDF/DOCX/answer/extract/review) | `smartdoc` |
 | Reusable book/module knowledge | `smartbook-ingest` |
+| Scholarly literature & manuscripts | `academic` |
+| Prose AI-tell removal & humanizing | `humanizer` (`/unslop`) |
+| Editorial HTML/SVG diagrams | `diagram-design` |
 | Architecture bake-off | `/architect` (manual) |
 | Repo rationale | `/why` (manual) |
 
