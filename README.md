@@ -61,8 +61,8 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-    38 automatic       Codebase Memory        Verification
-    16 manual          Context7              Engineering
+     43 automatic       Codebase Memory        Verification
+     16 manual          Context7              Engineering
                        shadcn
         │
         ▼
@@ -105,6 +105,8 @@ Default: repository evidence first. Then at most one specialist.
 | Editorial HTML/SVG diagrams | `diagram-design` |
 | Architecture bake-off | `/architect` (manual) |
 | Repo rationale | `/why` (manual) |
+
+Warehouse: `api-design`, `contract-first`, `automation-audit-ops`, `code-tour`, `click-path-audit` (plus Wave 2 diagnostics).
 
 Examples: interactive product story told by scroll → `scroll-craft`. Unbroken camera through a miniature factory → `scroll-world`. Clean security dashboard → `impeccable`. Video, image generation, and Design V2 stay optional.
 
