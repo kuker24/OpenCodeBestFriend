@@ -39,9 +39,39 @@ class RoutingTests(unittest.TestCase):
             "smartdoc": "smartdoc",
             "smartbook-ingest": "smartbook-ingest",
             "scroll-craft": "scroll-craft",
+            "humanizer": "humanizer",
+            "academic": "academic",
+            "hyperframes": "hyperframes",
+            "diagram-design": "diagram-design",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)
+
+    def test_new_specialist_boundaries(self):
+        # Academic vs research vs smartdoc
+        self.assertIn("Academic literature / manuscript / peer-critique → skill `academic`", self.agents)
+        self.assertIn("Scholarly literature surveys, academic manuscripts", self.routing)
+        self.assertIn("academic", self.routing)
+        
+        # Hyperframes vs visual-studio vs scroll
+        self.assertIn("Deterministic HTML video / render HTML to MP4 → skill `hyperframes`", self.agents)
+        self.assertIn("Deterministic HTML composition rendered to video: `/hyperframes`", self.routing)
+        self.assertIn("Ordinary scrollable UI stays `/impeccable`.", self.routing)
+        
+        # Diagram design vs impeccable vs codebase-design
+        self.assertIn("Editorial diagram HTML/SVG → skill `diagram-design`", self.agents)
+        self.assertIn("Editorial HTML and inline SVG diagrams", self.routing)
+        
+        # Humanizer & unslop alias
+        self.assertIn("Prose AI-tells / humanize → skill `humanizer`. Slash `/unslop` is the same specialist, manual only.", self.agents)
+        self.assertIn("Prose AI-tell removal and natural tone polishing: `/humanizer`.", self.routing)
+        unslop_skill = (ROOT / "manual-skills" / "unslop" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("skills/humanizer/SKILL.md", unslop_skill)
+        self.assertNotIn("Puffery", unslop_skill)
+        self.assertNotIn("Superficial -ing phrases", unslop_skill)
+        
+        # Foreign harness note
+        self.assertIn("ECC / other harness overlays: `FOREIGN_ON_DEMAND`", self.routing)
 
     def test_scroll_routes_have_explicit_boundaries(self):
         self.assertIn(

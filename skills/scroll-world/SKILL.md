@@ -45,6 +45,7 @@ not restate them here.
 | Photoreal stills, ads, cinematic, identity, thumbnails (no world page) | `visual-studio` |
 | Photoreal person/creature inside this world | this skill owns the chain + page; load `visual-studio` cinematic for those stills/clips |
 | Game sprites, tiles, icon sets | `game-asset-core` |
+| Deterministic HTML composition rendered to video | `hyperframes` |
 | UI chrome motion (nav, buttons), not the video scrub | `emil-design-eng` after Impeccable |
 
 Do not load Emil for stills. Do not load Impeccable to render the video

@@ -1,6 +1,6 @@
 ---
 name: research
-description: "Investigate a question against official docs, specs, or first-party APIs and write cited Markdown if asked. Use for external/library facts. Skip why *this repo* chose an approach (/why)."
+description: "Investigate a question against official docs, specs, or first-party APIs and write cited Markdown if asked. Use for external/library facts. Skip why *this repo* chose an approach (/why), and academic literature/theses (academic)."
 compatibility: opencode
 ---
 
@@ -12,4 +12,4 @@ Current library or framework docs: MCP `context7` when repo evidence is not enou
 
 If the user asked for a note, write one Markdown file in the repo (match existing convention). Cite each claim. If they only wanted an answer, do not create a file.
 
-This is not `/why`. Repo history, PRs, and local design rationale stay on `/why`.
+This is not `/why`. Repo history, PRs, and local design rationale stay on `/why`. Scholarly papers, literature surveys, and academic peer review route to `academic`.

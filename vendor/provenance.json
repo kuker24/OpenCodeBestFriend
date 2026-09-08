@@ -532,6 +532,46 @@
       "modified": true,
       "redistribution": "mit",
       "notes": "Integrated quality guard and contextual reference modules in Impeccable."
+    },
+    {
+      "component": "humanizer",
+      "path": "skills/humanizer",
+      "upstream": "https://github.com/blader/humanizer",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 blader contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from blader/humanizer v3 with BestFriend Semantic-Preservation Constitution. manual-skills/unslop aliases it."
+    },
+    {
+      "component": "academic",
+      "path": "skills/academic",
+      "upstream": "first-party",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 OpenCodeBestFriend contributors",
+      "modified": false,
+      "redistribution": "mit",
+      "notes": "Original first-party academic specialist. Conceptual pipeline (research, write, review, revise) independently implemented. No text copied from Imbad0202/academic-research-skills (CC-BY-NC-4.0)."
+    },
+    {
+      "component": "hyperframes",
+      "path": "skills/hyperframes",
+      "upstream": "https://github.com/heygen-com/hyperframes",
+      "license": "Apache-2.0",
+      "copyright": "Copyright (c) HeyGen",
+      "modified": true,
+      "redistribution": "apache-2.0",
+      "notes": "Deterministic HTML-to-MP4 video composition specialist with local Chromium and FFmpeg execution boundaries."
+    },
+    {
+      "component": "diagram-design",
+      "path": "skills/diagram-design",
+      "upstream": "https://github.com/cathrynlavery/diagram-design",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 Cathryn Lavery",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from cathrynlavery/diagram-design. Standalone HTML/inline SVG diagrams with anti-Mermaid slop discipline."
     }
   ],
   "adaptedFrom": {

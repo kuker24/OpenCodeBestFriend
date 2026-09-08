@@ -23,6 +23,10 @@ Machine-readable copy: `vendor/license-audit.json`.
 | `playwright-qa` | [microsoft/playwright-cli](https://github.com/microsoft/playwright-cli) `655530f` — `vendor/licenses/MICROSOFT-PLAYWRIGHT-CLI-APACHE2.txt`; skill `NOTICE.md` | Apache-2.0 © Microsoft Corporation | follow Apache-2.0 |
 | `taste-guard` | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) `ccbc156` — `vendor/licenses/LEONXLNX-TASTE-MIT.txt`; integrated in Impeccable | MIT © 2026 Leonxlnx | follow MIT |
 | `install-anti-slop` | [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop) `e8c4880` — `vendor/licenses/DMMULROY-ANTI-SLOP-MIT.txt`; skill `NOTICE.md` | MIT © 2026 Dillon Mulroy | follow MIT |
+| `humanizer` | [blader/humanizer](https://github.com/blader/humanizer) v3; skill `NOTICE.md` | MIT © 2024-2026 blader contributors | follow MIT |
+| `academic` | Original first-party text. Conceptual pipeline (research→write→review→revise) independently implemented. No source copied from Imbad0202/academic-research-skills (CC-BY-NC-4.0). | MIT © 2026 OpenCodeBestFriend contributors | follow MIT |
+| `hyperframes` | [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes); skill `NOTICE.md` | Apache-2.0 | follow Apache-2.0 |
+| `diagram-design` | [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design); skill `NOTICE.md` | MIT © 2024-2026 Cathryn Lavery contributors | follow MIT |
 | Design bank media | User-provided public bootstrap artifact or existing local bank | **not cleared** | not in git; normal install does not download it |
 | Codebase Memory, serena, browser-act CLI, semgrep, gitleaks, osv-scanner | `vendor/sources.json` | upstream | follow upstream |
 

@@ -1,6 +1,6 @@
 ---
 name: smartdoc
-description: Per-job document intelligence. Understand attached PDF/DOCX/TXT/MD/images, lock a Document Contract, then answer, create, transform, summarize, extract, analyze, synthesize, or verify. Triggers: kerjakan, soal, PDF, DOCX, laporan, proposal, ringkas, extract tables, tulisan tangan, cek similarity, perbaiki dokumen, review, letter, form. Not for UI DESIGN.md (impeccable document) or compiling a reusable SmartBook (smartbook-ingest).
+description: Per-job document intelligence. Understand attached PDF/DOCX/TXT/MD/images, lock a Document Contract, then answer, create, transform, summarize, extract, analyze, synthesize, or verify. Triggers: kerjakan, soal, PDF, DOCX, laporan, proposal, ringkas, extract tables, tulisan tangan, cek similarity, perbaiki dokumen, review, letter, form. Not for UI DESIGN.md (impeccable document), compiling a reusable SmartBook (smartbook-ingest), or academic literature surveys/theses (academic).
 compatibility: opencode
 license: MIT
 ---
@@ -43,6 +43,7 @@ Load [references/qa.md](references/qa.md) after content exists. Load [references
 - Do not search the web unless `source_policy.web` is true.
 - Do not create a SmartBook unless the user asked.
 - Identity only when the artifact needs it and no profile is selected.
+- Academic literature synthesis, scholarly papers, and peer critique route to `academic`; SmartDoc handles file intake, OCR, and output rendering.
 - Ask only HIGH/CRITICAL questions whose answers change the artifact. HIGH confidence → proceed.
 - Never call a local score Turnitin. Never promise 0%. Never run a detector-evasion loop.
 - Handwriting is a renderer, not a skill.

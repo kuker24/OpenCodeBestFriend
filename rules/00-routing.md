@@ -31,12 +31,15 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Broader web research: built-in `WebSearch` and `WebFetch`. MCP `exa` is foreign/pre-existing and ON_DEMAND. Use it only if already connected and research needs it. Never add or remove `exa`.
 - Hard, high-impact, divergent decisions, fuzzy debugging, API or schema alternatives, trap detection: `/adhd` on demand only. Skip ADHD for typos, ordinary CRUD, or bugs with a known cause.
 - Official library, spec, or first-party API facts: `/research` (Context7 when repo evidence is not enough). Why *this repo* chose an approach: suggest `/why` (manual). Do not mix the two.
+- Scholarly literature surveys, academic manuscripts (IMRaD/thesis/proposal), and structured peer critique: `/academic` (not `research`, not `smartdoc` unless file extract/render).
 - Fuzzy or conflicting domain terms, glossary, CONTEXT.md / ADR writing: `/domain-modeling`. Full product interviews that should leave CONTEXT.md/ADRs: `/grill-with-docs`.
 - Module, interface, seam, testability, abstraction: `/codebase-design`. Multi-sketch bake-off: suggest `/architect` (manual). Do not auto-start `/architect`.
 - Throwaway evidence for one design question: `/prototype`. Skip ordinary implementation, ADHD, and `/arena`.
 - Unknown / hard bugs, regressions, measured slowdown: `/diagnosing-bugs`. Skip typos, known-cause, and test-first known fixes (`/tdd`).
 - Authoring SKILL.md / AGENTS.md / skill descriptions / context pointers: `/writing-for-agents`. Workflow choice stays `/ask-matt`.
 - Documents (answer, create, transform, extract, review, PDF/DOCX): `/smartdoc`. Reusable book/module knowledge: `/smartbook-ingest`. SmartDoc may read an existing SmartBook; that is not a second implementation specialist. Impeccable `document` stays DESIGN.md.
+- Prose AI-tell removal and natural tone polishing: `/humanizer`. Manual `/unslop` is an alias to the same specialist body. Do not auto-apply on ordinary code or diffs. Technical documentation structure stays `/technical-writing`.
+- Editorial HTML and inline SVG diagrams (architecture, sequence, ER, flowcharts, Wardley): `/diagram-design`. Mermaid/draw.io are inputs to redraw, not final output. Frontend UI implementation stays `/impeccable`. Code-level seams stay `/codebase-design`.
 
 ## UI and browser
 
@@ -47,6 +50,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Use the hub only when cwd has `components.json`. Never silent `shadcn init` on this adapter, a backend or Python tree, or a non-UI cwd.
 - Scroll-led storytelling (scroll is the timeline, scrollytelling, signature interaction): `/scroll-craft`. Ordinary scrollable UI stays `/impeccable`. `/scroll-craft` plus Continuous World: Scroll Craft writes the brief, then `/scroll-world`.
 - Continuous camera fly-through, diorama, or 3D-world landing: `/scroll-world` even if the request says scroll.
+- Deterministic HTML composition rendered to video: `/hyperframes` (headless Chrome + FFmpeg). Ordinary scrollable UI stays `/impeccable`.
 - Photoreal stills / ads / identity with no UI surface: `/visual-studio`.
 - Motion after Impeccable: `/emil-design-eng`.
 - Image/video generation: use OpenCode native image tools if the session exposes them. Otherwise write prompt files and mark DEGRADED. Do not invent `image_gen`.
@@ -87,7 +91,8 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 
 - No extra marketplace plugins. Foundation = skills + MCP + thin AGENTS.md + runtime helpers.
 - User MCP: `codebase-memory-mcp`, `context7`, and `shadcn` on; `serena` absent until a human enables it; `exa` foreign.
-- Never auto-edit rules or skills from a learning log.
+- ECC / other harness overlays: `FOREIGN_ON_DEMAND`. Never add, remove, or merge their skills from this installer. If already present in user environment, do not merge and do not shadow.
+- Never auto-edit rules or skills from a learning log (no `/learn`, `/evolve`, or session-end skill writers).
 
 ## Do not
 
