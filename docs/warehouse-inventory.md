@@ -1,4 +1,4 @@
-# OpenCodeBestFriend — Skill Warehouse Wave 2 Inventory
+# OpenCodeBestFriend — Skill Warehouse Inventory
 
 This inventory establishes the contract for warehouse skills across the five analyzed upstream repositories:
 1. `blader/humanizer` (MIT)
@@ -9,18 +9,19 @@ This inventory establishes the contract for warehouse skills across the five ana
 
 ## Contract Rules
 - Decisions: `NEW | MERGE | REJECT | DEFER | DONE`
-- Batch `2a`: Only rows marked `decision=NEW` with `batch=2a` are ported in this wave.
+- Batch `2a`: Rows marked `decision=NEW` with `batch=2a` were ported in Wave 2.
+- Batch `3a`: Only remaining `DEFER` rows marked `decision=NEW` with `batch=3a` are ported in Wave 3. Do not reopen `REJECT`. Do not re-port `DONE`/`MERGE`.
 - External harness runtimes, auto-mutations, and CC-BY-NC text are strictly REJECTED.
 
 ## Summary Counts
 
 | Decision | Count | Description |
 | :--- | :---: | :--- |
-| `NEW` | 5 | Uniquely missing capabilities ported to first-party MIT BestFriend specialists in Batch 2a |
+| `NEW` | 10 | Uniquely missing capabilities ported to first-party MIT BestFriend specialists (Batch 2a + 3a) |
 | `DONE` | 3 | Specialists already ported to OpenCodeBestFriend (`humanizer`, `diagram-design`, `hyperframes`) |
-| `MERGE` | 78 | Capabilities merged into existing BestFriend specialists or references (zero text plagiarism) |
+| `MERGE` | 83 | Capabilities merged into existing BestFriend specialists or references (zero text plagiarism) |
 | `REJECT` | 158 | Foreign harness runtimes, framework sprawl, trading bots, vendor ops, and incompatible licenses |
-| `DEFER` | 74 | Domain-specific procedures cataloged for future warehouse wave evaluation |
+| `DEFER` | 64 | Domain-specific procedures cataloged for future warehouse wave evaluation |
 | **TOTAL** | **318** | Total upstream skill items cataloged |
 
 ---
@@ -53,10 +54,10 @@ This inventory establishes the contract for warehouse skills across the five ana
 | `heygen-com/hyperframes` | `talking-head-recut` | **MERGE** | `hyperframes` | Talking head recut workflow; documented in references/workflows.md | `-` |
 | `heygen-com/hyperframes` | `.agents/skills/captions-overlay` | **MERGE** | `hyperframes` | Caption typography and positioning rules; merged into references/composition.md | `-` |
 | `heygen-com/hyperframes` | `.agents/skills/changelog-video` | **DEFER** | `-` | Changelog video pipeline coupled to proprietary HeyGen assets and voices | `-` |
-| `heygen-com/hyperframes` | `.agents/skills/cut-the-curve` | **DEFER** | `-` | Easing curves and cubic-bezier guidelines overlapping emil-design-eng / scroll-craft | `-` |
-| `heygen-com/hyperframes` | `.agents/skills/motion-doctrine` | **DEFER** | `-` | Seam-gate motion doctrines overlapping emil-design-eng | `-` |
-| `heygen-com/hyperframes` | `.agents/skills/oversized-cursor` | **DEFER** | `-` | Animated cursor visual primitive overlapping emil-design-eng | `-` |
-| `heygen-com/hyperframes` | `.agents/skills/seam-craft` | **DEFER** | `-` | Transition seam mechanics overlapping emil-design-eng / hyperframes | `-` |
+| `heygen-com/hyperframes` | `.agents/skills/cut-the-curve` | **MERGE** | `emil-design-eng` | Easing curves already live in emil-design-eng; one handoff sentence, no twin skill | `3a` |
+| `heygen-com/hyperframes` | `.agents/skills/motion-doctrine` | **MERGE** | `emil-design-eng` | Seam-gate motion doctrine overlaps emil-design-eng; handoff only | `3a` |
+| `heygen-com/hyperframes` | `.agents/skills/oversized-cursor` | **MERGE** | `emil-design-eng` | Pointer chrome overlaps emil-design-eng; handoff only | `3a` |
+| `heygen-com/hyperframes` | `.agents/skills/seam-craft` | **MERGE** | `emil-design-eng` | Transition seams overlap emil-design-eng; handoff only | `3a` |
 | `Imbad0202/academic-research-skills` | `academic-paper` | **MERGE** | `academic` | Manuscript drafting methodology synthesized in first-party skills/academic/references/write.md; zero CC-BY-NC text copied | `-` |
 | `Imbad0202/academic-research-skills` | `academic-paper-reviewer` | **MERGE** | `academic` | Peer critique framework synthesized in first-party skills/academic/references/review.md; zero CC-BY-NC text copied | `-` |
 | `Imbad0202/academic-research-skills` | `academic-pipeline` | **MERGE** | `academic` | End-to-end research synthesis pipeline merged into skills/academic/SKILL.md; zero CC-BY-NC text copied | `-` |
@@ -76,10 +77,10 @@ This inventory establishes the contract for warehouse skills across the five ana
 | `affaan-m/ECC` | `android-clean-architecture` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
 | `affaan-m/ECC` | `angular-developer` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
 | `affaan-m/ECC` | `api-connector-builder` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
-| `affaan-m/ECC` | `api-design` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
+| `affaan-m/ECC` | `api-design` | **NEW** | `api-design` | REST resource, status, pagination, error, and versioning design; not a Context7 clone | `3a` |
 | `affaan-m/ECC` | `architecture-decision-records` | **MERGE** | `grill-with-docs` | MERGE into grill-with-docs / domain-modeling ADR generation | `-` |
 | `affaan-m/ECC` | `article-writing` | **MERGE** | `humanizer` | MERGE into humanizer / technical-writing | `-` |
-| `affaan-m/ECC` | `automation-audit-ops` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
+| `affaan-m/ECC` | `automation-audit-ops` | **NEW** | `automation-audit-ops` | Evidence-first live cron/CI/hook/MCP inventory with keep/merge/cut | `3a` |
 | `affaan-m/ECC` | `autonomous-agent-harness` | **REJECT** | `-` | Harness control plane / autonomous loop / host adapter runtime; reject vendor runtime | `-` |
 | `affaan-m/ECC` | `autonomous-loops` | **REJECT** | `-` | Harness control plane / autonomous loop / host adapter runtime; reject vendor runtime | `-` |
 | `affaan-m/ECC` | `backend-patterns` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
@@ -97,9 +98,9 @@ This inventory establishes the contract for warehouse skills across the five ana
 | `affaan-m/ECC` | `cisco-ios-patterns` | **REJECT** | `-` | Third-party vendor operations and niche business workflows; reject proprietary automation | `-` |
 | `affaan-m/ECC` | `ck` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
 | `affaan-m/ECC` | `claude-devfleet` | **REJECT** | `-` | Harness control plane / autonomous loop / host adapter runtime; reject vendor runtime | `-` |
-| `affaan-m/ECC` | `click-path-audit` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
+| `affaan-m/ECC` | `click-path-audit` | **NEW** | `click-path-audit` | Handler vs shared-store sequential-undo audit; not playwright-qa | `3a` |
 | `affaan-m/ECC` | `clickhouse-io` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
-| `affaan-m/ECC` | `code-tour` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
+| `affaan-m/ECC` | `code-tour` | **NEW** | `code-tour` | CodeTour `.tour` walkthroughs with verified file anchors | `3a` |
 | `affaan-m/ECC` | `codebase-onboarding` | **MERGE** | `codebase-memory` | MERGE into codebase-memory MCP | `-` |
 | `affaan-m/ECC` | `codehealth-mcp` | **MERGE** | `codebase-memory` | MERGE into codebase-memory MCP | `-` |
 | `affaan-m/ECC` | `coding-standards` | **MERGE** | `matt-code-review` | MERGE into matt-code-review / 02-engineering-principles | `-` |
@@ -115,7 +116,7 @@ This inventory establishes the contract for warehouse skills across the five ana
 | `affaan-m/ECC` | `continuous-agent-loop` | **REJECT** | `-` | Harness control plane / autonomous loop / host adapter runtime; reject vendor runtime | `-` |
 | `affaan-m/ECC` | `continuous-learning-v2` | **REJECT** | `-` | Harness control plane / autonomous loop / host adapter runtime; reject vendor runtime | `-` |
 | `affaan-m/ECC` | `continuous-learning` | **REJECT** | `-` | Harness control plane / autonomous loop / host adapter runtime; reject vendor runtime | `-` |
-| `affaan-m/ECC` | `contract-first` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
+| `affaan-m/ECC` | `contract-first` | **NEW** | `contract-first` | One canonical machine-checkable consumer/provider contract artifact | `3a` |
 | `affaan-m/ECC` | `cost-aware-llm-pipeline` | **NEW** | `cost-aware-llm-pipeline` | Cost engineering patterns for LLM APIs (complexity routing, token budgeting, prompt caching, fallback tiers) | `2a` |
 | `affaan-m/ECC` | `cost-tracking` | **MERGE** | `cost-aware-llm-pipeline` | MERGE into cost-aware-llm-pipeline | `-` |
 | `affaan-m/ECC` | `council-multi-model` | **REJECT** | `-` | Harness control plane / autonomous loop / host adapter runtime; reject vendor runtime | `-` |
@@ -133,7 +134,7 @@ This inventory establishes the contract for warehouse skills across the five ana
 | `affaan-m/ECC` | `database-migrations` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
 | `affaan-m/ECC` | `deep-research` | **MERGE** | `research` | MERGE into research / academic | `-` |
 | `affaan-m/ECC` | `defi-amm-security` | **REJECT** | `-` | Cryptocurrency / Web3 / automated trading specific domain; outside BestFriend core mission | `-` |
-| `affaan-m/ECC` | `delivery-gate` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
+| `affaan-m/ECC` | `delivery-gate` | **MERGE** | `rules/01-verification.md` | Mechanical completion gates already live in verification profiles; no Claude Stop hook | `3a` |
 | `affaan-m/ECC` | `deployment-patterns` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
 | `affaan-m/ECC` | `design-system` | **MERGE** | `impeccable` | MERGE into impeccable design tokens | `-` |
 | `affaan-m/ECC` | `dev-team` | **DEFER** | `-` | Specialized domain procedure deferred for future warehouse wave evaluation | `-` |
