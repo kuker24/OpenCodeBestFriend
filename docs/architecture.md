@@ -10,8 +10,8 @@
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-    38 automatic       Codebase Memory        Verification
-    16 manual          Context7              Engineering
+     43 automatic       Codebase Memory        Verification
+     16 manual          Context7              Engineering
                        shadcn
         │
         ▼

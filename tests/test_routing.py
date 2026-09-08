@@ -48,6 +48,11 @@ class RoutingTests(unittest.TestCase):
             "cost-aware-llm-pipeline": "cost-aware-llm-pipeline",
             "prompt-optimizer": "prompt-optimizer",
             "skill-stocktake": "skill-stocktake",
+            "api-design": "api-design",
+            "contract-first": "contract-first",
+            "automation-audit-ops": "automation-audit-ops",
+            "code-tour": "code-tour",
+            "click-path-audit": "click-path-audit",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)
@@ -85,6 +90,14 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("Cost-aware LLM architectures, complexity model tiering", self.routing)
         self.assertIn("Prompt critique, structural optimization", self.routing)
         self.assertIn("OpenCodeBestFriend skill catalog hygiene", self.routing)
+
+        # Warehouse Wave 3 specialists
+        self.assertIn("API contract / click-path / live automation inventory → skill `contract-first` or `click-path-audit`", self.agents)
+        self.assertIn("REST resource, status, pagination, and versioning design: `/api-design`", self.routing)
+        self.assertIn("Consumer/provider OpenAPI, AsyncAPI, or Protobuf contracts: `/contract-first`", self.routing)
+        self.assertIn("Live cron, CI, hook, MCP, and wrapper inventory", self.routing)
+        self.assertIn("CodeTour `.tour` walkthroughs with verified file anchors: `/code-tour`", self.routing)
+        self.assertIn("Button/handler sequential-undo and shared-store side effects: `/click-path-audit`", self.routing)
 
     def test_scroll_routes_have_explicit_boundaries(self):
         self.assertIn(
