@@ -48,6 +48,10 @@
     "smartdoc": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE", "redistribution": "mit"},
     "smartbook-ingest": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE", "redistribution": "mit"},
     "install-anti-slop": {"license": "MIT", "evidence": "dmmulroy/anti-slop e8c4880 + vendor/licenses/DMMULROY-ANTI-SLOP-MIT.txt; NOTICE.md", "redistribution": "mit"},
-    "playwright-qa": {"license": "Apache-2.0", "evidence": "microsoft/playwright-cli 655530f + vendor/licenses/MICROSOFT-PLAYWRIGHT-CLI-APACHE2.txt; NOTICE.md", "redistribution": "apache-2.0"}
+    "playwright-qa": {"license": "Apache-2.0", "evidence": "microsoft/playwright-cli 655530f + vendor/licenses/MICROSOFT-PLAYWRIGHT-CLI-APACHE2.txt; NOTICE.md", "redistribution": "apache-2.0"},
+    "academic": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE (first-party original)", "redistribution": "mit"},
+    "diagram-design": {"license": "MIT", "evidence": "SKILL.md frontmatter + cathrynlavery/diagram-design; NOTICE.md", "redistribution": "mit"},
+    "humanizer": {"license": "MIT", "evidence": "SKILL.md frontmatter + blader/humanizer; NOTICE.md", "redistribution": "mit"},
+    "hyperframes": {"license": "Apache-2.0", "evidence": "SKILL.md frontmatter + heygen-com/hyperframes; NOTICE.md", "redistribution": "apache-2.0"}
   }
 }
