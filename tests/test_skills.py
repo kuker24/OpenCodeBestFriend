@@ -18,8 +18,8 @@ FM = re.compile(r"\A---\n(.*?\n)---\n", re.DOTALL)
 class SkillPolicyTests(unittest.TestCase):
     def test_counts(self):
         allow, skills, model, manual = load_policy(ROOT)
-        self.assertEqual(len(allow), 43)
-        self.assertEqual(len(model), 27)
+        self.assertEqual(len(allow), 45)
+        self.assertEqual(len(model), 29)
         self.assertEqual(len(manual), 16)
         self.assertEqual(set(allow), set(skills))
 
@@ -32,6 +32,7 @@ class SkillPolicyTests(unittest.TestCase):
             text = skill.read_text(encoding="utf-8")
             fm = FM.match(text)
             self.assertIsNotNone(fm, name)
+            assert fm is not None
             self.assertNotIn("disable-model-invocation", fm.group(1))
             self.assertNotIn("user-invocable", fm.group(1))
             self.assertTrue((ROOT / "manual-skills" / name).exists() is False)

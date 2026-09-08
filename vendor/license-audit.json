@@ -46,6 +46,8 @@
     "scroll-world": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
     "visual-studio": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
     "smartdoc": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE", "redistribution": "mit"},
-    "smartbook-ingest": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE", "redistribution": "mit"}
+    "smartbook-ingest": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE", "redistribution": "mit"},
+    "install-anti-slop": {"license": "MIT", "evidence": "dmmulroy/anti-slop e8c4880 + vendor/licenses/DMMULROY-ANTI-SLOP-MIT.txt; NOTICE.md", "redistribution": "mit"},
+    "playwright-qa": {"license": "Apache-2.0", "evidence": "microsoft/playwright-cli 655530f + vendor/licenses/MICROSOFT-PLAYWRIGHT-CLI-APACHE2.txt; NOTICE.md", "redistribution": "apache-2.0"}
   }
 }

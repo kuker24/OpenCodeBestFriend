@@ -20,10 +20,12 @@ grill-with-docs
 grilling
 impeccable
 improve-codebase-architecture
+install-anti-slop
 interrogate
 maintain-verification-skill
 matt-code-review
 matt-implement
+playwright-qa
 prototype
 reflect
 research

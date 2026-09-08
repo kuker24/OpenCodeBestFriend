@@ -50,9 +50,11 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Photoreal stills / ads / identity with no UI surface: `/visual-studio`.
 - Motion after Impeccable: `/emil-design-eng`.
 - Image/video generation: use OpenCode native image tools if the session exposes them. Otherwise write prompt files and mark DEGRADED. Do not invent `image_gen`.
-- Exploratory real-user QA: `/browser-act`. Load the skill before any `browser-act` command. Never `--type chrome-direct`.
+- Exploratory application UI QA: `/playwright-qa` is the primary adapter (navigation, form inputs, state inspection, snapshot, screenshot). Never launch for backend/non-UI.
+- Explicit multi-account or persistent browser sessions: `/browser-act`. Load the skill before any `browser-act` command. Never `--type chrome-direct`.
 - Observed browser cause: `/chrome-devtools-axi` after `opencode-chromium-cdp start` on `http://127.0.0.1:9223`. Never Google Chrome.
-- Deterministic browser regression: project Playwright only if that project already has it.
+- Deterministic browser regression: existing project test suite (Playwright Test, Cypress, etc.) using project scripts/package manager.
+- Anti-Slop lint setup, audit, migration, or removal on TS/JS projects: `/install-anti-slop` (explicit user request only; never auto-run in ordinary coding). Prose cleanup stays manual `/unslop`.
 
 ## Risk and GitHub
 

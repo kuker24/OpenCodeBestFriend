@@ -13,7 +13,7 @@ Read DESIGN.md, representative code, tokens, components, and assets.
 
 A section, component, feature, or state inside an established surface inherits that surface. Never turn a local addition into a new identity exercise.
 
-After classifying the work above, load [design-intelligence.md](design-intelligence.md) only for a whole surface or a new/replacement world. Its planner decides whether the local catalog supplies structure challengers, system-and-structure challengers, or nothing. It never becomes the owner of the stage. Do not load it for a narrow change, local extension, motion-only, data-viz-only, or 3D-only request.
+After classifying the work above, load [design-intelligence.md](design-intelligence.md) only for a whole surface or a new/replacement world. Its planner decides whether the local catalog supplies structure challengers, system-and-structure challengers, or nothing. It never becomes the owner of the stage. Do not load it for a narrow change, local extension, motion-only, data-viz-only, or 3D-only request. For Persuade and Experience surfaces, consult [taste/direction.md](taste/direction.md) and [taste/composition.md](taste/composition.md) to break default tropes while respecting user briefs.
 
 ## 2. Ask what will change the work
 

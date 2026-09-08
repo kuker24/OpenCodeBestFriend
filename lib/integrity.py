@@ -255,21 +255,46 @@ def verify_owned_runtime() -> int:
     known_keys = {key for key, _source, _installed, _kind in entries}
     if stored and isinstance(stored.get("files"), dict):
         for key, metadata in stored["files"].items():
-            if key in known_keys or not any(key.startswith(f"product/lib/{pkg}/") for pkg in PRODUCT_RUNTIME_PACKAGES):
-                continue
-            rel = key.removeprefix("product/")
-            rel_path = Path(rel)
-            if rel_path.is_absolute() or ".." in rel_path.parts or rel_path.suffix not in {".py", ".json"}:
+            if key in known_keys:
                 continue
             meta = metadata if isinstance(metadata, dict) else {}
-            kind = str(meta.get("kind") or "product-runtime")
-            entries.append((key, root / rel_path, share_dir() / "product" / rel_path, kind))
+            kind = str(meta.get("kind") or "")
+            rel_path = Path(key)
+            if rel_path.is_absolute() or ".." in rel_path.parts:
+                continue
+            installed_path = None
+            if key.startswith("skills/"):
+                installed_path = config_dir() / key
+                kind = kind or "model-skill"
+            elif key.startswith("manual-skills/"):
+                rel = key.removeprefix("manual-skills/")
+                installed_path = bf_dir() / "skills" / rel
+                kind = kind or "manual-skill"
+            elif key.startswith("commands/"):
+                installed_path = config_dir() / key
+                kind = kind or "command"
+            elif key.startswith("rules/"):
+                installed_path = bf_dir() / key
+                kind = kind or "rule"
+            elif key.startswith("product/"):
+                rel = key.removeprefix("product/")
+                installed_path = share_dir() / "product" / rel
+                kind = kind or "product-runtime"
+            elif key.startswith("helpers/"):
+                rel = key.removeprefix("helpers/")
+                installed_path = bin_dir() / rel
+                kind = kind or ("helper" if rel != "opencode-bf" else "wrapper")
+
+            if installed_path is not None:
+                entries.append((key, root / key, installed_path, kind))
     for key, source, installed, kind in entries:
         live = fingerprint(installed, kind)
-        if kind == "model-skill" and key.endswith("/SKILL.md"):
-            skill_total += 1
+        if kind == "model-skill":
+            if key.endswith("/SKILL.md"):
+                skill_total += 1
+                if live is None:
+                    missing_skills += 1
             if live is None:
-                missing_skills += 1
                 f.add("MISSING", key, str(installed))
         if kind == "command":
             cmd_total += 1
@@ -283,6 +308,8 @@ def verify_owned_runtime() -> int:
             else:
                 helper_ok += 1
         if kind == "product-runtime" and live is None:
+            f.add("MISSING", key, str(installed))
+        if kind == "manual-skill" and live is None:
             f.add("MISSING", key, str(installed))
         expected = expected_fingerprint(source, kind) if use_source and source.exists() else None
         if expected is None and stored and isinstance(stored.get("files"), dict):

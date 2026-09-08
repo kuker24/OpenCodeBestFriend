@@ -21,7 +21,7 @@ Run project-native typecheck, relevant unit or integration tests, and the build 
 
 Visual or interaction changes.
 
-Run project-native typecheck and relevant tests, then the repository's configured browser or E2E workflow. Use `/browser-act` to discover issues. Use `/chrome-devtools-axi` only after an observed failure. Both attach through background Chromium (`opencode-chromium-cdp` on `127.0.0.1:9223`). Use project Playwright to lock a repaired critical flow. Do not initialize browser tooling that the project does not already have.
+Run project-native typecheck and relevant tests, then the repository's configured browser or E2E workflow. Use `/playwright-qa` as the primary adapter for exploratory UI QA (or `/browser-act` when explicitly requested or configured for specific browser sessions). Use `/chrome-devtools-axi` only after an observed failure; DevTools attaches through background Chromium (`opencode-chromium-cdp` on `127.0.0.1:9223`). Playwright QA and BrowserAct manage their own isolated sessions. Run existing project test suites (Playwright Test, Cypress) for regression; do not initialize browser tooling or configs that the project does not already have.
 
 ## SECURITY
 

@@ -497,6 +497,41 @@
       "modified": false,
       "redistribution": "mit",
       "notes": "First-party reusable document knowledge. User data lives under the resolved SmartDoc root, not installer ownership."
+    },
+    {
+      "component": "playwright-qa",
+      "path": "skills/playwright-qa",
+      "upstream": "https://github.com/microsoft/playwright-cli",
+      "commit": "655530f6d0dc71a0d6bf46ae165877d3c7311099",
+      "license": "Apache-2.0",
+      "copyright": "Copyright (c) Microsoft Corporation",
+      "modified": true,
+      "redistribution": "apache-2.0",
+      "notes": "OCBF exploratory browser QA adapter; isolated sessions, default headless Chromium."
+    },
+    {
+      "component": "install-anti-slop",
+      "path": "skills/install-anti-slop",
+      "upstream": "https://github.com/dmmulroy/anti-slop",
+      "commit": "e8c4880471b23ab7f216fba7b27d173a6ef07d4c",
+      "version": "0.1.2",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Dillon Mulroy",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Vendored rule snapshot with 4 modes (audit, recommended, strict, custom) and opt-in Effect rules."
+    },
+    {
+      "component": "taste-guard",
+      "path": "skills/impeccable/reference/taste-guard.md",
+      "upstream": "https://github.com/Leonxlnx/taste-skill",
+      "commit": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
+      "originalPath": "skills/taste-skill",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Leonxlnx",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Integrated quality guard and contextual reference modules in Impeccable."
     }
   ],
   "adaptedFrom": {

@@ -320,7 +320,6 @@ def _host_findings(f: Findings, shadcn_enabled: bool) -> None:
         "git": which("git"),
         "curl": which("curl"),
         "tar": which("tar"),
-        "browser-act": which("browser-act"),
         "serena": which("serena"),
         "semgrep": which("semgrep"),
         "osv-scanner": which("osv-scanner"),
@@ -330,7 +329,7 @@ def _host_findings(f: Findings, shadcn_enabled: bool) -> None:
     required = {"python3"}
     if shadcn_enabled:
         required.update({"node", "npx"})
-    optional = {"browser-act", "serena", "semgrep", "osv-scanner", "gitleaks", "gh"}
+    optional = {"serena", "semgrep", "osv-scanner", "gitleaks", "gh"}
     for name, path in mapping.items():
         if path:
             if name == "gh":
@@ -346,6 +345,61 @@ def _host_findings(f: Findings, shadcn_enabled: bool) -> None:
             f.add("OPTIONAL_ABSENT", name, "NOT_INSTALLED")
         else:
             f.add("DEGRADED", name, "NOT_INSTALLED")
+
+
+def _browser_qa_findings(f: Findings) -> None:
+    pw_cli = which("playwright-cli")
+    local_pw = Path.cwd() / "node_modules" / ".bin" / "playwright-cli"
+    if local_pw.is_file() and os.access(local_pw, os.X_OK):
+        pw_cli = str(local_pw)
+
+    if pw_cli:
+        try:
+            r = run([pw_cli, "--version"])
+            ver = (r.stdout or r.stderr or "").strip()
+            f.add("PASS", "Playwright CLI", f"{pw_cli} {ver}")
+        except (OSError, ValueError):
+            f.add("DEGRADED", "Playwright CLI", f"{pw_cli} (version check failed)")
+    else:
+        f.add("OPTIONAL_ABSENT", "Playwright CLI", "NOT_INSTALLED")
+
+    bw_env = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
+    bw_cache = Path(bw_env) if bw_env else (home() / ".cache" / "ms-playwright")
+    browsers_found = []
+    if bw_cache.is_dir():
+        for item in bw_cache.iterdir():
+            if item.is_dir() and any(name in item.name for name in ("chromium", "chrome", "firefox", "webkit")):
+                browsers_found.append(item.name)
+    if browsers_found:
+        f.add("PASS", "Playwright browsers", ", ".join(sorted(browsers_found)[:3]))
+    else:
+        f.add("OPTIONAL_ABSENT", "Playwright browsers", "not cached in ~/.cache/ms-playwright")
+
+    project_suites = []
+    for cfg_name in ("playwright.config.ts", "playwright.config.js", "cypress.config.ts", "cypress.config.js"):
+        if (Path.cwd() / cfg_name).is_file():
+            project_suites.append(cfg_name)
+    if project_suites:
+        f.add("PASS", "Project E2E suite", ", ".join(project_suites))
+    else:
+        f.add("OPTIONAL_ABSENT", "Project E2E suite", "NOT_CONFIGURED")
+
+    f.add("NOT_APPLICABLE", "Browser launch probe", "DEFERRED_TO_EXPLICIT_SMOKE")
+
+    ba = which("browser-act")
+    if ba:
+        try:
+            r = run([ba, "--version"])
+            ba_ver = (r.stdout or r.stderr or "").strip()
+            if "1.1.0" in ba_ver:
+                f.add("DEGRADED_SECURITY", "BrowserAct CLI", f"{ba_ver} (Issue #18 env var argv leak warning)")
+            else:
+                f.add("PASS", "BrowserAct CLI", f"{ba} {ba_ver}")
+        except (OSError, ValueError):
+            f.add("DEGRADED", "BrowserAct CLI", f"{ba} (version check failed)")
+        f.add("PASS", "BrowserAct instructions", "skill stub requested 2.0.2")
+    else:
+        f.add("OPTIONAL_ABSENT", "BrowserAct CLI", "NOT_INSTALLED")
 
 
 def _permission_findings(f: Findings) -> None:
@@ -576,6 +630,7 @@ def cmd_doctor(deep: bool = False, strict: bool = False) -> int:
 
     print("--- optional ---")
     _host_findings(f, shadcn_enabled=shadcn_enabled)
+    _browser_qa_findings(f)
     _permission_findings(f)
     print("--- context ---")
     f.add("NOT_APPLICABLE", "Context Guard", "NOT_PORTED_BY_DESIGN")
