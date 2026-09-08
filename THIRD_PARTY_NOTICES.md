@@ -20,6 +20,9 @@ Machine-readable copy: `vendor/license-audit.json`.
 | Pstack selected skills (`blast-radius`, `unslop`, `create-verification-skill`, `maintain-verification-skill`, `technical-writing`, `arena`, `interrogate`, `architect`, `decision-log`, `why`, `reflect`, `figure-it-out`) | cursor/plugins pstack `60c641e` | MIT — `vendor/licenses/PSTACK-MIT.txt` | follow MIT |
 | Snapshot skills (`browser-act`, `chrome-devtools-axi`, `emil-design-eng`, `found-this-design`, `full-audit-keamanan`, `full-performance-audit`, `gh-axi`, `scroll-world`, `visual-studio`) | GrokBestFriend 1.3.1 snapshot + `vendor/licenses/GROKBESTFRIEND-MIT.txt`; skill wrappers MIT. Separate CLIs follow their own packages. | MIT | follow MIT |
 | `scroll-craft` | [nateherkai/scroll-craft](https://github.com/nateherkai/scroll-craft) `0b81622` — `vendor/licenses/NATEHERK-SCROLL-CRAFT-MIT.txt`; skill `NOTICE.md` | MIT © 2026 Nate Herk | follow MIT |
+| `playwright-qa` | [microsoft/playwright-cli](https://github.com/microsoft/playwright-cli) `655530f` — `vendor/licenses/MICROSOFT-PLAYWRIGHT-CLI-APACHE2.txt`; skill `NOTICE.md` | Apache-2.0 © Microsoft Corporation | follow Apache-2.0 |
+| `taste-guard` | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) `ccbc156` — `vendor/licenses/LEONXLNX-TASTE-MIT.txt`; integrated in Impeccable | MIT © 2026 Leonxlnx | follow MIT |
+| `install-anti-slop` | [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop) `e8c4880` — `vendor/licenses/DMMULROY-ANTI-SLOP-MIT.txt`; skill `NOTICE.md` | MIT © 2026 Dillon Mulroy | follow MIT |
 | Design bank media | User-provided public bootstrap artifact or existing local bank | **not cleared** | not in git; normal install does not download it |
 | Codebase Memory, serena, browser-act CLI, semgrep, gitleaks, osv-scanner | `vendor/sources.json` | upstream | follow upstream |
 

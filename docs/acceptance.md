@@ -15,7 +15,7 @@ PASS SOURCE_REPOSITORY https://github.com/kuker24/OpenCodeBestFriend
 PASS OpenCode
 PASS opencode.jsonc parseable
 PASS AGENTS.md thin owned-lines=…
-PASS skills TOTAL 43/43 MODEL 27/27 MANUAL 16/16
+PASS skills TOTAL 45/45 MODEL 29/29 MANUAL 16/16
 PASS rules 6 portable; 04-context-guard EXCLUDED_BY_DESIGN
 
 CONFIGURED mcp:codebase-memory-mcp

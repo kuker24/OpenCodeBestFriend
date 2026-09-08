@@ -89,6 +89,32 @@
       "license": "MIT",
       "copyright": "Copyright (c) 2026 Lauren Tan",
       "licenseFile": "vendor/licenses/PSTACK-MIT.txt"
+    },
+    "playwright-cli": {
+      "repository": "https://github.com/microsoft/playwright-cli",
+      "commit": "655530f6d0dc71a0d6bf46ae165877d3c7311099",
+      "license": "Apache-2.0",
+      "copyright": "Copyright (c) Microsoft Corporation",
+      "licenseFile": "vendor/licenses/MICROSOFT-PLAYWRIGHT-CLI-APACHE2.txt",
+      "note": "OCBF exploratory browser QA adapter; isolated sessions, default headless Chromium."
+    },
+    "taste-skill": {
+      "repository": "https://github.com/Leonxlnx/taste-skill",
+      "commit": "ccbc15639c97057cbfcf32ecebc38ef716e4bb37",
+      "originalPath": "skills/taste-skill",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Leonxlnx",
+      "licenseFile": "vendor/licenses/LEONXLNX-TASTE-MIT.txt",
+      "note": "Selectively adapted into Impeccable reference/taste-guard.md and reference/taste/ modules."
+    },
+    "anti-slop": {
+      "repository": "https://github.com/dmmulroy/anti-slop",
+      "commit": "e8c4880471b23ab7f216fba7b27d173a6ef07d4c",
+      "version": "0.1.2",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Dillon Mulroy",
+      "licenseFile": "vendor/licenses/DMMULROY-ANTI-SLOP-MIT.txt",
+      "note": "Vendored rule snapshot for TS/JS projects with 4 modes (audit, recommended, strict, custom) and opt-in Effect rules."
     }
   }
 }
