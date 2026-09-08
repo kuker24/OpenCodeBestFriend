@@ -40,6 +40,11 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Documents (answer, create, transform, extract, review, PDF/DOCX): `/smartdoc`. Reusable book/module knowledge: `/smartbook-ingest`. SmartDoc may read an existing SmartBook; that is not a second implementation specialist. Impeccable `document` stays DESIGN.md.
 - Prose AI-tell removal and natural tone polishing: `/humanizer`. Manual `/unslop` is an alias to the same specialist body. Do not auto-apply on ordinary code or diffs. Technical documentation structure stays `/technical-writing`.
 - Editorial HTML and inline SVG diagrams (architecture, sequence, ER, flowcharts, Wardley): `/diagram-design`. Mermaid/draw.io are inputs to redraw, not final output. Frontend UI implementation stays `/impeccable`. Code-level seams stay `/codebase-design`.
+- Agent architecture diagnosis, autonomous loop failures, context leakage, wrapper regressions: `/agent-architecture-audit`. Defensive security and secrets auditing stay `/full-audit-keamanan`.
+- Evaluation harness, prompt/agent benchmarks, pass@k metrics, regression suites: `/eval-harness`. Project code unit tests stay `/tdd`.
+- Cost-aware LLM architectures, complexity model tiering, token budgets, prompt caching: `/cost-aware-llm-pipeline`. Application bundle and page latency profiling stay `/full-performance-audit`.
+- Prompt critique, structural optimization, negative constraints, format locks: `/prompt-optimizer`. General prose polishing stays `/humanizer`.
+- OpenCodeBestFriend skill catalog hygiene, frontmatter validation, boundary integrity: `/skill-stocktake`. Code standards review stays `/matt-code-review`.
 
 ## UI and browser
 
@@ -91,7 +96,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 
 - No extra marketplace plugins. Foundation = skills + MCP + thin AGENTS.md + runtime helpers.
 - User MCP: `codebase-memory-mcp`, `context7`, and `shadcn` on; `serena` absent until a human enables it; `exa` foreign.
-- ECC / other harness overlays: `FOREIGN_ON_DEMAND`. Never add, remove, or merge their skills from this installer. If already present in user environment, do not merge and do not shadow.
+- ECC / other harness overlays: `FOREIGN_ON_DEMAND`. Never add, remove, or merge foreign harness control planes or continuous-learning runtimes. Individual warehouse procedures ported in Wave 2 (agent-architecture-audit, cost-aware-llm-pipeline, eval-harness, prompt-optimizer, skill-stocktake) are first-party MIT skills. If external ECC is already present in user environment, do not merge and do not shadow.
 - Never auto-edit rules or skills from a learning log (no `/learn`, `/evolve`, or session-end skill writers).
 
 ## Do not

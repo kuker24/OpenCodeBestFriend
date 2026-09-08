@@ -572,6 +572,56 @@
       "modified": true,
       "redistribution": "mit",
       "notes": "Adapted from cathrynlavery/diagram-design. Standalone HTML/inline SVG diagrams with anti-Mermaid slop discipline."
+    },
+    {
+      "component": "agent-architecture-audit",
+      "path": "skills/agent-architecture-audit",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. Agent system architecture diagnostics, loop ceilings, and context leakage analysis."
+    },
+    {
+      "component": "cost-aware-llm-pipeline",
+      "path": "skills/cost-aware-llm-pipeline",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. Complexity-based model routing, token budgeting, prompt caching, and fallback cascades."
+    },
+    {
+      "component": "eval-harness",
+      "path": "skills/eval-harness",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. Eval-driven development (EDD), benchmark dataset construction, and pass@k metric tracking."
+    },
+    {
+      "component": "prompt-optimizer",
+      "path": "skills/prompt-optimizer",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. Advisory prompt engineering review, structural framing, and negative constraint enforcement with zero auto-mutation."
+    },
+    {
+      "component": "skill-stocktake",
+      "path": "skills/skill-stocktake",
+      "upstream": "https://github.com/affaan-m/ECC",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2024-2026 affaan-m and ECC contributors",
+      "modified": true,
+      "redistribution": "mit",
+      "notes": "Adapted from affaan-m/ECC. OpenCodeBestFriend skill catalog hygiene, frontmatter schema validation, and boundary verification."
     }
   ],
   "adaptedFrom": {

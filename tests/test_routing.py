@@ -43,6 +43,11 @@ class RoutingTests(unittest.TestCase):
             "academic": "academic",
             "hyperframes": "hyperframes",
             "diagram-design": "diagram-design",
+            "agent-architecture-audit": "agent-architecture-audit",
+            "eval-harness": "eval-harness",
+            "cost-aware-llm-pipeline": "cost-aware-llm-pipeline",
+            "prompt-optimizer": "prompt-optimizer",
+            "skill-stocktake": "skill-stocktake",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)
@@ -72,6 +77,14 @@ class RoutingTests(unittest.TestCase):
         
         # Foreign harness note
         self.assertIn("ECC / other harness overlays: `FOREIGN_ON_DEMAND`", self.routing)
+
+        # Warehouse Wave 2 specialists
+        self.assertIn("Agent stack diagnostics / eval benchmarks → skill `agent-architecture-audit` or `eval-harness`", self.agents)
+        self.assertIn("Agent architecture diagnosis, autonomous loop failures", self.routing)
+        self.assertIn("Evaluation harness, prompt/agent benchmarks", self.routing)
+        self.assertIn("Cost-aware LLM architectures, complexity model tiering", self.routing)
+        self.assertIn("Prompt critique, structural optimization", self.routing)
+        self.assertIn("OpenCodeBestFriend skill catalog hygiene", self.routing)
 
     def test_scroll_routes_have_explicit_boundaries(self):
         self.assertIn(

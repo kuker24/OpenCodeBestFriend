@@ -2,12 +2,15 @@
 
 ## Unreleased
 
+- Warehouse Wave 2: catalog contract `docs/warehouse-inventory.md` classifying 318 upstream items (5 NEW, 3 DONE, 78 MERGE, 158 REJECT, 74 DEFER).
+- Add Batch 2a model-invoked warehouse specialists (first-party MIT rewrite from ECC procedures): `agent-architecture-audit` (agent stack diagnostics), `cost-aware-llm-pipeline` (token budgeting & model tiering), `eval-harness` (eval-driven development & benchmarks), `prompt-optimizer` (advisory prompt optimization without auto-mutation), and `skill-stocktake` (skill catalog hygiene & schema audit).
+- Expand reference documentation: 39-type diagram catalog in `skills/diagram-design/references/types.md`, video workflows in `skills/hyperframes/references/workflows.md`, and evidence lineage tracking in `skills/academic/references/research.md`.
 - Add model-invoked `humanizer` specialist for removing AI prose tells; `/unslop` is updated to a manual alias delegating to it.
 - Add original first-party `academic` specialist (literature survey, scholarly drafting, peer critique, revision ledger) without copying CC-BY-NC material.
 - Add model-invoked `hyperframes` specialist for deterministic HTML/CSS-to-MP4 video composition via headless Chromium and FFmpeg.
 - Add model-invoked `diagram-design` specialist for editorial HTML and inline SVG technical diagrams (anti-Mermaid slop).
-- Reject ECC pack; foreign harnesses remain `FOREIGN_ON_DEMAND` and are not vendored or auto-merged.
-- Update routing, allowlists, provenance, and tests. Skills now total 49 owned names (33 model-invoked, 16 manual slash commands).
+- Reject foreign harness control planes and continuous-learning mutators; external harnesses remain `FOREIGN_ON_DEMAND`.
+- Update routing, allowlists, provenance, and tests. Skills now total 54 owned names (38 model-invoked, 16 manual slash commands).
 
 ## 1.7.1 — 2026-09-05
 

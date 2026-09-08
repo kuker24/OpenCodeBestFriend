@@ -2,56 +2,277 @@
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
   "productVersion": "1.7.1",
-  "note": "Evidence-based. A missing frontmatter license is not a grant. Adapted ≠ first-party.",
+  "note": "Evidence-based. A missing frontmatter license is not a grant. Adapted \u2260 first-party.",
   "skills": {
-    "adhd": {"license": "MIT", "evidence": "SKILL.md frontmatter", "redistribution": "mit"},
-    "impeccable": {"license": "Apache-2.0", "evidence": "SKILL.md frontmatter (Apache 2.0)", "redistribution": "apache-2.0"},
-    "diagnosing-bugs": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c + vendor/licenses/MATT-POCOCK-MIT.txt", "redistribution": "mit"},
-    "domain-modeling": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "codebase-design": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "writing-for-agents": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "research": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "prototype": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "grilling": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "improve-codebase-architecture": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "wizard": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "wait-what": {"license": "MIT", "evidence": "mattpocock/skills 9c9f36c", "redistribution": "mit"},
-    "ask-matt": {"license": "MIT", "evidence": "mattpocock/skills (engineering/ask-matt) MIT LICENSE; overlay in this tree", "redistribution": "mit"},
-    "grill-with-docs": {"license": "MIT", "evidence": "mattpocock/skills (engineering/grill-with-docs) MIT LICENSE; overlay in this tree", "redistribution": "mit"},
-    "to-spec": {"license": "MIT", "evidence": "mattpocock/skills (engineering/to-spec) MIT LICENSE", "redistribution": "mit"},
-    "to-tickets": {"license": "MIT", "evidence": "mattpocock/skills (engineering/to-tickets) MIT LICENSE", "redistribution": "mit"},
-    "tdd": {"license": "MIT", "evidence": "mattpocock/skills (engineering/tdd) MIT LICENSE", "redistribution": "mit"},
-    "matt-code-review": {"license": "MIT", "evidence": "mattpocock/skills engineering/code-review renamed; MIT LICENSE", "redistribution": "mit"},
-    "matt-implement": {"license": "MIT", "evidence": "mattpocock/skills engineering/implement renamed; MIT LICENSE", "redistribution": "mit"},
-    "blast-radius": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e + vendor/licenses/PSTACK-MIT.txt", "redistribution": "mit"},
-    "unslop": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "create-verification-skill": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "maintain-verification-skill": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "technical-writing": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "arena": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "interrogate": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "architect": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "decision-log": {"license": "MIT", "evidence": "cursor/plugins pstack show-me-your-work 60c641e", "redistribution": "mit"},
-    "why": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "reflect": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "figure-it-out": {"license": "MIT", "evidence": "cursor/plugins pstack 60c641e", "redistribution": "mit"},
-    "browser-act": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt. browser-act CLI is a separate host package.", "redistribution": "mit"},
-    "chrome-devtools-axi": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt. chrome-devtools-axi CLI is separate.", "redistribution": "mit"},
-    "emil-design-eng": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
-    "found-this-design": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
-    "full-audit-keamanan": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
-    "full-performance-audit": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
-    "gh-axi": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt. gh-axi CLI is a separate npm package.", "redistribution": "mit"},
-    "scroll-craft": {"license": "MIT", "evidence": "nateherkai/scroll-craft 0b81622 + vendor/licenses/NATEHERK-SCROLL-CRAFT-MIT.txt; NOTICE.md", "redistribution": "mit"},
-    "scroll-world": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
-    "visual-studio": {"license": "MIT", "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt", "redistribution": "mit"},
-    "smartdoc": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE", "redistribution": "mit"},
-    "smartbook-ingest": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE", "redistribution": "mit"},
-    "install-anti-slop": {"license": "MIT", "evidence": "dmmulroy/anti-slop e8c4880 + vendor/licenses/DMMULROY-ANTI-SLOP-MIT.txt; NOTICE.md", "redistribution": "mit"},
-    "playwright-qa": {"license": "Apache-2.0", "evidence": "microsoft/playwright-cli 655530f + vendor/licenses/MICROSOFT-PLAYWRIGHT-CLI-APACHE2.txt; NOTICE.md", "redistribution": "apache-2.0"},
-    "academic": {"license": "MIT", "evidence": "SKILL.md frontmatter + repository LICENSE (first-party original)", "redistribution": "mit"},
-    "diagram-design": {"license": "MIT", "evidence": "SKILL.md frontmatter + cathrynlavery/diagram-design; NOTICE.md", "redistribution": "mit"},
-    "humanizer": {"license": "MIT", "evidence": "SKILL.md frontmatter + blader/humanizer; NOTICE.md", "redistribution": "mit"},
-    "hyperframes": {"license": "Apache-2.0", "evidence": "SKILL.md frontmatter + heygen-com/hyperframes; NOTICE.md", "redistribution": "apache-2.0"}
+    "adhd": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter",
+      "redistribution": "mit"
+    },
+    "impeccable": {
+      "license": "Apache-2.0",
+      "evidence": "SKILL.md frontmatter (Apache 2.0)",
+      "redistribution": "apache-2.0"
+    },
+    "diagnosing-bugs": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c + vendor/licenses/MATT-POCOCK-MIT.txt",
+      "redistribution": "mit"
+    },
+    "domain-modeling": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "codebase-design": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "writing-for-agents": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "research": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "prototype": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "grilling": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "improve-codebase-architecture": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "wizard": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "wait-what": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills 9c9f36c",
+      "redistribution": "mit"
+    },
+    "ask-matt": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills (engineering/ask-matt) MIT LICENSE; overlay in this tree",
+      "redistribution": "mit"
+    },
+    "grill-with-docs": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills (engineering/grill-with-docs) MIT LICENSE; overlay in this tree",
+      "redistribution": "mit"
+    },
+    "to-spec": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills (engineering/to-spec) MIT LICENSE",
+      "redistribution": "mit"
+    },
+    "to-tickets": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills (engineering/to-tickets) MIT LICENSE",
+      "redistribution": "mit"
+    },
+    "tdd": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills (engineering/tdd) MIT LICENSE",
+      "redistribution": "mit"
+    },
+    "matt-code-review": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills engineering/code-review renamed; MIT LICENSE",
+      "redistribution": "mit"
+    },
+    "matt-implement": {
+      "license": "MIT",
+      "evidence": "mattpocock/skills engineering/implement renamed; MIT LICENSE",
+      "redistribution": "mit"
+    },
+    "blast-radius": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e + vendor/licenses/PSTACK-MIT.txt",
+      "redistribution": "mit"
+    },
+    "unslop": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "create-verification-skill": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "maintain-verification-skill": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "technical-writing": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "arena": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "interrogate": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "architect": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "decision-log": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack show-me-your-work 60c641e",
+      "redistribution": "mit"
+    },
+    "why": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "reflect": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "figure-it-out": {
+      "license": "MIT",
+      "evidence": "cursor/plugins pstack 60c641e",
+      "redistribution": "mit"
+    },
+    "browser-act": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt. browser-act CLI is a separate host package.",
+      "redistribution": "mit"
+    },
+    "chrome-devtools-axi": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt. chrome-devtools-axi CLI is separate.",
+      "redistribution": "mit"
+    },
+    "emil-design-eng": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt",
+      "redistribution": "mit"
+    },
+    "found-this-design": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt",
+      "redistribution": "mit"
+    },
+    "full-audit-keamanan": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt",
+      "redistribution": "mit"
+    },
+    "full-performance-audit": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt",
+      "redistribution": "mit"
+    },
+    "gh-axi": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt. gh-axi CLI is a separate npm package.",
+      "redistribution": "mit"
+    },
+    "scroll-craft": {
+      "license": "MIT",
+      "evidence": "nateherkai/scroll-craft 0b81622 + vendor/licenses/NATEHERK-SCROLL-CRAFT-MIT.txt; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "scroll-world": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt",
+      "redistribution": "mit"
+    },
+    "visual-studio": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + GrokBestFriend LICENSE; vendor/licenses/GROKBESTFRIEND-MIT.txt",
+      "redistribution": "mit"
+    },
+    "smartdoc": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + repository LICENSE",
+      "redistribution": "mit"
+    },
+    "smartbook-ingest": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + repository LICENSE",
+      "redistribution": "mit"
+    },
+    "install-anti-slop": {
+      "license": "MIT",
+      "evidence": "dmmulroy/anti-slop e8c4880 + vendor/licenses/DMMULROY-ANTI-SLOP-MIT.txt; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "playwright-qa": {
+      "license": "Apache-2.0",
+      "evidence": "microsoft/playwright-cli 655530f + vendor/licenses/MICROSOFT-PLAYWRIGHT-CLI-APACHE2.txt; NOTICE.md",
+      "redistribution": "apache-2.0"
+    },
+    "academic": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + repository LICENSE (first-party original)",
+      "redistribution": "mit"
+    },
+    "diagram-design": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + cathrynlavery/diagram-design; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "humanizer": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + blader/humanizer; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "hyperframes": {
+      "license": "Apache-2.0",
+      "evidence": "SKILL.md frontmatter + heygen-com/hyperframes; NOTICE.md",
+      "redistribution": "apache-2.0"
+    },
+    "agent-architecture-audit": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "cost-aware-llm-pipeline": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "eval-harness": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "prompt-optimizer": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    },
+    "skill-stocktake": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
+      "redistribution": "mit"
+    }
   }
 }
