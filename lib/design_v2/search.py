@@ -132,16 +132,26 @@ def ranking_score(
 
 KIND_INTENT_TERMS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "button": (("component",), ("button",)),
+    "ghost": (("component",), ("button.ghost", "button")),
+    "outline": (("component",), ("button.ghost", "button")),
+    "secondary": (("component",), ("button.ghost", "button")),
+    "subtle": (("component",), ("button.ghost", "button")),
+    "destructive": (("component",), ("button.destructive", "button")),
+    "danger": (("component",), ("button.destructive", "button")),
+    "delete": (("component",), ("button.destructive", "button")),
+    "icon": (("component",), ("button.icon", "button")),
+    "primary": (("component",), ("button.primary", "button")),
     "card": (("component",), ("card",)),
     "form": (("component",), ("form",)),
     "nav": (("component",), ("nav", "navbar")),
     "navbar": (("component",), ("navbar", "nav")),
     "navigation": (("component",), ("nav", "navbar")),
+    "sidebar": (("component",), ("sidebar", "nav.sidebar-item")),
     "input": (("component",), ("input",)),
-    "modal": (("component",), ("modal",)),
-    "dialog": (("component",), ("modal",)),
-    "tabs": (("component",), ("tabs",)),
-    "tab": (("component",), ("tabs",)),
+    "modal": (("component",), ("modal", "overlay.modal")),
+    "dialog": (("component",), ("modal", "overlay.modal")),
+    "tabs": (("component",), ("tabs", "nav.tab")),
+    "tab": (("component",), ("tabs", "nav.tab")),
     "accordion": (("component",), ("accordion",)),
     "badge": (("component",), ("badge",)),
     "dropdown": (("component",), ("dropdown", "input.select")),
@@ -210,6 +220,9 @@ def kind_intent_score(item: dict[str, Any], query: str, policy: dict[str, Any]) 
     if cat_hit:
         score += cat_match
         signals.append("category_intent")
+        if role and role in preferred_cats:
+            score += 3.0
+            signals.append("role_intent")
     # Suppress effects/shaders when explicitly searching for buttons
     if "button" in preferred_cats and (item_kind in {"effect", "theme"} or role in {"effect", "theme"}):
         score -= 20.0
