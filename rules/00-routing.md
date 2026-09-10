@@ -50,6 +50,9 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Live cron, CI, hook, MCP, and wrapper inventory (keep/merge/cut): `/automation-audit-ops`. Catalog hygiene stays `/skill-stocktake`.
 - CodeTour `.tour` walkthroughs with verified file anchors: `/code-tour`. Prose docs stay `/technical-writing`.
 - Button/handler sequential-undo and shared-store side effects: `/click-path-audit`. Exploratory browser QA stays `/playwright-qa`.
+- Supabase Auth, RLS policies, migrations, Edge Functions: `/supabase-ops` (Context7; not `/impeccable`). Defensive security review of public tables stays `/full-audit-keamanan`.
+- MongoDB schemas, indexing, aggregation pipelines: `/mongodb-ops`. Connection strings must never be printed. Official syntax stays Context7.
+- Vercel deployment, `vercel.json`, preview URLs, hosting config: `/vercel-ops`. Deploy PR workflow stays `/gh-axi`. Never run `vercel --prod` automatically. Never replace `/found-this-design` or `/impeccable`.
 
 ## UI and browser
 
@@ -102,6 +105,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - No extra marketplace plugins. Foundation = skills + MCP + thin AGENTS.md + runtime helpers.
 - User MCP: `codebase-memory-mcp`, `context7`, and `shadcn` on; `serena` absent until a human enables it; `exa` foreign.
 - ECC / other harness overlays: `FOREIGN_ON_DEMAND`. Never add, remove, or merge foreign harness control planes or continuous-learning runtimes. Individual warehouse procedures ported in Wave 2 (agent-architecture-audit, cost-aware-llm-pipeline, eval-harness, prompt-optimizer, skill-stocktake) and Wave 3 (api-design, contract-first, automation-audit-ops, code-tour, click-path-audit) are first-party MIT skills. If external ECC is already present in user environment, do not merge and do not shadow.
+- FOREIGN vendor packs (e.g. `mongodb/agent-skills`, `supabase/agent-skills`, `vercel-labs/agent-skills`) stay off the overlay; user may `npx skills add mongodb/agent-skills|supabase/agent-skills` locally; never `frontend-design` for product UI.
 - Never auto-edit rules or skills from a learning log (no `/learn`, `/evolve`, or session-end skill writers).
 
 ## Do not
@@ -109,6 +113,8 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Do not enable every specialist in one turn.
 - Do not load two implementation specialists in parallel; on mixed requests, implement the primary largest surface first.
 - Do not load Wave 2 or Wave 3 warehouse skills unless the user explicitly names the job.
+- Do not use vendor `frontend-design` for product UI; UI direction stays `/found-this-design` and implementation stays `/impeccable`.
+- Do not print database connection strings, JWTs, or secret keys in Supabase, MongoDB, or Vercel ops.
 - Do not run `/found-this-design` for atomic components (button, input, card, nav); stay in `/impeccable`.
 - Do not auto-start `/grilling` for product interviews or planning; `/grill-with-docs` is the primary route.
 - Do not `@`-import the full routing or verification files into CLAUDE.md.

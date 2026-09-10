@@ -45,6 +45,8 @@ REST resource/status/pagination/versioning → skill `api-design`. Consumer/prov
 
 Agent stack diagnostics / context leak / wrapper regression → skill `agent-architecture-audit`. Benchmark agent / pass@k → skill `eval-harness` (project unit tests stay `tdd`). Token budget / model tier / prompt cache → skill `cost-aware-llm-pipeline` (not `full-performance-audit`). Structural prompt critique → skill `prompt-optimizer` (not `humanizer`). Skill catalog hygiene → skill `skill-stocktake`.
 
+Supabase Auth/RLS/migrations/Edge → skill `supabase-ops` (Context7; not impeccable). Mongo schema/index/aggregation → skill `mongodb-ops`. Vercel/Next hosting/deploy config → skill `vercel-ops` (not visual UI). Library facts remain Context7. These three never replace found-this-design or impeccable.
+
 ## When routing is non-obvious
 
 Read the file `~/.config/opencode/bestfriend/rules/00-routing.md` with the Read tool. Do not `@`-import it.

@@ -18,10 +18,13 @@ FM = re.compile(r"\A---\n(.*?\n)---\n", re.DOTALL)
 class SkillPolicyTests(unittest.TestCase):
     def test_counts(self):
         allow, skills, model, manual = load_policy(ROOT)
-        self.assertEqual(len(allow), 59)
-        self.assertEqual(len(model), 43)
+        self.assertEqual(len(allow), 62)
+        self.assertEqual(len(model), 46)
         self.assertEqual(len(manual), 16)
         self.assertEqual(set(allow), set(skills))
+        for name in ("supabase-ops", "mongodb-ops", "vercel-ops"):
+            self.assertIn(name, allow)
+            self.assertIn(name, model)
 
     def test_model_skills_exist(self):
         _, _, model, manual = load_policy(ROOT)

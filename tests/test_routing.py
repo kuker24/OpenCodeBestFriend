@@ -53,6 +53,9 @@ class RoutingTests(unittest.TestCase):
             "automation-audit-ops": "automation-audit-ops",
             "code-tour": "code-tour",
             "click-path-audit": "click-path-audit",
+            "supabase-ops": "supabase-ops",
+            "mongodb-ops": "mongodb-ops",
+            "vercel-ops": "vercel-ops",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)
@@ -138,10 +141,23 @@ class RoutingTests(unittest.TestCase):
             "smartdoc",
             "academic",
             "humanizer",
+            "supabase-ops",
+            "mongodb-ops",
+            "vercel-ops",
         ]
         for spec in required_specialists:
             self.assertIn(spec, self.agents, f"Expected {spec} in AGENTS.md")
             self.assertIn(spec, self.routing, f"Expected {spec} in 00-routing.md")
+
+    def test_vendor_ops_boundaries(self):
+        self.assertIn("Supabase Auth/RLS/migrations/Edge → skill `supabase-ops`", self.agents)
+        self.assertIn("Mongo schema/index/aggregation → skill `mongodb-ops`", self.agents)
+        self.assertIn("Vercel/Next hosting/deploy config → skill `vercel-ops`", self.agents)
+        self.assertIn("Supabase Auth, RLS policies, migrations, Edge Functions: `/supabase-ops`", self.routing)
+        self.assertIn("MongoDB schemas, indexing, aggregation pipelines: `/mongodb-ops`", self.routing)
+        self.assertIn("Vercel deployment, `vercel.json`, preview URLs, hosting config: `/vercel-ops`", self.routing)
+        self.assertIn("FOREIGN vendor packs", self.routing)
+        self.assertIn("Do not use vendor `frontend-design` for product UI", self.routing)
 
     def test_scroll_routes_have_explicit_boundaries(self):
         self.assertIn(
