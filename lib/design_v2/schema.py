@@ -252,6 +252,8 @@ def check_item(item: dict[str, Any], policy: dict[str, Any] | None = None) -> li
     enum_ok("normalization_status", item.get("normalization_status"))
     if item.get("dedup_reason") is not None:
         enum_ok("dedup_reason", item.get("dedup_reason"))
+    if item.get("role") is not None:
+        enum_ok("role", item.get("role"))
 
     source = item.get("source")
     source_keys = V1_SOURCE if version == 1 else V2_SOURCE

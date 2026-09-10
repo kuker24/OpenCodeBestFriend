@@ -7,7 +7,16 @@ from typing import Any
 from ..bank import atomic_write_json, ensure_layout
 from ..provenance import default_provenance, license_from_evidence
 from ..schema import REL_PATH_RE
-from .common import IngestRejected, KIND_DIR, catalog_item, detect_anti_slop, dna_from_text, slugify, write_inbox
+from .common import (
+    IngestRejected,
+    KIND_DIR,
+    catalog_item,
+    classify_atomic_role,
+    detect_anti_slop,
+    dna_from_text,
+    slugify,
+    write_inbox,
+)
 
 name = "bank-pointer"
 
@@ -259,24 +268,30 @@ def ingest(path: Path, bank: Path) -> dict[str, Any]:
     refero_items = _load_catalog(path / "Refero" / "bank" / "catalog.json")
     for row in refero_items:
         slug = slugify(str(row.get("slug") or row.get("name") or "refero"))
-        item = _visual_item(
-            "refero",
-            slug,
-            str(row.get("name") or slug),
-            str(row.get("northStar") or row.get("description") or ""),
-            [str(t) for t in (row.get("tags") or []) if isinstance(t, str)],
+        item = _pointer_item(
+            kind="page",
+            provider="refero",
+            slug=slug,
+            name=str(row.get("name") or slug),
+            description=str(row.get("northStar") or row.get("description") or ""),
+            tags=[str(t) for t in (row.get("tags") or []) if isinstance(t, str)],
+            categories=["page"],
+            role="page",
         )
         write_inbox(bank, item)
         count += 1
     motion_items = _load_catalog(path / "motionsites" / "library" / "catalog.json")
     for row in motion_items:
         slug = slugify(str(row.get("id") or row.get("title") or "motion"))
-        item = _visual_item(
-            "motionsites",
-            slug,
-            str(row.get("title") or slug),
-            str(row.get("jenis") or row.get("page_type") or ""),
-            [str(t) for t in (row.get("types_source") or []) if isinstance(t, str)],
+        item = _pointer_item(
+            kind="motion",
+            provider="motionsites",
+            slug=slug,
+            name=str(row.get("title") or slug),
+            description=str(row.get("jenis") or row.get("page_type") or ""),
+            tags=[str(t) for t in (row.get("types_source") or []) if isinstance(t, str)],
+            categories=["motion"],
+            role="motion",
         )
         write_inbox(bank, item)
         count += 1
@@ -305,10 +320,9 @@ def ingest_catalog_bank(path: Path, bank: Path, *, provider: str) -> dict[str, A
         item_id = str(row.get("id") or "").strip()
         if not item_id:
             continue
-        jenis = str(row.get("jenis") or "").strip()
+        jenis = str(row.get("jenis") or "").strip().lower()
         raw_kind = row.get("kind")
         catalog_kind = raw_kind if isinstance(raw_kind, str) else None
-        kind = map_jenis_kind(jenis, catalog_kind)
         raw_title = row.get("title") or row.get("name")
         title = raw_title if isinstance(raw_title, str) and raw_title.strip() else item_id
         raw_desc = row.get("description")
@@ -316,6 +330,60 @@ def ingest_catalog_bank(path: Path, bank: Path, *, provider: str) -> dict[str, A
         tags = [str(tag) for tag in (row.get("tags") or []) if isinstance(tag, str)]
         if jenis and jenis not in tags:
             tags.append(jenis)
+
+        if provider == "aura":
+            # Aura tokens/themes/layouts/patterns should never be forced to component
+            if jenis in {"landing-page", "3d-website", "mobile-app"}:
+                kind = "page"
+                role = "page"
+            elif jenis in {
+                "hero", "features", "footer", "cta", "pricing", "about", "blog",
+                "carousel", "stats", "testimonials", "404",
+            }:
+                kind = "section"
+                role = "section"
+            elif jenis == "theme":
+                kind = "theme"
+                role = "theme"
+            elif jenis == "template":
+                kind = "template"
+                role = "template"
+            elif jenis in {"button", "input", "card", "nav", "modal", "form", "badge"}:
+                kind = "component"
+                ident = f"{item_id} {title}"
+                atom_role = classify_atomic_role(ident, jenis=jenis)
+                role = atom_role if atom_role else "component"
+            else:
+                kind = "pattern"
+                role = "pattern"
+        elif provider == "21st":
+            if jenis == "shader":
+                kind = "effect"
+                role = "effect"
+            elif jenis == "theme":
+                kind = "theme"
+                role = "theme"
+            elif jenis == "template":
+                kind = "template"
+                role = "template"
+            elif jenis in {"3d-website", "landing-page", "mobile-app"}:
+                kind = "page"
+                role = "page"
+            elif jenis in {
+                "hero", "features", "footer", "cta", "pricing", "about", "blog",
+                "carousel", "stats", "testimonials", "404",
+            }:
+                kind = "section"
+                role = "section"
+            else:
+                kind = "component"
+                ident = f"{item_id} {title}"
+                atom_role = classify_atomic_role(ident, jenis=jenis)
+                role = atom_role if atom_role else "component"
+        else:
+            kind = map_jenis_kind(jenis, catalog_kind)
+            role = kind
+
         categories = [jenis] if jenis else [kind]
         item = _pointer_item(
             kind=kind,
@@ -325,7 +393,7 @@ def ingest_catalog_bank(path: Path, bank: Path, *, provider: str) -> dict[str, A
             description=description or title,
             tags=tags,
             categories=categories,
-            role=kind,
+            role=role,
             upstream_id=item_id,
             source_path=preview_relative_path(row),
         )

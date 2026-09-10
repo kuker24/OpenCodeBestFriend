@@ -64,6 +64,7 @@ def add_design_cli(parser: ArgumentParser, *, read_only: bool = False) -> None:
     search_parser.add_argument("target", nargs="?", metavar="QUERY")
     search_parser.add_argument("--query")
     search_parser.add_argument("--kind")
+    search_parser.add_argument("--role")
     search_parser.add_argument("--limit", type=int, help="result count, 1-50")
     search_parser.add_argument("--intent")
     search_parser.add_argument("--mode")
@@ -80,6 +81,8 @@ def add_design_cli(parser: ArgumentParser, *, read_only: bool = False) -> None:
     shortlist_parser = common("shortlist", "return bounded offline reasoning cards")
     shortlist_parser.add_argument("target", nargs="?", metavar="QUERY")
     shortlist_parser.add_argument("--query")
+    shortlist_parser.add_argument("--kind")
+    shortlist_parser.add_argument("--role")
     shortlist_parser.add_argument("--limit", type=int, help="per-lane result count, 1-5")
     shortlist_parser.add_argument("--intent")
     shortlist_parser.add_argument("--mode")
@@ -192,6 +195,7 @@ def cmd_search(
     query: str,
     *,
     kind: str | None = None,
+    role: str | None = None,
     limit: int | None = None,
     root: Path | None = None,
     intent: str | None = None,
@@ -202,6 +206,7 @@ def cmd_search(
         query,
         root=root,
         kind=kind,
+        role=role,
         limit=limit,
         intent=intent,
         mode=mode,
@@ -539,6 +544,8 @@ def cmd_shortlist(
     query: str,
     *,
     root: Path | None = None,
+    kind: str | None = None,
+    role: str | None = None,
     intent: str | None = None,
     mode: str | None = None,
     frameworks: list[str] | None = None,
@@ -549,6 +556,8 @@ def cmd_shortlist(
         shortlist(
             query,
             root=root,
+            kind=kind,
+            role=role,
             intent=intent,
             mode=mode,
             frameworks=frameworks,
@@ -567,14 +576,17 @@ def dispatch(args: Namespace) -> int:
             return cmd_status(root, json_output=json_output)
         if action == "search":
             query = getattr(args, "query", None) or getattr(args, "target", None)
-            if not query:
+            kind = getattr(args, "kind", None)
+            role = getattr(args, "role", None)
+            if not query and not kind and not role:
                 return _fail(action, "MISSING_QUERY", "query is required", json_output=json_output, exit_code=2)
             limit = getattr(args, "limit", None)
             if limit is not None and not 1 <= limit <= 50:
                 return _fail(action, "INVALID_LIMIT", "limit must be between 1 and 50", json_output=json_output, exit_code=2)
             return cmd_search(
-                query,
-                kind=getattr(args, "kind", None),
+                query or "",
+                kind=kind,
+                role=role,
                 limit=limit,
                 root=root,
                 intent=getattr(args, "intent", None),
@@ -622,14 +634,18 @@ def dispatch(args: Namespace) -> int:
             return cmd_sources(root)
         if action == "shortlist":
             query = getattr(args, "query", None) or getattr(args, "target", None)
-            if not query:
+            kind = getattr(args, "kind", None)
+            role = getattr(args, "role", None)
+            if not query and not kind and not role:
                 return _fail(action, "MISSING_QUERY", "query is required", json_output=json_output, exit_code=2)
             limit = getattr(args, "limit", None)
             if limit is not None and not 1 <= limit <= 5:
                 return _fail(action, "INVALID_LIMIT", "limit must be between 1 and 5", json_output=json_output, exit_code=2)
             return cmd_shortlist(
-                query,
+                query or "",
                 root=root,
+                kind=kind,
+                role=role,
                 intent=getattr(args, "intent", None),
                 mode=getattr(args, "mode", None),
                 frameworks=getattr(args, "framework", None),

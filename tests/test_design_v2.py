@@ -24,6 +24,7 @@ from lib.design_v2.bank import (  # noqa: E402
     resolve_design_v2_root,
 )
 from lib.design_v2.dna import extract_query  # noqa: E402
+from lib.design_v2.importers.common import classify_atomic_role  # noqa: E402
 from lib.design_v2.import_stage import ImportRejected, import_stage  # noqa: E402
 from lib.design_v2.commands import doctor_rows  # noqa: E402
 from lib.design_v2.bank import load_policy  # noqa: E402
@@ -502,6 +503,143 @@ class DesignV2Tests(IsolatedHome):
         self.assertIsNone(lock["fts"]["sqlite_filename"])
         self.assertTrue((self.bank / "catalog" / lock["jsonl_filename"]).is_file())
         self.assertEqual(result["item_count"], 0)
+
+    def test_atomic_roles_classification(self):
+        cases = [
+            ("delete-button", "button", "button.destructive"),
+            ("ghost-button", "button", "button.ghost"),
+            ("outline-btn", "button", "button.ghost"),
+            ("icon-button", "button", "button.icon"),
+            ("star-button", "button", "button.icon"),
+            ("save-button", "button", "button.primary"),
+            ("discover-button", "button", "button.primary"),
+            ("text-input", "input", "input.text"),
+            ("search-bar", "input", "input.search"),
+            ("priority-select", "dropdown", "input.select"),
+            ("bento-card", "card", "card"),
+            ("favicon-badge", "badge", "badge"),
+            ("discrete-tab", "tabs", "nav.tab"),
+            ("sidebar-nav-item", "nav", "nav.sidebar-item"),
+            ("dialog-modal", "modal", "overlay.modal"),
+        ]
+        for ident, jenis, expected_role in cases:
+            with self.subTest(ident=ident, jenis=jenis):
+                self.assertEqual(classify_atomic_role(ident, jenis), expected_role)
+
+    def test_schema_role_validation(self):
+        policy = load_policy()
+        for role in (
+            "button.primary",
+            "button.ghost",
+            "button.destructive",
+            "button.icon",
+            "input.text",
+            "input.search",
+            "input.select",
+            "card",
+            "badge",
+            "nav.tab",
+            "nav.sidebar-item",
+            "overlay.modal",
+            "page",
+            "section",
+            "pattern",
+        ):
+            valid_item = _item(id=f"component:test-{role.replace('.', '-')}", role=role, kind="component")
+            self.assertEqual(check_item(valid_item, policy), [], f"role {role} should be valid")
+
+        invalid_item = _item(id="component:test-invalid", role="unsupported-wildcard-role", kind="component")
+        self.assertIn("role='unsupported-wildcard-role'", check_item(invalid_item, policy))
+
+    def test_shortlist_and_search_by_kind_and_role(self):
+        btn_prim = _item(
+            id="component:test-btn-prim",
+            name="Primary Action Button",
+            kind="component",
+            role="button.primary",
+            search_text="primary action button click",
+        )
+        btn_ghost = _item(
+            id="component:test-btn-ghost",
+            name="Ghost Button",
+            kind="component",
+            role="button.ghost",
+            search_text="ghost subtle outline button",
+        )
+        card = _item(
+            id="component:test-card",
+            name="Simple Card",
+            kind="component",
+            role="card",
+            search_text="simple card surface",
+        )
+        shader = _item(
+            id="effect:test-shader-button",
+            name="Glow Button Shader",
+            kind="effect",
+            role="effect",
+            search_text="glow button background shader visual",
+        )
+        for it in (btn_prim, btn_ghost, card, shader):
+            self._inbox(it)
+        rebuild(self.bank)
+
+        # Search with kind and role
+        res = search("", root=self.bank, kind="component", role="button.primary")
+        self.assertEqual(res["bank_status"], "ok")
+        self.assertEqual([r["id"] for r in res["results"]], ["component:test-btn-prim"])
+
+        # Shortlist with kind and role
+        short = shortlist(root=self.bank, kind="component", role="button.primary")
+        self.assertEqual(short["status"], "ok")
+        self.assertEqual([r["id"] for r in short["results"]], ["component:test-btn-prim"])
+        self.assertEqual([r["id"] for r in short["components"]], ["component:test-btn-prim"])
+
+    def test_cli_shortlist_by_kind_and_role(self):
+        btn = _item(
+            id="component:test-cli-btn",
+            name="CLI Button",
+            kind="component",
+            role="button.primary",
+            search_text="cli primary button",
+        )
+        self._inbox(btn)
+        rebuild(self.bank)
+
+        out = io.StringIO()
+        with redirect_stdout(out):
+            rc = cli_main(["design", "shortlist", "--kind", "component", "--role", "button.primary", "--json"])
+        self.assertEqual(rc, 0)
+        data = json.loads(out.getvalue())
+        self.assertEqual(data["status"], "ok")
+        self.assertEqual([r["id"] for r in data["results"]], ["component:test-cli-btn"])
+
+    def test_button_search_does_not_rank_shaders(self):
+        real_button = _item(
+            id="component:real-button",
+            name="Interactive Push Button",
+            kind="component",
+            role="button.primary",
+            search_text="interactive push button component click",
+            categories=["button"],
+        )
+        shader_button = _item(
+            id="effect:shader-button",
+            name="Fancy Button Background Effect",
+            kind="effect",
+            role="effect",
+            search_text="fancy button background effect shader noise",
+            categories=["shader"],
+        )
+        self._inbox(real_button)
+        self._inbox(shader_button)
+        rebuild(self.bank)
+
+        res = search("button", root=self.bank)
+        self.assertEqual(res["bank_status"], "ok")
+        result_ids = [r["id"] for r in res["results"]]
+        self.assertIn("component:real-button", result_ids)
+        self.assertEqual(result_ids[0], "component:real-button")
 
 
 class HardlinkImportTests(IsolatedHome):

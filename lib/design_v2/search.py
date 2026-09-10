@@ -139,10 +139,13 @@ KIND_INTENT_TERMS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "navigation": (("component",), ("nav", "navbar")),
     "input": (("component",), ("input",)),
     "modal": (("component",), ("modal",)),
+    "dialog": (("component",), ("modal",)),
     "tabs": (("component",), ("tabs",)),
+    "tab": (("component",), ("tabs",)),
     "accordion": (("component",), ("accordion",)),
     "badge": (("component",), ("badge",)),
-    "dropdown": (("component",), ("dropdown",)),
+    "dropdown": (("component",), ("dropdown", "input.select")),
+    "select": (("component",), ("input.select", "dropdown")),
     "hero": (("section",), ("hero",)),
     "features": (("section",), ("features",)),
     "footer": (("section",), ("footer",)),
@@ -188,7 +191,14 @@ def kind_intent_score(item: dict[str, Any], query: str, policy: dict[str, Any]) 
     item_kind = str(item.get("kind") or "")
     item_cats = {str(value).lower() for value in (item.get("categories") or []) if value}
     role = str(item.get("role") or "").lower()
-    cat_hit = bool(preferred_cats and (item_cats & preferred_cats or role in preferred_cats))
+    cat_hit = bool(
+        preferred_cats
+        and (
+            item_cats & preferred_cats
+            or role in preferred_cats
+            or any(role.startswith(c) for c in preferred_cats)
+        )
+    )
     kind_hit = bool(preferred_kinds and item_kind in preferred_kinds)
     score = 0.0
     signals: list[str] = []
@@ -200,6 +210,9 @@ def kind_intent_score(item: dict[str, Any], query: str, policy: dict[str, Any]) 
     if cat_hit:
         score += cat_match
         signals.append("category_intent")
+    # Suppress effects/shaders when explicitly searching for buttons
+    if "button" in preferred_cats and (item_kind in {"effect", "theme"} or role in {"effect", "theme"}):
+        score -= 20.0
     return score, signals
 
 
@@ -225,6 +238,7 @@ def eligible(
     item: dict[str, Any],
     kind: str | None,
     kinds: frozenset[str] | set[str] | None = None,
+    role: str | None = None,
 ) -> tuple[bool, str]:
     if item.get("alias_of") or item.get("duplicate_of"):
         return False, "alias_or_duplicate"
@@ -240,6 +254,8 @@ def eligible(
             return False, "kind"
     elif kind and item.get("kind") != kind:
         return False, "kind"
+    if role and item.get("role") != role:
+        return False, "role"
     return True, "ok"
 
 
@@ -336,6 +352,7 @@ def search(
     root: Path | None = None,
     kind: str | None = None,
     kinds: frozenset[str] | set[str] | None = None,
+    role: str | None = None,
     limit: int | None = None,
     intent: str | None = None,
     mode: str | None = None,
@@ -354,6 +371,7 @@ def search(
         return {
             "query": query,
             "kind": kind,
+            "role": role,
             "results": [],
             "bank_status": bank_status,
             "retrieval": "none",
@@ -364,9 +382,20 @@ def search(
     requested_frameworks = _requested_frameworks(query, frameworks, items)
     ranking_query = " ".join(
         value
-        for value in (query, intent or "", mode or "", " ".join(sorted(requested_frameworks)))
+        for value in (query, role or "", kind or "", intent or "", mode or "", " ".join(sorted(requested_frameworks)))
         if value
     )
+    if not ranking_query.strip() and not kind and not role:
+        return {
+            "query": query,
+            "kind": kind,
+            "role": role,
+            "results": [],
+            "bank_status": "ok",
+            "retrieval": "none",
+            "packages_loaded_during_search": 0,
+            "dna": extracted,
+        }
     extracted = extract_query(ranking_query)
 
     fts = lock.get("fts") if isinstance(lock, dict) else None
@@ -391,12 +420,15 @@ def search(
 
     scored: list[tuple[float, dict[str, Any], list[str]]] = []
     for item in candidates:
-        ok, _reason = eligible(item, kind, kinds=kinds)
+        ok, _reason = eligible(item, kind, kinds=kinds, role=role)
         if not ok:
             continue
         points, matched = lexical_score(item, ranking_query, policy)
         points += score_dna(item, extracted, policy)
         points -= slop_penalty(item, extracted, policy)
+        if role and item.get("role") == role:
+            points += 10.0
+            matched.append(f"role:{role}")
         if points <= 0:
             continue
         context_points, context_signals = ranking_score(
@@ -447,6 +479,7 @@ def search(
         results.append(
             {
                 "id": item["id"],
+                "canonical_id": item.get("canonical_id") or item["id"],
                 "kind": item.get("kind"),
                 "role": item.get("role"),
                 "name": item.get("name"),
@@ -470,6 +503,7 @@ def search(
     return {
         "query": query,
         "kind": kind,
+        "role": role,
         "results": results,
         "bank_status": "ok",
         "retrieval": retrieval,
@@ -485,9 +519,11 @@ def search(
 
 
 def shortlist(
-    query: str,
+    query: str = "",
     *,
     root: Path | None = None,
+    kind: str | None = None,
+    role: str | None = None,
     intent: str | None = None,
     mode: str | None = None,
     frameworks: list[str] | tuple[str, ...] | None = None,
@@ -503,6 +539,8 @@ def shortlist(
     payload: dict[str, Any] = {
         "status": "ok" if bank_status == "ok" else bank_status,
         "query": query,
+        "kind": kind,
+        "role": role,
         "intent": intent,
         "mode": mode,
         "frameworks": list(frameworks or []),
@@ -521,6 +559,22 @@ def shortlist(
         "catalog_generation": (lock or {}).get("generation_id") if isinstance(lock, dict) else None,
     }
     if bank_status != "ok" or not items:
+        return payload
+    if kind or role:
+        filtered = search(
+            query,
+            root=bank,
+            kind=kind,
+            role=role,
+            limit=bounded_limit,
+            intent=intent,
+            mode=mode,
+            frameworks=frameworks,
+        )["results"]
+        payload["results"] = filtered
+        payload["visuals"] = filtered
+        if kind == "component" or (role and role.startswith(("button", "input", "card", "badge", "nav", "overlay"))):
+            payload["components"] = filtered
         return payload
     if not structure_only:
         payload["systems"] = search(
