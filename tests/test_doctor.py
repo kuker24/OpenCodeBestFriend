@@ -13,6 +13,7 @@ import os
 import shutil
 from contextlib import redirect_stdout
 
+from lib import jsonc  # noqa: E402
 from lib.doctor import cmd_doctor, owned_agents_block, parse_mcp_list  # noqa: E402
 from lib.install import cmd_install  # noqa: E402
 from lib.integrity import cmd_verify  # noqa: E402
@@ -245,6 +246,58 @@ class DoctorDeepTests(IsolatedHome):
         os.environ["PATH"] = self.prev["PATH"] or ""
         self.assertEqual(rc, 1, buf.getvalue())
         self.assertTrue("npx" in buf.getvalue() or "node" in buf.getvalue())
+
+    def test_doctor_stitch_missing_does_not_fail(self):
+        self._install()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("OPTIONAL_ABSENT        mcp:stitch", buf.getvalue())
+
+    def test_doctor_deep_stitch_missing_does_not_fail(self):
+        self._install()
+        self.write_mcp_list(
+            "codebase-memory-mcp connected\ncontext7 connected\nshadcn connected\n"
+        )
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor(deep=True)
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("OPTIONAL_ABSENT        mcp:stitch", buf.getvalue())
+
+    def test_doctor_stitch_invalid_schema_fails(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["stitch"] = {
+            "type": "local",
+            "command": ["stitch-bin"],
+            "enabled": True,
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 1, buf.getvalue())
+        self.assertIn("FAIL                   mcp:stitch", buf.getvalue())
+
+    def test_doctor_stitch_valid_configured_passes(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["stitch"] = {
+            "type": "remote",
+            "url": "https://stitch.googleapis.com/mcp",
+            "enabled": True,
+            "headers": {"X-Goog-Api-Key": "{env:STITCH_API_KEY}"},
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("CONFIGURED             mcp:stitch", buf.getvalue())
 
 
 if __name__ == "__main__":

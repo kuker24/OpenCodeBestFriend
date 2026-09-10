@@ -118,16 +118,31 @@ def mcp_status_map() -> dict[str, str]:
         try:
             data = jsonc.load_path(cfg)
         except (OSError, json.JSONDecodeError, ValueError):
-            return {k: "FAIL" for k in ("codebase-memory-mcp", "context7", "shadcn", "serena", "exa")}
+            return {k: "FAIL" for k in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "exa")}
     mcp = data.get("mcp") or {}
     owned = {"codebase-memory-mcp", "context7", "shadcn"}
-    for name in ("codebase-memory-mcp", "context7", "shadcn", "serena", "exa"):
+    for name in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "exa"):
         spec = mcp.get(name)
         if spec is None:
-            out[name] = "OPTIONAL_ABSENT" if name in {"serena", "exa"} else "FAIL"
+            out[name] = "OPTIONAL_ABSENT" if name in {"serena", "stitch", "exa"} else "FAIL"
+            continue
+        if not isinstance(spec, dict):
+            out[name] = "FAIL"
             continue
         if spec.get("enabled") is False:
             out[name] = "DISABLED"
+            continue
+        if name == "stitch":
+            typ = spec.get("type")
+            url = spec.get("url")
+            if typ != "remote" or url != "https://stitch.googleapis.com/mcp":
+                out[name] = "FAIL"
+                continue
+            headers = spec.get("headers")
+            if headers is not None and not isinstance(headers, dict):
+                out[name] = "FAIL"
+                continue
+            out[name] = "CONFIGURED"
             continue
         if name not in owned:
             out[name] = "FOREIGN"

@@ -872,7 +872,7 @@ def apply(meta: dict, cbm_bin: Path, bank: tuple[str | None, str, str]) -> list[
         "modelInvokedSkills": meta["model"],
         "manualSkills": meta["manual"],
         "ownedMcp": list(OWNED_MCP),
-        "optionalMcp": ["serena", "exa"],
+        "optionalMcp": ["serena", "stitch", "exa"],
         "designBank": {
             "root": bank_root,
             "source": bank_source,
@@ -1291,3 +1291,81 @@ def cmd_serena_enable() -> int:
         path.write_text(jsonc.dumps(data), encoding="utf-8")
     info(f"enabled serena MCP in {path}")
     return 0
+
+
+def cmd_stitch_enable(oauth: bool = False) -> int:
+    if not oauth and not os.environ.get("STITCH_API_KEY", "").strip():
+        die("STITCH_API_KEY environment variable is empty (set STITCH_API_KEY or use --oauth)")
+    spec: dict[str, object] = {
+        "type": "remote",
+        "url": "https://stitch.googleapis.com/mcp",
+        "enabled": True,
+    }
+    if not oauth:
+        spec["headers"] = {
+            "X-Goog-Api-Key": "{env:STITCH_API_KEY}",
+        }
+    path = target_config_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.is_file():
+        path.write_text(
+            jsonc.dumps({"$schema": "https://opencode.ai/config.json", "mcp": {"stitch": spec}}),
+            encoding="utf-8",
+        )
+        info(f"enabled stitch MCP in {path}")
+        return 0
+    raw = path.read_text(encoding="utf-8")
+    try:
+        data = jsonc.loads(raw)
+    except Exception as exc:
+        die(f"OPENCODE_CONFIG_INVALID: {exc}")
+    if not isinstance(data, dict):
+        die("OPENCODE_CONFIG_INVALID: root is not an object")
+    mcp = data.get("mcp") or {}
+    if not isinstance(mcp, dict):
+        die("OPENCODE_CONFIG_INVALID mcp")
+    if jsonc.contains_comments(raw):
+        try:
+            merged = jsonc.upsert_mcp_servers(raw, {"stitch": spec})
+            jsonc.loads(merged)
+            path.write_text(merged if merged.endswith("\n") else merged + "\n", encoding="utf-8")
+        except Exception as exc:
+            die(f"OPENCODE_CONFIG_JSONC_SURGICAL_FAILED: {exc}")
+    else:
+        data.setdefault("mcp", {})["stitch"] = spec
+        path.write_text(jsonc.dumps(data), encoding="utf-8")
+    info(f"enabled stitch MCP in {path}")
+    return 0
+
+
+def cmd_stitch_disable() -> int:
+    path = target_config_path()
+    if not path.is_file():
+        info("stitch MCP not present; nothing to disable")
+        return 0
+    raw = path.read_text(encoding="utf-8")
+    try:
+        data = jsonc.loads(raw)
+    except Exception as exc:
+        die(f"OPENCODE_CONFIG_INVALID: {exc}")
+    if not isinstance(data, dict):
+        die("OPENCODE_CONFIG_INVALID: root is not an object")
+    mcp = data.get("mcp") or {}
+    if not isinstance(mcp, dict):
+        die("OPENCODE_CONFIG_INVALID mcp")
+    if "stitch" not in mcp:
+        info("stitch MCP not present; nothing to disable")
+        return 0
+    if jsonc.contains_comments(raw):
+        try:
+            merged = jsonc.remove_mcp_servers(raw, ["stitch"])
+            jsonc.loads(merged)
+            path.write_text(merged if merged.endswith("\n") else merged + "\n", encoding="utf-8")
+        except Exception as exc:
+            die(f"OPENCODE_CONFIG_JSONC_SURGICAL_FAILED: {exc}")
+    else:
+        del data["mcp"]["stitch"]
+        path.write_text(jsonc.dumps(data), encoding="utf-8")
+    info(f"disabled stitch MCP in {path}")
+    return 0
+

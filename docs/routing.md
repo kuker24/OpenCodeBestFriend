@@ -22,7 +22,7 @@ MANUAL_NOT_INVOKED
 
 Never list unused tools as used.
 
-UI direction from the bank routes to `found-this-design` first, which stops before component implementation. Visual UI and UI atoms (buttons, inputs, cards, nav) route to `impeccable` after Design V2 shortlist; BANK_MISS ≠ generate (+ shadcn/Design V2 internal). Motion UI routes to `emil-design-eng`. Still/ads/non-UI surface route to `visual-studio`. Scroll-led stories route to `scroll-craft`, while continuous camera 3D fly-throughs route to `scroll-world`.
+UI direction from the bank routes to `found-this-design` first, which stops before component implementation. Visual UI and UI atoms (buttons, inputs, cards, nav) route to `impeccable` after Design V2 shortlist; BANK_MISS ≠ generate (+ shadcn/Design V2 internal). Stitch MCP is for screen/comp generation only, then found-this-design or impeccable with Design V2 atom shortlisting; never implement production UI from Stitch alone. Motion UI routes to `emil-design-eng`. Still/ads/non-UI surface route to `visual-studio`. Scroll-led stories route to `scroll-craft`, while continuous camera 3D fly-throughs route to `scroll-world`.
 
 Browser verification follows four explicit doors: exploratory application UI routes to `playwright-qa`, persistent multi-account sessions route to `browser-act`, observed Chromium cause routes to `chrome-devtools-axi`, and button handler sequential undo / shared-store side effects route to `click-path-audit`.
 

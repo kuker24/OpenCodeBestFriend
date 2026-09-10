@@ -4,6 +4,17 @@
 
 None.
 
+## 1.8.2 — 2026-09-10
+
+Patch release adding Google Stitch as an optional remote MCP comp source. Total skills remain **62** (46 model-invoked, 16 manual slash commands).
+
+- Add optional Google Stitch remote MCP (`https://stitch.googleapis.com/mcp`) via `opencode-bf stitch enable`.
+- Support `{env:STITCH_API_KEY}` header interpolation or `--oauth` mode without headers.
+- Add `opencode-bf stitch disable` with surgical removal of only `mcp.stitch`.
+- Doctor: stitch is optional; absent != fail, schema violation = fail. Core servers remain 3 (`codebase-memory-mcp`, `context7`, `shadcn`).
+- Router: Stitch MCP is for screen/comp mock generation only, never an automatic production UI implementer. Product UI remains bank + Impeccable + Design V2 atoms + shadcn.
+- Impeccable: treat existing Stitch screens as approved comps; local atom shortlist remains mandatory.
+
 ## 1.8.1 — 2026-09-10
 
 Patch release for Design V2 atomic role locking and Impeccable atom handoff. Total skills remain **62** (46 model-invoked, 16 manual slash commands).

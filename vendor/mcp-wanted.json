@@ -38,6 +38,14 @@
       "scope": "user",
       "transport": "stdio",
       "status": "ON_DEMAND_ABSENT"
+    },
+    "stitch": {
+      "wanted": false,
+      "ownedIfAdded": false,
+      "scope": "user",
+      "transport": "http",
+      "url": "https://stitch.googleapis.com/mcp",
+      "status": "ON_DEMAND_ABSENT"
     }
   }
 }

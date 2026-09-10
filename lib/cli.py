@@ -25,6 +25,8 @@ from lib.install import (  # noqa: E402
     cmd_restore,
     cmd_restore_list,
     cmd_serena_enable,
+    cmd_stitch_disable,
+    cmd_stitch_enable,
     cmd_uninstall,
 )
 from lib.integrity import cmd_verify  # noqa: E402
@@ -98,6 +100,10 @@ def build_parser() -> argparse.ArgumentParser:
     se = sub.add_parser("serena")
     se.add_argument("action", choices=["enable"])
 
+    st = sub.add_parser("stitch", help="optional Google Stitch remote MCP")
+    st.add_argument("action", choices=["enable", "disable"])
+    st.add_argument("--oauth", action="store_true", help="use OAuth/Bearer auth instead of STITCH_API_KEY header")
+
     sd = sub.add_parser("smartdoc", help="document profiles, extract, status")
     add_smartdoc_cli(sd)
     sb = sub.add_parser("smartbook", help="reusable SmartBook lifecycle")
@@ -153,6 +159,10 @@ def main(argv: list[str] | None = None) -> int:
         return isolation_check(deep=args.deep)
     if cmd == "serena":
         return cmd_serena_enable()
+    if cmd == "stitch":
+        if args.action == "enable":
+            return cmd_stitch_enable(oauth=args.oauth)
+        return cmd_stitch_disable()
     if cmd == "smartdoc":
         return dispatch_smartdoc(args)
     if cmd == "smartbook":
