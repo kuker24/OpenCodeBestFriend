@@ -366,6 +366,9 @@ def ingest_catalog_bank(path: Path, bank: Path, *, provider: str) -> dict[str, A
             elif jenis == "template":
                 kind = "template"
                 role = "template"
+            elif jenis in {"background", "pattern"}:
+                kind = jenis
+                role = jenis
             elif jenis in {"3d-website", "landing-page", "mobile-app"}:
                 kind = "page"
                 role = "page"

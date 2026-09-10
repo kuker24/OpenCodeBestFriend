@@ -24,7 +24,7 @@ from lib.design_v2.bank import (  # noqa: E402
     resolve_design_v2_root,
 )
 from lib.design_v2.dna import extract_query  # noqa: E402
-from lib.design_v2.importers.common import classify_atomic_role  # noqa: E402
+from lib.design_v2.importers.common import classify_atomic_role, guess_kind_role  # noqa: E402
 from lib.design_v2.import_stage import ImportRejected, import_stage  # noqa: E402
 from lib.design_v2.commands import doctor_rows  # noqa: E402
 from lib.design_v2.bank import load_policy  # noqa: E402
@@ -507,12 +507,21 @@ class DesignV2Tests(IsolatedHome):
     def test_atomic_roles_classification(self):
         cases = [
             ("delete-button", "button", "button.destructive"),
+            ("discard-button", "button", "button.destructive"),
             ("ghost-button", "button", "button.ghost"),
             ("outline-btn", "button", "button.ghost"),
+            ("secondary-button", "button", "button.ghost"),
+            ("subtle-button", "button", "button.ghost"),
+            ("link-btn", "button", "button.ghost"),
             ("icon-button", "button", "button.icon"),
             ("star-button", "button", "button.icon"),
+            ("close-button", "button", "button.icon"),
+            ("back-button", "button", "button.icon"),
+            ("arrow-btn", "button", "button.icon"),
             ("save-button", "button", "button.primary"),
             ("discover-button", "button", "button.primary"),
+            ("shimmer-button", "button", "button.primary"),
+            ("rainbow-button", "button", "button.primary"),
             ("text-input", "input", "input.text"),
             ("search-bar", "input", "input.search"),
             ("priority-select", "dropdown", "input.select"),
@@ -521,6 +530,14 @@ class DesignV2Tests(IsolatedHome):
             ("discrete-tab", "tabs", "nav.tab"),
             ("sidebar-nav-item", "nav", "nav.sidebar-item"),
             ("dialog-modal", "modal", "overlay.modal"),
+            # Excluded non-action controls (must NOT be classified as atomic buttons)
+            ("radio-button", "button", None),
+            ("radio-group", "control", None),
+            ("switch-button", "button", None),
+            ("toggle-button", "button", None),
+            ("accordion-button", "button", None),
+            ("button-group", "button", None),
+            ("pagination-btn", "button", None),
         ]
         for ident, jenis, expected_role in cases:
             with self.subTest(ident=ident, jenis=jenis):
@@ -640,6 +657,75 @@ class DesignV2Tests(IsolatedHome):
         result_ids = [r["id"] for r in res["results"]]
         self.assertIn("component:real-button", result_ids)
         self.assertEqual(result_ids[0], "component:real-button")
+
+    def test_guess_kind_role_does_not_force_button_primary(self):
+        cases = [
+            (["RadioButton.tsx"], "export function RadioButton() { return <input type='radio' />; }", ("component", "component")),
+            (["Checkbox.tsx"], "export function Checkbox() { return <input type='checkbox' />; }", ("component", "component")),
+            (["Switch.tsx"], "export function Switch() { return <button role='switch' />; }", ("component", "component")),
+            (["Combobox.tsx"], "export function Combobox() { return <select />; }", ("component", "input.select")),
+            (["PricingSection.tsx"], "<div><h2>Pricing</h2><button>Subscribe</button></div>", ("section", "section")),
+            (["HeroSection.tsx"], "<div><h1>Welcome</h1><button>Get Started</button></div>", ("section", "hero")),
+            (["PrimaryButton.tsx"], "export function PrimaryButton() { return <button>Go</button>; }", ("component", "button.primary")),
+            (["GhostButton.tsx"], "export function GhostButton() { return <button>Ghost</button>; }", ("component", "button.ghost")),
+            (["CloseButton.tsx"], "export function CloseButton() { return <button aria-label='close' />; }", ("component", "button.icon")),
+        ]
+        for names, text, expected in cases:
+            with self.subTest(names=names):
+                self.assertEqual(guess_kind_role(names, text), expected)
+
+    def test_search_button_subtypes_ranking(self):
+        btn_prim = _item(
+            id="component:btn-prim",
+            name="Primary Action Button",
+            kind="component",
+            role="button.primary",
+            search_text="primary cta main action button",
+            categories=["button"],
+        )
+        btn_ghost = _item(
+            id="component:btn-ghost",
+            name="Secondary Ghost Button",
+            kind="component",
+            role="button.ghost",
+            search_text="ghost secondary outline subtle button",
+            categories=["button"],
+        )
+        btn_dest = _item(
+            id="component:btn-dest",
+            name="Delete Danger Button",
+            kind="component",
+            role="button.destructive",
+            search_text="delete destructive trash danger remove button",
+            categories=["button"],
+        )
+        btn_icon = _item(
+            id="component:btn-icon",
+            name="Close Icon Button",
+            kind="component",
+            role="button.icon",
+            search_text="close icon back dismiss button",
+            categories=["button"],
+        )
+        for it in (btn_prim, btn_ghost, btn_dest, btn_icon):
+            self._inbox(it)
+        rebuild(self.bank)
+
+        # "ghost button" should rank button.ghost at the top
+        res_ghost = search("ghost button", root=self.bank)
+        self.assertEqual(res_ghost["results"][0]["id"], "component:btn-ghost")
+
+        # "delete button" should rank button.destructive at the top
+        res_dest = search("delete button", root=self.bank)
+        self.assertEqual(res_dest["results"][0]["id"], "component:btn-dest")
+
+        # "close icon button" should rank button.icon at the top
+        res_icon = search("close icon button", root=self.bank)
+        self.assertEqual(res_icon["results"][0]["id"], "component:btn-icon")
+
+        # "primary button" should rank button.primary at the top
+        res_prim = search("primary button", root=self.bank)
+        self.assertEqual(res_prim["results"][0]["id"], "component:btn-prim")
 
 
 class HardlinkImportTests(IsolatedHome):

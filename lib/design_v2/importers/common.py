@@ -148,68 +148,162 @@ ATOMIC_ROLES = frozenset(
 
 
 def classify_atomic_role(ident: str, jenis: str = "") -> str | None:
+    ident_clean = re.sub(r"([a-z])([A-Z])", r"\1 \2", ident).lower()
+    words = set(re.findall(r"[a-z0-9]+", ident_clean))
     ident_lower = ident.lower()
     jenis_lower = (jenis or "").lower().strip()
 
     # 1. Overlay modal / dialog
-    if any(k in ident_lower for k in ("modal", "dialog", "alert-dialog", "sheet", "drawer", "popover")):
+    if (words & {"modal", "dialog", "sheet", "drawer", "popover"}) or "alert-dialog" in ident_lower:
         return "overlay.modal"
 
     # 2. Navigation
     if any(k in ident_lower for k in ("sidebar-item", "sidenav-item", "nav-item", "nav-link", "sidebar-link")):
         return "nav.sidebar-item"
-    if any(k in ident_lower for k in ("tab", "tabs", "segmented", "segment-group")):
+    if (words & {"tab", "tabs", "segmented"}) or "segment-group" in ident_lower:
         return "nav.tab"
 
     # 3. Badge
-    if any(k in ident_lower for k in ("badge", "pill", "chip", "status-dot", "tag")) and not any(
-        k in ident_lower for k in ("button", "btn")
+    if ((words & {"badge", "pill", "chip", "tag"}) or "status-dot" in ident_lower) and not (
+        words & {"button", "btn"}
     ):
         return "badge"
 
     # 4. Inputs
     if any(k in ident_lower for k in ("search-bar", "search-input", "searchbar", "command-menu")) or (
-        "search" in ident_lower and any(k in ident_lower for k in ("input", "box", "field", "bar"))
+        "search" in words and (words & {"input", "box", "field", "bar"})
     ):
         return "input.search"
-    if any(k in ident_lower for k in ("select", "dropdown", "combobox", "picker", "autocomplete")):
+    if words & {"select", "dropdown", "combobox", "picker", "autocomplete"}:
         return "input.select"
-    if any(k in ident_lower for k in ("input", "textfield", "text-field", "textarea", "form-field")):
+    if (words & {"input", "textfield", "textarea"}) or any(k in ident_lower for k in ("text-field", "form-field")):
         return "input.text"
 
     # 5. Buttons
-    has_btn = any(k in ident_lower for k in ("button", "btn")) or jenis_lower == "button"
+    # Exclude non-action controls that contain "button" or "btn" in their name
+    is_non_btn_control = bool(
+        (words & {"radio", "switch", "toggle", "checkbox", "slider", "accordion", "pagination"})
+        or "button-group" in ident_lower
+        or "btn-group" in ident_lower
+    )
+    has_btn = (bool(words & {"button", "btn"}) or jenis_lower == "button") and not is_non_btn_control
     if has_btn:
-        if any(k in ident_lower for k in ("delete", "destructive", "danger", "remove", "trash")):
+        if (
+            words & {"delete", "destructive", "danger", "remove", "trash", "kill", "discard"}
+            or "clear-all" in ident_lower
+        ):
             return "button.destructive"
-        if any(k in ident_lower for k in ("ghost", "outline", "border")):
+        if (
+            words
+            & {
+                "ghost",
+                "outline",
+                "border",
+                "subtle",
+                "secondary",
+                "tertiary",
+                "link",
+                "plain",
+                "flat",
+                "transparent",
+                "minimal",
+            }
+            or "text-button" in ident_lower
+            or "text-btn" in ident_lower
+        ):
             return "button.ghost"
-        if any(k in ident_lower for k in ("icon", "star", "copy", "fab", "floating-action", "bookmark")):
+        if (
+            words
+            & {
+                "icon",
+                "star",
+                "copy",
+                "fab",
+                "bookmark",
+                "close",
+                "back",
+                "prev",
+                "next",
+                "chevron",
+                "arrow",
+                "kebab",
+                "meatball",
+                "dots",
+                "share",
+            }
+            or "floating-action" in ident_lower
+        ):
             return "button.icon"
         return "button.primary"
 
     # 6. Card
-    if any(k in ident_lower for k in ("card", "bento")) or jenis_lower == "card":
+    if (words & {"card", "bento"}) or jenis_lower == "card":
         return "card"
 
     return None
 
 
 def guess_kind_role(names: list[str], text: str) -> tuple[str, str]:
-    atom = classify_atomic_role(" ".join(names)) or classify_atomic_role(text[:500])
+    names_str = " ".join(names)
+    heading = ""
+    first_line = text.split("\n", 1)[0].strip() if text else ""
+    if first_line.startswith("#"):
+        heading = first_line.lstrip("# ").strip()
+    atom = classify_atomic_role(names_str)
+    if not atom and heading:
+        atom = classify_atomic_role(heading)
     if atom:
         return "component", atom
-    blob = " ".join(names).lower() + " " + text.lower()
-    if any(w in blob for w in ("button", "input", "combobox", "checkbox")):
-        return "component", "button.primary"
-    if any(w in blob for w in ("navbar", "nav", "header", "footer", "sidebar")):
-        return "block", "chrome"
+
+    blob = names_str.lower() + " " + text.lower()
+
+    # Macro layout / pages first
+    if any(w in blob for w in ("dashboard", "page", "landing")):
+        return "page", "page"
+
+    # Full sections
     if any(w in blob for w in ("hero",)):
         return "section", "hero"
-    if any(w in blob for w in ("pricing", "testimonial", "feature")):
+    if any(w in blob for w in ("pricing", "testimonial", "feature", "footer", "faq", "cta")):
         return "section", "section"
-    if any(w in blob for w in ("dashboard", "page")):
-        return "page", "page"
+
+    # Navigation chrome / blocks
+    if any(w in blob for w in ("navbar", "nav", "header", "sidebar")):
+        return "block", "chrome"
+
+    # Specific component atoms if names_str indicates input/modal/card/badge/tab
+    names_clean = re.sub(r"([a-z])([A-Z])", r"\1 \2", names_str).lower()
+    name_words = set(re.findall(r"[a-z0-9]+", names_clean))
+
+    if name_words & {"select", "combobox", "dropdown"}:
+        return "component", "input.select"
+    if name_words & {"input", "textfield", "textarea"}:
+        return "component", "input.text"
+    if name_words & {"modal", "dialog", "sheet"}:
+        return "component", "overlay.modal"
+    if name_words & {"card", "bento"}:
+        return "component", "card"
+    if name_words & {"badge", "pill", "chip"}:
+        return "component", "badge"
+    if name_words & {"tab", "tabs"}:
+        return "component", "nav.tab"
+
+    # Buttons only if declared in names_str or explicitly in heading, never buried in markup
+    if name_words & {"button", "btn"}:
+        btn_atom = classify_atomic_role(names_str)
+        if btn_atom:
+            return "component", btn_atom
+        if not (
+            name_words & {"radio", "switch", "toggle", "checkbox", "slider", "accordion", "pagination"}
+            or "button-group" in names_clean
+            or "btn-group" in names_clean
+        ):
+            return "component", "button.primary"
+
+    # Generic controls (checkbox, switch, radio, slider, accordion, avatar, etc.)
+    if any(w in blob for w in ("checkbox", "switch", "radio", "slider", "accordion", "avatar", "tooltip", "component")):
+        return "component", "component"
+
     if "design.md" in blob and not any(n.endswith(".html") for n in names):
         return "system", "system"
     return "section", "section"
