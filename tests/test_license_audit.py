@@ -28,8 +28,7 @@ class LicenseAuditTests(unittest.TestCase):
     def test_every_skill_is_audited(self):
         allow, _, _, _ = load_policy(ROOT)
         audit = json.loads((ROOT / "vendor" / "license-audit.json").read_text(encoding="utf-8"))
-        ops_adapters = {"mongodb-ops", "supabase-ops", "vercel-ops"}
-        self.assertEqual(set(allow) - ops_adapters, set(audit["skills"]))
+        self.assertEqual(set(allow), set(audit["skills"]))
         unknown = {k for k, v in audit["skills"].items() if v.get("redistribution") == "unknown"}
         self.assertEqual(unknown, set())
         for name in SNAPSHOT:
