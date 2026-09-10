@@ -18,6 +18,12 @@ Core principles:
 2. Before acting, load the one playbook that owns the request: the Commands table's reference for an explicit or clearly implied sub-command, or [reference/new-work.md](reference/new-work.md) for a new surface or replacement visual world. New-work conditionally loads [reference/design-intelligence.md](reference/design-intelligence.md); no other command does. Then inspect the target and at least one representative source of incumbent visual truth (tokens, theme, CSS, component, or asset) before editing.
 3. After analysis and direction are resolved, load [reference/craft-floor.md](reference/craft-floor.md) and [reference/taste-guard.md](reference/taste-guard.md) immediately before editing UI. They carry the quality floor, the Taste guardrails, and the reflexes no detector catches. For Persuade or Experience new surfaces and broad redesigns, consult the contextual modules under [reference/taste/](reference/taste/direction.md) ([composition.md](reference/taste/composition.md), [redesign.md](reference/taste/redesign.md), [preflight.md](reference/taste/preflight.md)). Do not load them for planning-only work.
 4. If the surface needs a catalog component (form, table, chart, hero, marquee, gantt, animated primitive), load [reference/ui-hub.md](reference/ui-hub.md) and use MCP `shadcn`. Search, inspect (namespace, dependencies, file targets, collisions), pick one, then install. Do not invent a second UI MCP.
+5. **UI atoms gate (fail-closed):** If the user requests a button, input, card, nav, modal, or badge, run Design V2 shortlist `python3 <skill-base-dir>/scripts/design_v2.py shortlist --kind component --role <mapped ATOMIC_ROLE>` first.
+   - If empty: report `BANK_MISS`; fall back to shadcn MCP only if cwd contains `components.json`. Never invent arbitrary hex, radius, or typography.
+   - If hits exist: pick or take the top role-exact card, record `id`, `provider`, `role`, and `local_path` into `.impeccable/atoms.json` in user project cwd.
+   - Implementation must mimic the structure and tokens of that atom + the visual world pack if pinned by `found-this-design`.
+   - Forbidden: `image_gen`, vendor `frontend-design`, or ungrounded model taste.
+   - World or page-level layout still routes to `found-this-design` first when no world is pinned.
 
 ## How to design
 

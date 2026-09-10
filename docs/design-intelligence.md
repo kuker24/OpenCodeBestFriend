@@ -116,3 +116,13 @@ JSONL remains canonical. Missing or stale FTS is `DEGRADED_FTS`, not a failed ca
 `skills/impeccable/scripts/design_v2.py` is a read-only thin adapter exposing status, search, shortlist, inspect, doctor, and sources. It does not expose import, ingest, dedupe, or rebuild.
 
 Search and shortlist open no asset folders and return bounded metadata cards with direction, system/style, structure, patterns, motion, reasons, compatibility, license/trust, avoid flags, and one `inspect_id`. Impeccable inspects only the user-selected candidate. It never loads the entire bank into model context.
+
+### Atomic Component Shortlist
+
+For UI atoms (button, input, card, nav, modal, badge), query the component shortlist directly:
+
+```bash
+opencode-bf design shortlist --kind component --role button.primary
+```
+
+Impeccable reads the top role-exact card and records the selection to `.impeccable/atoms.json` in the user project root. If the shortlist returns empty (`BANK_MISS`), Impeccable falls back to shadcn MCP only when `components.json` is present in the working directory; it never invents arbitrary styling tokens.

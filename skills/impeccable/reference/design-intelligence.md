@@ -50,7 +50,7 @@ After the Design Intelligence shortlist (or instead of it when that bank is empt
 python3 <skill-base-dir>/scripts/design_v2.py shortlist --query "<query>" --intent <intent> --mode <mode> [--framework <project-framework>]
 ```
 
-Add `--structure-only` when the lane is structure only.
+Add `--structure-only` when the lane is structure only. For UI atoms (button, input, card, nav, modal, badge), query `--kind component --role <ATOMIC_ROLE>` directly before markup. When hits exist, record the chosen item to `.impeccable/atoms.json` in project cwd. If empty, declare `BANK_MISS` and fall back to shadcn MCP only if `components.json` exists in cwd; never invent tokens.
 
 `EMPTY` or `DESIGN_V2_RUNTIME_MISSING`: skip V2 and continue DI plus native new-work. The shim is read-only; do not run `import`, `ingest`, `dedupe`, or `rebuild` from this playbook.
 

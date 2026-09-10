@@ -4,6 +4,16 @@
 
 None.
 
+## 1.8.1 — 2026-09-10
+
+Patch release for Design V2 atomic role locking and Impeccable atom handoff. Total skills remain **62** (46 model-invoked, 16 manual slash commands).
+
+- Lock 12 atomic roles (`button.primary`, `button.ghost`, `button.destructive`, `button.icon`, `input.text`, `input.search`, `input.select`, `card`, `badge`, `nav.tab`, `nav.sidebar-item`, `overlay.modal`) in Design V2 policy and schema.
+- Require Impeccable to shortlist Design V2 components (`--kind component --role <ATOMIC_ROLE>`) before implementing UI atoms; record picks into `.impeccable/atoms.json` in user project root.
+- Add atomic intent mapping and fail-closed gate: `BANK_MISS` declaratively routes to shadcn MCP only when `components.json` is present; arbitrary token invention and ungrounded generation are forbidden.
+- Integrate 3 first-party vendor ops stack adapters (`supabase-ops`, `mongodb-ops`, `vercel-ops`) without monorepo dependencies or vendor `frontend-design`.
+- Tighten router intent gates in `templates/AGENTS.md`, `rules/00-routing.md`, and `docs/routing.md` (`UI atoms → impeccable after Design V2 shortlist; BANK_MISS ≠ generate`).
+
 ## 1.8.0 — 2026-09-09
 
 Catalog freeze after warehouse Waves 1–3. Skills total **59** (43 model-invoked, 16 manual slash commands).

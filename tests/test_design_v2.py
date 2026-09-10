@@ -16,6 +16,13 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from lib.cli import main as cli_main  # noqa: E402
+from lib.design_v2.atoms import (  # noqa: E402
+    ATOMS_SCHEMA,
+    map_intent_to_role,
+    read_atoms,
+    record_atom_pick,
+    write_atoms,
+)
 from lib.design_v2.bank import (  # noqa: E402
     PathEscape,
     assert_under_v2,
@@ -726,6 +733,99 @@ class DesignV2Tests(IsolatedHome):
         # "primary button" should rank button.primary at the top
         res_prim = search("primary button", root=self.bank)
         self.assertEqual(res_prim["results"][0]["id"], "component:btn-prim")
+
+    def test_map_intent_to_role(self):
+        cases = [
+            ("ghost button", "button.ghost"),
+            ("outline button", "button.ghost"),
+            ("delete button", "button.destructive"),
+            ("danger button", "button.destructive"),
+            ("close icon button", "button.icon"),
+            ("copy button", "button.icon"),
+            ("primary action button", "button.primary"),
+            ("button", "button.primary"),
+            ("text input", "input.text"),
+            ("search input", "input.search"),
+            ("search bar", "input.search"),
+            ("dropdown select", "input.select"),
+            ("combobox", "input.select"),
+            ("card surface", "card"),
+            ("status badge", "badge"),
+            ("navigation tabs", "nav.tab"),
+            ("sidebar item link", "nav.sidebar-item"),
+            ("dialog modal", "overlay.modal"),
+        ]
+        for phrase, expected_role in cases:
+            with self.subTest(phrase=phrase):
+                self.assertEqual(map_intent_to_role(phrase), expected_role)
+
+    def test_atoms_json_read_write_and_schema(self):
+        proj = self.tmp / "my-project"
+        proj.mkdir()
+        empty = read_atoms(proj)
+        self.assertEqual(empty["schema"], ATOMS_SCHEMA)
+        self.assertEqual(empty["items"], [])
+
+        valid_payload = {
+            "schema": "impeccable.atoms.v1",
+            "items": [
+                {
+                    "id": "component:21st-test-button",
+                    "role": "button.primary",
+                    "kind": "component",
+                    "provider": "21st",
+                }
+            ],
+        }
+        out_path = write_atoms(proj, valid_payload)
+        self.assertTrue(out_path.is_file())
+        self.assertEqual(out_path, proj / ".impeccable" / "atoms.json")
+
+        loaded = read_atoms(proj)
+        self.assertEqual(loaded["schema"], "impeccable.atoms.v1")
+        self.assertEqual(len(loaded["items"]), 1)
+        self.assertEqual(loaded["items"][0]["id"], "component:21st-test-button")
+        self.assertEqual(loaded["items"][0]["role"], "button.primary")
+        self.assertEqual(loaded["items"][0]["kind"], "component")
+        self.assertEqual(loaded["items"][0]["provider"], "21st")
+
+        # Missing required key in item should raise ValueError on write
+        bad_payload = {
+            "schema": "impeccable.atoms.v1",
+            "items": [{"id": "bad", "role": "button.primary"}],  # missing kind, provider
+        }
+        with self.assertRaises(ValueError):
+            write_atoms(proj, bad_payload)
+
+    def test_record_atom_pick(self):
+        proj = self.tmp / "my-project-record"
+        proj.mkdir()
+        item = {
+            "id": "component:21st-sample-btn",
+            "kind": "component",
+            "role": "button.primary",
+            "provider": "21st",
+            "local_path": "components/21st/sample-btn",
+        }
+        out = record_atom_pick(proj, item)
+        self.assertTrue(out.is_file())
+        data = read_atoms(proj)
+        self.assertEqual(len(data["items"]), 1)
+        self.assertEqual(data["items"][0]["role"], "button.primary")
+        self.assertEqual(data["items"][0]["local_path"], "components/21st/sample-btn")
+
+        # Overwrite same role replaces it, new role appends
+        item2 = {
+            "id": "component:21st-ghost-btn",
+            "kind": "component",
+            "role": "button.ghost",
+            "provider": "21st",
+        }
+        record_atom_pick(proj, item2)
+        data2 = read_atoms(proj)
+        self.assertEqual(len(data2["items"]), 2)
+        roles = {it["role"] for it in data2["items"]}
+        self.assertEqual(roles, {"button.primary", "button.ghost"})
 
 
 class HardlinkImportTests(IsolatedHome):

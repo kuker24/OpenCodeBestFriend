@@ -9,7 +9,8 @@ license: MIT
 
 Find a visual direction from the local bank. Recommend 3 (default) or 5.
 Generate a high-fidelity first-viewport photo of **this product** in each
-world, then stop. `/impeccable` builds after the user picks.
+world, then stop. `/impeccable` builds after the user picks. Stop before
+component atoms; atoms are impeccable + Design V2.
 
 `/found_this_design` is the same command.
 
@@ -22,6 +23,7 @@ world, then stop. `/impeccable` builds after the user picks.
 
 ## Hard rules
 
+- Stop before component atoms; atoms are impeccable + Design V2.
 - Search with the scripts. Never read either `catalog.json` into context.
 - Do not implement UI, copy a Motion prompt into code, or overwrite the
   project's `DESIGN.md` unless the user asked to pin files.

@@ -159,6 +159,11 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("FOREIGN vendor packs", self.routing)
         self.assertIn("Do not use vendor `frontend-design` for product UI", self.routing)
 
+    def test_ui_atoms_clause(self):
+        needle = "UI atoms → impeccable after Design V2 shortlist; BANK_MISS ≠ generate"
+        self.assertIn(needle, self.routing)
+        self.assertIn("UI atoms (button, input, card, nav) after world/brief → impeccable after Design V2 shortlist; BANK_MISS ≠ generate", self.agents)
+
     def test_scroll_routes_have_explicit_boundaries(self):
         self.assertIn(
             "Scroll-led storytelling (scroll is the timeline, scrollytelling, signature interaction): `/scroll-craft`.",
