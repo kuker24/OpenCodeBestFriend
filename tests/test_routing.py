@@ -164,6 +164,16 @@ class RoutingTests(unittest.TestCase):
         self.assertIn(needle, self.routing)
         self.assertIn("UI atoms (button, input, card, nav) after world/brief → impeccable after Design V2 shortlist; BANK_MISS ≠ generate", self.agents)
 
+    def test_stitch_routing_boundary(self):
+        needle = "Stitch MCP = screen/comp generation only; then found-this-design or impeccable + Design V2 atoms. Never implement production UI from Stitch alone."
+        self.assertIn(needle, self.agents)
+        self.assertIn("Never implement production UI from Stitch alone", self.routing)
+        self.assertIn("never implement production UI from Stitch alone", (ROOT / "docs" / "routing.md").read_text(encoding="utf-8"))
+        self.assertIn("Do not use Stitch as an automatic UI implementer", self.routing)
+        impeccable = (ROOT / "skills" / "impeccable" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Stitch screen", impeccable)
+        self.assertIn("approved comp", impeccable)
+
     def test_scroll_routes_have_explicit_boundaries(self):
         self.assertIn(
             "Scroll-led storytelling (scroll is the timeline, scrollytelling, signature interaction): `/scroll-craft`.",

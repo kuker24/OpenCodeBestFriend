@@ -15,7 +15,15 @@ import sys
 
 sys.path.insert(0, str(ROOT))
 from lib import jsonc  # noqa: E402
-from lib.install import backup_relevant, cmd_install, cmd_restore, cmd_serena_enable, cmd_uninstall  # noqa: E402
+from lib.install import (  # noqa: E402
+    backup_relevant,
+    cmd_install,
+    cmd_restore,
+    cmd_serena_enable,
+    cmd_stitch_disable,
+    cmd_stitch_enable,
+    cmd_uninstall,
+)
 from lib.doctor import cmd_doctor, cmd_skills_verify, isolation_check  # noqa: E402
 from lib.design_v2.bootstrap import BootstrapError  # noqa: E402
 
@@ -292,6 +300,112 @@ class InstallTests(unittest.TestCase):
         self.assertIn("serena", data["mcp"])
         self.assertEqual(cmd_serena_enable(), 0)
         self.assertEqual(cfg.read_text(encoding="utf-8"), text)
+
+    def test_stitch_enable_requires_env_or_oauth(self):
+        os.environ.pop("STITCH_API_KEY", None)
+        with self.assertRaises(SystemExit):
+            cmd_stitch_enable(oauth=False)
+
+    def test_stitch_enable_with_env_key(self):
+        os.environ["STITCH_API_KEY"] = "mock_secret_key_12345"
+        try:
+            cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+            cfg.parent.mkdir(parents=True, exist_ok=True)
+            cfg.write_text(
+                """{
+  // existing config
+  "model": "keep-me-model",
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    }
+  }
+}
+""",
+                encoding="utf-8",
+            )
+            self.assertEqual(cmd_stitch_enable(oauth=False), 0)
+            text = cfg.read_text(encoding="utf-8")
+            self.assertIn("// existing config", text)
+            # Secret key value must NEVER be written to the file
+            self.assertNotIn("mock_secret_key_12345", text)
+            self.assertIn("{env:STITCH_API_KEY}", text)
+            data = jsonc.loads(text)
+            self.assertEqual(data["model"], "keep-me-model")
+            self.assertIn("foreign-weather", data["mcp"])
+            self.assertIn("stitch", data["mcp"])
+            stitch_spec = data["mcp"]["stitch"]
+            self.assertEqual(stitch_spec["type"], "remote")
+            self.assertEqual(stitch_spec["url"], "https://stitch.googleapis.com/mcp")
+            self.assertTrue(stitch_spec["enabled"])
+            self.assertEqual(stitch_spec["headers"]["X-Goog-Api-Key"], "{env:STITCH_API_KEY}")
+        finally:
+            os.environ.pop("STITCH_API_KEY", None)
+
+    def test_stitch_enable_oauth(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text("{\n  \"mcp\": {}\n}\n", encoding="utf-8")
+        self.assertEqual(cmd_stitch_enable(oauth=True), 0)
+        text = cfg.read_text(encoding="utf-8")
+        data = jsonc.loads(text)
+        self.assertIn("stitch", data["mcp"])
+        stitch_spec = data["mcp"]["stitch"]
+        self.assertEqual(stitch_spec["type"], "remote")
+        self.assertEqual(stitch_spec["url"], "https://stitch.googleapis.com/mcp")
+        self.assertTrue(stitch_spec["enabled"])
+        self.assertNotIn("headers", stitch_spec)
+
+    def test_stitch_disable_removes_only_stitch(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text(
+            """{
+  // penting: keep this comment
+  "model": "keep-me-model",
+  "provider": {"example": {"options": {"note": "user-owned-provider"}}},
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    },
+    "stitch": {
+      "type": "remote",
+      "url": "https://stitch.googleapis.com/mcp",
+      "enabled": true
+    }
+  }
+}
+""",
+            encoding="utf-8",
+        )
+        self.assertEqual(cmd_stitch_disable(), 0)
+        text = cfg.read_text(encoding="utf-8")
+        self.assertIn("penting: keep this comment", text)
+        data = jsonc.loads(text)
+        self.assertEqual(data["model"], "keep-me-model")
+        self.assertEqual(data["provider"]["example"]["options"]["note"], "user-owned-provider")
+        self.assertIn("foreign-weather", data["mcp"])
+        self.assertNotIn("stitch", data["mcp"])
+
+    def test_stitch_enable_invalid_config_fail_closed(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text("{ not valid json", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            cmd_stitch_enable(oauth=True)
+        self.assertEqual(cfg.read_text(encoding="utf-8"), "{ not valid json")
+
+    def test_stitch_disable_invalid_config_fail_closed(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text("{ not valid json", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            cmd_stitch_disable()
+        self.assertEqual(cfg.read_text(encoding="utf-8"), "{ not valid json")
 
     def test_restore_prior_product_tree(self):
         product = self.tmp / ".local" / "share" / "opencode-bestfriend" / "product"

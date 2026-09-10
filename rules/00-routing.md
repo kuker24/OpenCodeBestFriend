@@ -59,6 +59,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Matching or choosing a visual direction from the local design bank (Refero / Motionsites): `/found-this-design` first. Stop before component implementation. Then `/impeccable` after a pick. Bank root comes from `~/.config/opencode/bestfriend/config/design-bank.json` (optional override `OPENCODE_DESIGN_BANK`).
 - Visual UI once a world is chosen, the brief is already visual, or creating UI atoms (buttons, inputs, cards, nav): UI atoms → impeccable after Design V2 shortlist; BANK_MISS ≠ generate. Design V2 shortlist `kind=component` is an internal stage, never a separate specialist route. Do not run `/found-this-design` for atomic components.
 - Design Intelligence is an internal, lazy retrieval stage of Impeccable `new-work`, never a primary route or specialist. Design V2 is the same: an offline user bank, never a specialist.
+- Stitch MCP: screen/comp generation only; then found-this-design or impeccable + Design V2 atoms. Never implement production UI from Stitch alone. Treat existing Stitch screens as approved comps; local atom shortlist remains mandatory.
 - Installable UI components: MCP `shadcn` only. Do not add Magic UI, Kibo, 21st.dev, or community UI MCP servers.
 - Use the hub only when cwd has `components.json`. Never silent `shadcn init` on this adapter, a backend or Python tree, or a non-UI cwd.
 - Scroll-led storytelling (scroll is the timeline, scrollytelling, signature interaction): `/scroll-craft`. Ordinary scrollable UI stays `/impeccable`. `/scroll-craft` plus Continuous World: Scroll Craft writes the brief, then `/scroll-world`.
@@ -103,7 +104,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 ## Plugins and extra MCP
 
 - No extra marketplace plugins. Foundation = skills + MCP + thin AGENTS.md + runtime helpers.
-- User MCP: `codebase-memory-mcp`, `context7`, and `shadcn` on; `serena` absent until a human enables it; `exa` foreign.
+- User MCP: `codebase-memory-mcp`, `context7`, and `shadcn` on; `serena` and `stitch` absent until a human enables them; `exa` foreign.
 - ECC / other harness overlays: `FOREIGN_ON_DEMAND`. Never add, remove, or merge foreign harness control planes or continuous-learning runtimes. Individual warehouse procedures ported in Wave 2 (agent-architecture-audit, cost-aware-llm-pipeline, eval-harness, prompt-optimizer, skill-stocktake) and Wave 3 (api-design, contract-first, automation-audit-ops, code-tour, click-path-audit) are first-party MIT skills. If external ECC is already present in user environment, do not merge and do not shadow.
 - FOREIGN vendor packs (e.g. `mongodb/agent-skills`, `supabase/agent-skills`, `vercel-labs/agent-skills`) stay off the overlay; user may `npx skills add mongodb/agent-skills|supabase/agent-skills` locally; never `frontend-design` for product UI.
 - Never auto-edit rules or skills from a learning log (no `/learn`, `/evolve`, or session-end skill writers).
@@ -115,6 +116,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Do not load Wave 2 or Wave 3 warehouse skills unless the user explicitly names the job.
 - Do not use vendor `frontend-design` for product UI; UI direction stays `/found-this-design` and implementation stays `/impeccable`.
 - Do not print database connection strings, JWTs, or secret keys in Supabase, MongoDB, or Vercel ops.
+- Do not use Stitch as an automatic UI implementer or let it replace Design V2 atom shortlist.
 - Do not run `/found-this-design` for atomic components (button, input, card, nav); stay in `/impeccable`.
 - Do not auto-start `/grilling` for product interviews or planning; `/grill-with-docs` is the primary route.
 - Do not `@`-import the full routing or verification files into CLAUDE.md.
