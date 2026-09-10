@@ -13,7 +13,7 @@ Availability is not a reason to use a tool. One primary specialist. At most one 
 2. User typed a slash command → load that command's specialist. Do not substitute.
 3. Choosing a workflow → load skill `ask-matt`.
 4. Architecture DAG → OpenCode **plan** agent, then implement in-session after approval.
-5. Interview / glossary / ADR → skill `grill-with-docs` → `to-spec` → `to-tickets` only if asked or multi-session.
+5. Interview / glossary / ADR → skill `grill-with-docs` (`grilling` is not default; load `grilling` only if user names it) → `to-spec` → `to-tickets` only if asked or multi-session.
 6. Ordinary implementation → this session. Skill `tdd` when test-first. Never auto `/matt-implement`.
 7. Review → in-session. Skill `matt-code-review` only if two-axis asked.
 
@@ -33,13 +33,17 @@ repo/file → Codebase Memory MCP first (skip if no project for cwd) → Serena 
 
 ## Specialists (load one)
 
-UI direction → skill `found-this-design` then `impeccable`. Motion → `emil-design-eng`. Media → `visual-studio`. Scroll-led story → `scroll-craft`. Camera/3D world → `scroll-world`. Registry → shadcn MCP. Design Intelligence and Design V2 are internal to Impeccable `new-work`, never a route.
+UI direction → skill `found-this-design` then `impeccable`. UI atoms (button, input, card, nav) after world/brief → stay `impeccable` + shadcn/Design V2 internal (never `found-this-design` for buttons). Motion UI (easing, hover, seam) → `emil-design-eng`. Still/ads/non-UI surface → `visual-studio`. Scroll-led story → `scroll-craft`. Camera/3D world/diorama → `scroll-world`. Registry → shadcn MCP. Design Intelligence and Design V2 are internal to Impeccable `new-work`, never a route.
 
 Browser QA → skill `playwright-qa`. Explicit/session BrowserAct → `browser-act`. Observed cause → `chrome-devtools-axi` after `opencode-chromium-cdp` (`127.0.0.1:9223`). Never Google Chrome. Project E2E suites (Playwright Test/Cypress) stay authoritative for regressions.
 
-Auth/secret/payment/upload/webhook/privileged/public API → `full-audit-keamanan`. Measured LCP/INP/CLS/latency/bundle → `full-performance-audit`. GitHub → `gh-axi`. Hard unknown bug → `diagnosing-bugs`. Documents (answer/create/transform/extract/review/PDF/DOCX) → `smartdoc`. Reusable book/module knowledge → `smartbook-ingest`.
+Auth/secret/payment/upload/webhook/privileged/public API → `full-audit-keamanan`. Measured LCP/INP/CLS/latency/bundle → `full-performance-audit`. GitHub → `gh-axi`. Hard unknown bug → `diagnosing-bugs`. Documents (PDF/DOCX/extract/review) → `smartdoc`. Reusable local knowledge → `smartbook-ingest`.
 
-Prose AI-tells / humanize → skill `humanizer`. Slash `/unslop` is the same specialist, manual only. Academic literature / manuscript / peer-critique → skill `academic` (not `research`, not `smartdoc` unless file extract/render). Deterministic HTML video / render HTML to MP4 → skill `hyperframes` (not `visual-studio`, not `emil-design-eng`). Editorial diagram HTML/SVG → skill `diagram-design` (not `impeccable`). Agent stack diagnostics / eval benchmarks → skill `agent-architecture-audit` or `eval-harness`. API contract / click-path / live automation inventory → skill `contract-first` or `click-path-audit`.
+Prose AI-tells / humanize → skill `humanizer`. Slash `/unslop` is the same specialist, manual only. Technical writing structure → suggest `/technical-writing`. Academic literature / manuscript / peer-critique → skill `academic` (not `research`, not `smartdoc` unless file extract/render). Facts library/API → Context7; `research` only if repo lacking. Deterministic HTML video / render HTML to MP4 → skill `hyperframes` (not `visual-studio`, not `emil-design-eng`). Editorial diagram HTML/SVG → skill `diagram-design` (not `impeccable`).
+
+REST resource/status/pagination/versioning → skill `api-design`. Consumer/provider OpenAPI/AsyncAPI/Protobuf → skill `contract-first`. Live cron/CI/hook/MCP inventory keep-merge-cut → skill `automation-audit-ops`. CodeTour .tour + anchor file → skill `code-tour`. Handler vs shared-store sequential-undo → skill `click-path-audit` (not `playwright-qa`).
+
+Agent stack diagnostics / context leak / wrapper regression → skill `agent-architecture-audit`. Benchmark agent / pass@k → skill `eval-harness` (project unit tests stay `tdd`). Token budget / model tier / prompt cache → skill `cost-aware-llm-pipeline` (not `full-performance-audit`). Structural prompt critique → skill `prompt-optimizer` (not `humanizer`). Skill catalog hygiene → skill `skill-stocktake`.
 
 ## When routing is non-obvious
 

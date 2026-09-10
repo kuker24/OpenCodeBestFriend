@@ -84,7 +84,16 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("ECC / other harness overlays: `FOREIGN_ON_DEMAND`", self.routing)
 
         # Warehouse Wave 2 specialists
-        self.assertIn("Agent stack diagnostics / eval benchmarks → skill `agent-architecture-audit` or `eval-harness`", self.agents)
+        self.assertIn("agent-architecture-audit", self.agents)
+        self.assertIn("eval-harness", self.agents)
+        self.assertIn("cost-aware-llm-pipeline", self.agents)
+        self.assertIn("prompt-optimizer", self.agents)
+        self.assertIn("skill-stocktake", self.agents)
+        self.assertIn("Agent stack diagnostics / context leak / wrapper regression → skill `agent-architecture-audit`", self.agents)
+        self.assertIn("Benchmark agent / pass@k → skill `eval-harness`", self.agents)
+        self.assertIn("Token budget / model tier / prompt cache → skill `cost-aware-llm-pipeline`", self.agents)
+        self.assertIn("Structural prompt critique → skill `prompt-optimizer`", self.agents)
+        self.assertIn("Skill catalog hygiene → skill `skill-stocktake`", self.agents)
         self.assertIn("Agent architecture diagnosis, autonomous loop failures", self.routing)
         self.assertIn("Evaluation harness, prompt/agent benchmarks", self.routing)
         self.assertIn("Cost-aware LLM architectures, complexity model tiering", self.routing)
@@ -92,12 +101,47 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("OpenCodeBestFriend skill catalog hygiene", self.routing)
 
         # Warehouse Wave 3 specialists
-        self.assertIn("API contract / click-path / live automation inventory → skill `contract-first` or `click-path-audit`", self.agents)
+        self.assertIn("api-design", self.agents)
+        self.assertIn("contract-first", self.agents)
+        self.assertIn("automation-audit-ops", self.agents)
+        self.assertIn("code-tour", self.agents)
+        self.assertIn("click-path-audit", self.agents)
+        self.assertIn("REST resource/status/pagination/versioning → skill `api-design`", self.agents)
+        self.assertIn("Consumer/provider OpenAPI/AsyncAPI/Protobuf → skill `contract-first`", self.agents)
+        self.assertIn("Live cron/CI/hook/MCP inventory keep-merge-cut → skill `automation-audit-ops`", self.agents)
+        self.assertIn("CodeTour .tour + anchor file → skill `code-tour`", self.agents)
+        self.assertIn("Handler vs shared-store sequential-undo → skill `click-path-audit`", self.agents)
         self.assertIn("REST resource, status, pagination, and versioning design: `/api-design`", self.routing)
         self.assertIn("Consumer/provider OpenAPI, AsyncAPI, or Protobuf contracts: `/contract-first`", self.routing)
         self.assertIn("Live cron, CI, hook, MCP, and wrapper inventory", self.routing)
         self.assertIn("CodeTour `.tour` walkthroughs with verified file anchors: `/code-tour`", self.routing)
         self.assertIn("Button/handler sequential-undo and shared-store side effects: `/click-path-audit`", self.routing)
+
+        # Ensure all required named specialists appear in both AGENTS.md and 00-routing.md
+        required_specialists = [
+            "api-design",
+            "contract-first",
+            "automation-audit-ops",
+            "code-tour",
+            "click-path-audit",
+            "agent-architecture-audit",
+            "eval-harness",
+            "cost-aware-llm-pipeline",
+            "prompt-optimizer",
+            "skill-stocktake",
+            "found-this-design",
+            "impeccable",
+            "hyperframes",
+            "scroll-craft",
+            "scroll-world",
+            "diagram-design",
+            "smartdoc",
+            "academic",
+            "humanizer",
+        ]
+        for spec in required_specialists:
+            self.assertIn(spec, self.agents, f"Expected {spec} in AGENTS.md")
+            self.assertIn(spec, self.routing, f"Expected {spec} in 00-routing.md")
 
     def test_scroll_routes_have_explicit_boundaries(self):
         self.assertIn(

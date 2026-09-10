@@ -2,7 +2,7 @@
 
 Read this file only when routing is non-obvious. Do not load every specialist.
 
-Use tools lazily. Prefer current repository evidence before external tools. Use one primary specialist per problem. If a risk trigger is active (auth, authorization, secrets, public APIs, payment, upload, webhook, privileged operations), also load at most one verification specialist (`/full-audit-keamanan`). If the concern is a measured performance regression (LCP, INP, CLS, latency, bundle, query, memory), the verification specialist is `/full-performance-audit`. Do not load a second implementation specialist. Availability is not a reason to activate a tool.
+Use tools lazily. Prefer current repository evidence before external tools. Use one primary specialist per problem. If a risk trigger is active (auth, authorization, secrets, public APIs, payment, upload, webhook, privileged operations), also load at most one verification specialist (`/full-audit-keamanan`). If the concern is a measured performance regression (LCP, INP, CLS, latency, bundle, query, memory), the verification specialist is `/full-performance-audit`. Do not load a second implementation specialist. Availability is not a reason to activate a tool. For mixed requests (e.g., landing + button + video), pick the primary largest surface (typically `/impeccable`); motion or video is step 2 after user pick, never a parallel load.
 
 ```text
 pikir dulu → bukti di repo → satu spesialis → cek hasil
@@ -16,7 +16,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 2. **User typed a slash skill** → load that skill. Do not substitute.
 3. **User is choosing a workflow** (`which skill`, `alur apa`, `ask matt`) → load `/ask-matt`.
 4. **Architecture / PR-plan DAG** → the OpenCode plan agent. After approval → implement in this session. There is no bundled `/design` or `/execute-plan`.
-5. **Feature still needs a plan** (interview, glossary, ADR) → `/grill-with-docs`. Then `/to-spec` → `/to-tickets` only if the user asked for tickets or the work is multi-session.
+5. **Feature still needs a plan** (interview, glossary, ADR) → `/grill-with-docs`. `/grilling` is not default; load `/grilling` only if the user explicitly names grilling. Then `/to-spec` → `/to-tickets` only if the user asked for tickets or the work is multi-session.
 6. **Ordinary implementation** → write in this session. Use `/tdd` when test-first. Do **not** auto-start `/matt-implement`. There is no user `/implement` skill.
 7. **User asked for the Matt ticket loop** → `/matt-implement` only for a `/to-tickets` ticket.
 8. **Review** → in-session review. `/matt-code-review` only if the user asked for two-axis Standards + Spec. There is no user `/code-review` skill.
@@ -33,19 +33,19 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Official library, spec, or first-party API facts: `/research` (Context7 when repo evidence is not enough). Why *this repo* chose an approach: suggest `/why` (manual). Do not mix the two.
 - Scholarly literature surveys, academic manuscripts (IMRaD/thesis/proposal), and structured peer critique: `/academic` (not `research`, not `smartdoc` unless file extract/render).
 - Fuzzy or conflicting domain terms, glossary, CONTEXT.md / ADR writing: `/domain-modeling`. Full product interviews that should leave CONTEXT.md/ADRs: `/grill-with-docs`.
-- Module, interface, seam, testability, abstraction: `/codebase-design`. Multi-sketch bake-off: suggest `/architect` (manual). Do not auto-start `/architect`.
-- Throwaway evidence for one design question: `/prototype`. Skip ordinary implementation, ADHD, and `/arena`.
+- Module, interface, seam, testability, abstraction: `/codebase-design` (distinct from `/api-design` for REST and `/contract-first` for machine schemas). Multi-sketch bake-off: suggest `/architect` (manual). Do not auto-start `/architect`.
+- Throwaway evidence for one design question: `/prototype`. Not for production UI; skip ordinary implementation, ADHD, and `/arena`.
 - Unknown / hard bugs, regressions, measured slowdown: `/diagnosing-bugs`. Skip typos, known-cause, and test-first known fixes (`/tdd`).
-- Authoring SKILL.md / AGENTS.md / skill descriptions / context pointers: `/writing-for-agents`. Workflow choice stays `/ask-matt`.
+- Authoring SKILL.md / AGENTS.md / skill descriptions / context pointers: `/writing-for-agents` (distinct from `/skill-stocktake` which audits catalog hygiene). Workflow choice stays `/ask-matt`.
 - Documents (answer, create, transform, extract, review, PDF/DOCX): `/smartdoc`. Reusable book/module knowledge: `/smartbook-ingest`. SmartDoc may read an existing SmartBook; that is not a second implementation specialist. Impeccable `document` stays DESIGN.md.
-- Prose AI-tell removal and natural tone polishing: `/humanizer`. Manual `/unslop` is an alias to the same specialist body. Do not auto-apply on ordinary code or diffs. Technical documentation structure stays `/technical-writing`.
+- Prose AI-tell removal and natural tone polishing: `/humanizer`. Manual `/unslop` is an alias to the same specialist body. Do not auto-apply on ordinary code or diffs. Technical documentation structure stays `/technical-writing`. Code linting stays `/install-anti-slop`. Prompt structure stays `/prompt-optimizer`.
 - Editorial HTML and inline SVG diagrams (architecture, sequence, ER, flowcharts, Wardley): `/diagram-design`. Mermaid/draw.io are inputs to redraw, not final output. Frontend UI implementation stays `/impeccable`. Code-level seams stay `/codebase-design`.
-- Agent architecture diagnosis, autonomous loop failures, context leakage, wrapper regressions: `/agent-architecture-audit`. Defensive security and secrets auditing stay `/full-audit-keamanan`.
-- Evaluation harness, prompt/agent benchmarks, pass@k metrics, regression suites: `/eval-harness`. Project code unit tests stay `/tdd`.
-- Cost-aware LLM architectures, complexity model tiering, token budgets, prompt caching: `/cost-aware-llm-pipeline`. Application bundle and page latency profiling stay `/full-performance-audit`.
+- Agent architecture diagnosis, autonomous loop failures, context leakage, wrapper regressions: `/agent-architecture-audit`. Load only when user names the agent stack job. Defensive security and secrets auditing stay `/full-audit-keamanan`.
+- Evaluation harness, prompt/agent benchmarks, pass@k metrics, regression suites: `/eval-harness`. Load only when user names benchmark work. Project code unit tests stay `/tdd`.
+- Cost-aware LLM architectures, complexity model tiering, token budgets, prompt caching: `/cost-aware-llm-pipeline`. Load only when user names cost/token budget work. Application bundle and page latency profiling stay `/full-performance-audit`.
 - Prompt critique, structural optimization, negative constraints, format locks: `/prompt-optimizer`. General prose polishing stays `/humanizer`.
 - OpenCodeBestFriend skill catalog hygiene, frontmatter validation, boundary integrity: `/skill-stocktake`. Code standards review stays `/matt-code-review`.
-- REST resource, status, pagination, and versioning design: `/api-design`. Library docs stay Context7. Shared schema ownership stays `/contract-first`.
+- REST resource, status, pagination, and versioning design: `/api-design`. Library docs stay Context7. Shared schema ownership stays `/contract-first`. Seam design stays `/codebase-design`.
 - Consumer/provider OpenAPI, AsyncAPI, or Protobuf contracts: `/contract-first`. Module seams stay `/codebase-design`.
 - Live cron, CI, hook, MCP, and wrapper inventory (keep/merge/cut): `/automation-audit-ops`. Catalog hygiene stays `/skill-stocktake`.
 - CodeTour `.tour` walkthroughs with verified file anchors: `/code-tour`. Prose docs stay `/technical-writing`.
@@ -53,14 +53,14 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 
 ## UI and browser
 
-- Matching or choosing a visual direction from the local design bank (Refero / Motionsites): `/found-this-design` first. Then `/impeccable` after a pick. Bank root comes from `~/.config/opencode/bestfriend/config/design-bank.json` (optional override `OPENCODE_DESIGN_BANK`).
-- Visual UI once a world is chosen or the brief is already visual: `/impeccable` first.
+- Matching or choosing a visual direction from the local design bank (Refero / Motionsites): `/found-this-design` first. Stop before component implementation. Then `/impeccable` after a pick. Bank root comes from `~/.config/opencode/bestfriend/config/design-bank.json` (optional override `OPENCODE_DESIGN_BANK`).
+- Visual UI once a world is chosen, the brief is already visual, or creating UI atoms (buttons, inputs, cards, nav): `/impeccable` first. Design V2 shortlist `kind=component` is an internal stage, never a separate specialist route. Do not run `/found-this-design` for atomic components.
 - Design Intelligence is an internal, lazy retrieval stage of Impeccable `new-work`, never a primary route or specialist. Design V2 is the same: an offline user bank, never a specialist.
 - Installable UI components: MCP `shadcn` only. Do not add Magic UI, Kibo, 21st.dev, or community UI MCP servers.
 - Use the hub only when cwd has `components.json`. Never silent `shadcn init` on this adapter, a backend or Python tree, or a non-UI cwd.
 - Scroll-led storytelling (scroll is the timeline, scrollytelling, signature interaction): `/scroll-craft`. Ordinary scrollable UI stays `/impeccable`. `/scroll-craft` plus Continuous World: Scroll Craft writes the brief, then `/scroll-world`.
 - Continuous camera fly-through, diorama, or 3D-world landing: `/scroll-world` even if the request says scroll.
-- Deterministic HTML composition rendered to video: `/hyperframes` (headless Chrome + FFmpeg). Ordinary scrollable UI stays `/impeccable`.
+- Deterministic HTML composition rendered to video: `/hyperframes` (headless Chrome + FFmpeg). Not `visual-studio`, not `emil-design-eng`. Ordinary scrollable UI stays `/impeccable`.
 - Photoreal stills / ads / identity with no UI surface: `/visual-studio`.
 - Motion after Impeccable: `/emil-design-eng`.
 - Image/video generation: use OpenCode native image tools if the session exposes them. Otherwise write prompt files and mark DEGRADED. Do not invent `image_gen`.
@@ -107,6 +107,10 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 ## Do not
 
 - Do not enable every specialist in one turn.
+- Do not load two implementation specialists in parallel; on mixed requests, implement the primary largest surface first.
+- Do not load Wave 2 or Wave 3 warehouse skills unless the user explicitly names the job.
+- Do not run `/found-this-design` for atomic components (button, input, card, nav); stay in `/impeccable`.
+- Do not auto-start `/grilling` for product interviews or planning; `/grill-with-docs` is the primary route.
 - Do not `@`-import the full routing or verification files into CLAUDE.md.
 - Do not register 21st.dev, Magic UI MCP, Kibo MCP, or unofficial React Bits / Aceternity MCP.
 - Do not run `shadcn init` on this adapter, backend, or Python repositories.
