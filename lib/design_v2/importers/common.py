@@ -253,7 +253,9 @@ def guess_kind_role(names: list[str], text: str) -> tuple[str, str]:
     if not atom and heading:
         atom = classify_atomic_role(heading)
     if atom:
-        return "component", atom
+        if atom in ATOMIC_ROLES:
+            return "component", atom
+        return "component", "component"
 
     blob = names_str.lower() + " " + text.lower()
 
@@ -292,7 +294,9 @@ def guess_kind_role(names: list[str], text: str) -> tuple[str, str]:
     if name_words & {"button", "btn"}:
         btn_atom = classify_atomic_role(names_str)
         if btn_atom:
-            return "component", btn_atom
+            if btn_atom in ATOMIC_ROLES:
+                return "component", btn_atom
+            return "component", "component"
         if not (
             name_words & {"radio", "switch", "toggle", "checkbox", "slider", "accordion", "pagination"}
             or "button-group" in names_clean

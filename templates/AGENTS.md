@@ -33,7 +33,7 @@ repo/file → Codebase Memory MCP first (skip if no project for cwd) → Serena 
 
 ## Specialists (load one)
 
-UI direction → skill `found-this-design` then `impeccable`. UI atoms (button, input, card, nav) after world/brief → stay `impeccable` + shadcn/Design V2 internal (never `found-this-design` for buttons). Motion UI (easing, hover, seam) → `emil-design-eng`. Still/ads/non-UI surface → `visual-studio`. Scroll-led story → `scroll-craft`. Camera/3D world/diorama → `scroll-world`. Registry → shadcn MCP. Design Intelligence and Design V2 are internal to Impeccable `new-work`, never a route.
+UI direction → skill `found-this-design` then `impeccable`. UI atoms (button, input, card, nav) after world/brief → impeccable after Design V2 shortlist; BANK_MISS ≠ generate (never `found-this-design` for buttons). Motion UI (easing, hover, seam) → `emil-design-eng`. Still/ads/non-UI surface → `visual-studio`. Scroll-led story → `scroll-craft`. Camera/3D world/diorama → `scroll-world`. Registry → shadcn MCP. Design Intelligence and Design V2 are internal to Impeccable `new-work`, never a route.
 
 Browser QA → skill `playwright-qa`. Explicit/session BrowserAct → `browser-act`. Observed cause → `chrome-devtools-axi` after `opencode-chromium-cdp` (`127.0.0.1:9223`). Never Google Chrome. Project E2E suites (Playwright Test/Cypress) stay authoritative for regressions.
 
