@@ -298,6 +298,21 @@
       "license": "MIT",
       "evidence": "SKILL.md frontmatter + affaan-m/ECC MIT; NOTICE.md",
       "redistribution": "mit"
+    },
+    "mongodb-ops": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter (first-party MIT adapter)",
+      "redistribution": "mit"
+    },
+    "supabase-ops": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter (first-party MIT adapter)",
+      "redistribution": "mit"
+    },
+    "vercel-ops": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter (first-party MIT adapter)",
+      "redistribution": "mit"
     }
   }
 }
