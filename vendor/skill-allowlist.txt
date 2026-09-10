@@ -37,6 +37,7 @@ interrogate
 maintain-verification-skill
 matt-code-review
 matt-implement
+mongodb-ops
 playwright-qa
 prompt-optimizer
 prototype
@@ -47,11 +48,13 @@ scroll-world
 skill-stocktake
 smartbook-ingest
 smartdoc
+supabase-ops
 tdd
 technical-writing
 to-spec
 to-tickets
 unslop
+vercel-ops
 visual-studio
 wait-what
 why

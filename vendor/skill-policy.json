@@ -119,6 +119,9 @@
     "matt-implement": {
       "invocation": "manual"
     },
+    "mongodb-ops": {
+      "invocation": "model"
+    },
     "playwright-qa": {
       "invocation": "model"
     },
@@ -149,6 +152,9 @@
     "smartdoc": {
       "invocation": "model"
     },
+    "supabase-ops": {
+      "invocation": "model"
+    },
     "tdd": {
       "invocation": "model"
     },
@@ -163,6 +169,9 @@
     },
     "unslop": {
       "invocation": "manual"
+    },
+    "vercel-ops": {
+      "invocation": "model"
     },
     "visual-studio": {
       "invocation": "model"
