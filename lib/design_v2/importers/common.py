@@ -129,10 +129,79 @@ def detect_license(folder: Path) -> tuple[str | None, str]:
     return None, "unknown"
 
 
+ATOMIC_ROLES = frozenset(
+    {
+        "button.primary",
+        "button.ghost",
+        "button.destructive",
+        "button.icon",
+        "input.text",
+        "input.search",
+        "input.select",
+        "card",
+        "badge",
+        "nav.tab",
+        "nav.sidebar-item",
+        "overlay.modal",
+    }
+)
+
+
+def classify_atomic_role(ident: str, jenis: str = "") -> str | None:
+    ident_lower = ident.lower()
+    jenis_lower = (jenis or "").lower().strip()
+
+    # 1. Overlay modal / dialog
+    if any(k in ident_lower for k in ("modal", "dialog", "alert-dialog", "sheet", "drawer", "popover")):
+        return "overlay.modal"
+
+    # 2. Navigation
+    if any(k in ident_lower for k in ("sidebar-item", "sidenav-item", "nav-item", "nav-link", "sidebar-link")):
+        return "nav.sidebar-item"
+    if any(k in ident_lower for k in ("tab", "tabs", "segmented", "segment-group")):
+        return "nav.tab"
+
+    # 3. Badge
+    if any(k in ident_lower for k in ("badge", "pill", "chip", "status-dot", "tag")) and not any(
+        k in ident_lower for k in ("button", "btn")
+    ):
+        return "badge"
+
+    # 4. Inputs
+    if any(k in ident_lower for k in ("search-bar", "search-input", "searchbar", "command-menu")) or (
+        "search" in ident_lower and any(k in ident_lower for k in ("input", "box", "field", "bar"))
+    ):
+        return "input.search"
+    if any(k in ident_lower for k in ("select", "dropdown", "combobox", "picker", "autocomplete")):
+        return "input.select"
+    if any(k in ident_lower for k in ("input", "textfield", "text-field", "textarea", "form-field")):
+        return "input.text"
+
+    # 5. Buttons
+    has_btn = any(k in ident_lower for k in ("button", "btn")) or jenis_lower == "button"
+    if has_btn:
+        if any(k in ident_lower for k in ("delete", "destructive", "danger", "remove", "trash")):
+            return "button.destructive"
+        if any(k in ident_lower for k in ("ghost", "outline", "border")):
+            return "button.ghost"
+        if any(k in ident_lower for k in ("icon", "star", "copy", "fab", "floating-action", "bookmark")):
+            return "button.icon"
+        return "button.primary"
+
+    # 6. Card
+    if any(k in ident_lower for k in ("card", "bento")) or jenis_lower == "card":
+        return "card"
+
+    return None
+
+
 def guess_kind_role(names: list[str], text: str) -> tuple[str, str]:
+    atom = classify_atomic_role(" ".join(names)) or classify_atomic_role(text[:500])
+    if atom:
+        return "component", atom
     blob = " ".join(names).lower() + " " + text.lower()
     if any(w in blob for w in ("button", "input", "combobox", "checkbox")):
-        return "component", "control"
+        return "component", "button.primary"
     if any(w in blob for w in ("navbar", "nav", "header", "footer", "sidebar")):
         return "block", "chrome"
     if any(w in blob for w in ("hero",)):
