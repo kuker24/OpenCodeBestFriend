@@ -171,6 +171,18 @@ class ReleaseArtifactTests(unittest.TestCase):
 
     def test_builder_missing_release_tag_fails_closed(self):
         head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        expected_tag = f"v{version}"
+        tag_exists = (
+            subprocess.run(
+                ["git", "rev-parse", "-q", "--verify", f"refs/tags/{expected_tag}"],
+                cwd=ROOT,
+                capture_output=True,
+            ).returncode
+            == 0
+        )
+        if tag_exists:
+            self.skipTest(f"{expected_tag} exists in this checkout; missing-tag path not reachable")
         proc = _run_builder("--sha", head)
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("SOURCE_REF_MISMATCH", proc.stderr)

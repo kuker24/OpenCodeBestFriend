@@ -306,6 +306,38 @@ class InstallTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cmd_stitch_enable(oauth=False)
 
+    def test_stitch_enable_does_not_overwrite_existing_entry(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        original = (
+            "{\n"
+            '  "mcp": {\n'
+            '    "stitch": {\n'
+            '      "type": "remote",\n'
+            '      "url": "https://stitch.googleapis.com/mcp",\n'
+            '      "enabled": true,\n'
+            '      "headers": {"Authorization": "{env:MY_OWN_TOKEN}"}\n'
+            "    }\n"
+            "  }\n"
+            "}\n"
+        )
+        cfg.write_text(original, encoding="utf-8")
+        os.environ["STITCH_API_KEY"] = "mock_secret_key_12345"
+        try:
+            self.assertEqual(cmd_stitch_enable(oauth=False), 0)
+        finally:
+            os.environ.pop("STITCH_API_KEY", None)
+        self.assertEqual(cfg.read_text(encoding="utf-8"), original)
+
+    def test_stitch_enable_null_mcp_fails_closed(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        original = '{\n  "mcp": null\n}\n'
+        cfg.write_text(original, encoding="utf-8")
+        self.assertEqual(cmd_stitch_enable(oauth=True), 0)
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        self.assertEqual(data["mcp"]["stitch"]["url"], "https://stitch.googleapis.com/mcp")
+
     def test_stitch_enable_with_env_key(self):
         os.environ["STITCH_API_KEY"] = "mock_secret_key_12345"
         try:

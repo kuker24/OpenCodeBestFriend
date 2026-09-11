@@ -1302,6 +1302,9 @@ def cmd_stitch_enable(oauth: bool = False) -> int:
         "enabled": True,
     }
     if not oauth:
+        # API-key mode: suppress OpenCode's automatic OAuth-on-401 so a bad key
+        # surfaces as an auth error instead of starting a browser OAuth flow.
+        spec["oauth"] = False
         spec["headers"] = {
             "X-Goog-Api-Key": "{env:STITCH_API_KEY}",
         }
@@ -1324,6 +1327,9 @@ def cmd_stitch_enable(oauth: bool = False) -> int:
     mcp = data.get("mcp") or {}
     if not isinstance(mcp, dict):
         die("OPENCODE_CONFIG_INVALID mcp")
+    if "stitch" in mcp:
+        info("stitch MCP already present; not overwriting (run `stitch disable` first to change auth mode)")
+        return 0
     if jsonc.contains_comments(raw):
         try:
             merged = jsonc.upsert_mcp_servers(raw, {"stitch": spec})
@@ -1332,7 +1338,8 @@ def cmd_stitch_enable(oauth: bool = False) -> int:
         except Exception as exc:
             die(f"OPENCODE_CONFIG_JSONC_SURGICAL_FAILED: {exc}")
     else:
-        data.setdefault("mcp", {})["stitch"] = spec
+        mcp["stitch"] = spec
+        data["mcp"] = mcp
         path.write_text(jsonc.dumps(data), encoding="utf-8")
     info(f"enabled stitch MCP in {path}")
     return 0
