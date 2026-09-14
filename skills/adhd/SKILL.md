@@ -197,15 +197,15 @@ points where the cost of the obvious answer is high.
 ## Companion library and CLI
 
 There is a Node/TS implementation that does the same loop with structured
-JSON parsing, score weighting, and a CLI. Use it when running outside
-Claude Code or in batch.
+JSON parsing, score weighting, and a CLI. Use it for batch runs outside an
+interactive session.
 
     npm install -g adhd-agent
     adhd "your problem here"
 
 Code, paper, evals, and contributing guide at
 https://github.com/UditAkhourii/adhd. The skill above gives you the same
-loop inside GrokBuild with no extra install required.
+loop in-session with no extra install required.
 
 ## Source spec
 
