@@ -7,9 +7,9 @@ license: MIT
 
 # Visual Studio
 
-Production director for photoreal stills and short videos. GrokBuild already
-owns the tools. This skill owns the production order, identity, modes, and
-VFX method.
+Production director for photoreal stills and short videos. The image and
+video tools already own generation. This skill owns the production order,
+identity, modes, and VFX method.
 
 ## Load first
 

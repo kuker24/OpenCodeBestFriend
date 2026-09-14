@@ -1,6 +1,6 @@
 ---
 name: ask-matt
-description: Pick the GrokBuild skill or flow that fits. Use when the user asks which skill to use, which workflow, "alur apa", "ask matt", or is choosing between planning, implement, review, and design paths.
+description: Pick the OpenCodeBestFriend skill or flow that fits. Use when the user asks which skill to use, which workflow, "alur apa", "ask matt", or is choosing between planning, implement, review, and design paths.
 compatibility: opencode
 ---
 

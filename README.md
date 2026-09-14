@@ -126,6 +126,7 @@ Optional:
 
 - `serena` — host binary may exist; MCP is **not** registered unless you run `opencode-bf serena enable`
 - `exa` — `FOREIGN_ON_DEMAND`; installer never adds, removes, or overwrites it
+- `stitch` — `opencode-bf stitch enable` registers Google Stitch as a remote comp/mock source. Not an owned core server and not a production UI implementer: hand screens to `found-this-design` or `impeccable` before shipping. Keys are never written into config, only referenced as `{env:STITCH_API_KEY}`, or omitted with `--oauth`. `opencode-bf stitch disable` removes only that server key. Absent is not a `doctor` failure; a malformed entry fails closed.
 
 NVIDIA SkillEvaluator is `FOREIGN_ON_DEMAND` in the same sense: a maintainer may run it externally for embedding-based overlap scoring or live catalog evaluation. The installer never adds it, `doctor` does not fail when it is absent, and a malformed MCP entry for it fails closed like any other schema violation.
 
