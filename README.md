@@ -1,14 +1,14 @@
 # OpenCodeBestFriend
 
 Production-ready capability layer for OpenCode:
-59 routed skills (core + Wave 2/3 warehouse specialists), MCP, Codebase Memory,
+62 routed skills (core + Wave 2/3 warehouse specialists), MCP, Codebase Memory,
 Design Bank, Design Intelligence, SmartDoc, browser and verification tooling.
 
 OpenCodeBestFriend is an installer and runtime overlay for [OpenCode](https://opencode.ai). It is **not** Claude Code, **not** a model provider, and **not** a dump of a developer home directory.
 
 ## What it is
 
-- 59 skills: 43 model-invoked, 16 manual slash commands
+- 62 skills: 46 model-invoked, 16 manual slash commands
 - A thin `AGENTS.md` router (lazy, one primary specialist)
 - Core MCP: Codebase Memory, Context7, shadcn
 - Design Bank discovery or download (media is **not** in git)
@@ -61,7 +61,7 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-     43 automatic       Codebase Memory        Verification
+     46 automatic       Codebase Memory        Verification
      16 manual          Context7              Engineering
                        shadcn
         │
@@ -126,6 +126,8 @@ Optional:
 
 - `serena` — host binary may exist; MCP is **not** registered unless you run `opencode-bf serena enable`
 - `exa` — `FOREIGN_ON_DEMAND`; installer never adds, removes, or overwrites it
+
+NVIDIA SkillEvaluator is `FOREIGN_ON_DEMAND` in the same sense: a maintainer may run it externally for embedding-based overlap scoring or live catalog evaluation. The installer never adds it, `doctor` does not fail when it is absent, and a malformed MCP entry for it fails closed like any other schema violation.
 
 The installer merges only owned MCP keys. Provider, model, permissions, plugins, and foreign MCP stay yours.
 

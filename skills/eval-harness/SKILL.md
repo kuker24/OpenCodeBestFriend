@@ -20,6 +20,7 @@ This skill establishes objective quality gates using Eval-Driven Development (ED
 | Application build verification profiles (FAST, STANDARD, RELEASE) | `rules/01-verification.md` |
 | Deep architectural failure diagnosis across agent layers | `agent-architecture-audit` |
 | Auditing cost tradeoffs across model tiers | `cost-aware-llm-pipeline` |
+| Catalog verdicts and skill retirement decisions | `skill-stocktake` |
 | **Designing benchmarks, evaluation datasets, rubrics, and regression suites** | **`eval-harness`** |
 
 ## Core Methodology
@@ -42,3 +43,8 @@ Consult [references/methodology.md](references/methodology.md) for detailed scor
    - Establish a baseline score on the current stable prompt or agent setup.
    - Run the eval suite on proposed changes and calculate the score delta.
    - Reject any prompt change that introduces regressions on previously passing test cases.
+
+5. **Skill Utility Gate (A/B):**
+   - Consult [references/skill-utility.md](references/skill-utility.md) when the question is whether a skill beats its own absence.
+   - Run the same dataset without the skill (Run A) and with it (Run B); quality parity at lower token or latency cost still passes.
+   - `A ≈ B` on the skill's claimed task is evidence for `RETIRE` or `COMPRESS`; route that verdict to `skill-stocktake`.
