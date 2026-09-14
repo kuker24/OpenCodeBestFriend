@@ -12,6 +12,8 @@ This inventory establishes the contract for warehouse skills across the five ana
 - Batch `2a`: Rows marked `decision=NEW` with `batch=2a` were ported in Wave 2.
 - Batch `3a`: Only remaining `DEFER` rows marked `decision=NEW` with `batch=3a` are ported in Wave 3. Do not reopen `REJECT`. Do not re-port `DONE`/`MERGE`.
 - External harness runtimes, auto-mutations, and CC-BY-NC text are strictly REJECTED.
+- `DEFER` does not promote to `NEW` without an existence pass and a no-skill baseline. Route the existence pass through `skill-stocktake` and the baseline through the `eval-harness` utility gate. A procedure that a current model already performs unprompted stays `DEFER` or becomes `REJECT`.
+- Capability drift is a legitimate reason to `COMPRESS` or `RETIRE` an existing specialist. It is never a reason to add a twin skill beside it.
 
 ## Summary Counts
 

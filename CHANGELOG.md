@@ -2,7 +2,14 @@
 
 ## Unreleased
 
-None.
+Catalog hygiene patch. No new skills, no new MCP, no foreign harness runtime. Totals stay **62** (46 model-invoked, 16 manual slash commands).
+
+- Sync stale user-facing catalog copy (`59` / `43 model-invoked`) to the measured tree in `README.md`, `docs/skills.md`, and `docs/architecture.md`. Historical release entries keep their original numbers.
+- `skill-stocktake`: replace the schema-only sweep with a verdict protocol. Every catalog item resolves to exactly one of `KEEP`, `COMPRESS`, `UPDATE`, `MERGE → <target>`, or `RETIRE`, backed by an existence pass, a currency pass, and cited evidence. The skill never rewrites or deletes another skill; `COMPRESS`/`UPDATE` hand off to `writing-for-agents` or `prompt-optimizer`.
+- `eval-harness`: add `references/skill-utility.md`, an A/B utility gate that scores a task with the skill (Run B) against the same task without it (Run A). Quality parity with lower token or latency passes; `A ≈ B` on the skill's own claimed task is evidence for `RETIRE` or `COMPRESS`. Deterministic assertions first, no external harness, no API key.
+- `tests/test_skills.py`: reconcile `vendor/skill-policy.json` against the actual `skills/`, `manual-skills/`, and `commands/` trees instead of trusting declared counts alone. Add frontmatter conformance (`name`, `description`, `compatibility: opencode`, `license`), model/manual name collision detection, a lexical description-overlap gate (warn at 50%, fail at 75% Jaccard), and a `~/.claude` runtime path assertion. Network-free and key-free.
+- `docs/warehouse-inventory.md`: `DEFER` no longer promotes to `NEW` without an existence pass and a no-skill baseline. Capability drift is grounds for `COMPRESS`/`RETIRE`, never a twin skill. Wave 1–3 counts are unchanged.
+- Document NVIDIA SkillEvaluator as `FOREIGN_ON_DEMAND`: never installed, absent is not a doctor failure, and a malformed MCP entry still fails closed.
 
 ## 1.8.2 — 2026-09-10
 
