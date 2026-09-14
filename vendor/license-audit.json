@@ -11,7 +11,7 @@
     },
     "impeccable": {
       "license": "Apache-2.0",
-      "evidence": "SKILL.md frontmatter (Apache 2.0)",
+      "evidence": "SKILL.md frontmatter",
       "redistribution": "apache-2.0"
     },
     "diagnosing-bugs": {

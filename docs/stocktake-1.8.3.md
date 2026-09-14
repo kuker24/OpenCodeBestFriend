@@ -13,7 +13,7 @@ License column is authoritative from `vendor/license-audit.json`, not frontmatte
 | Skill | Kind | Verdict | Evidence | Handoff |
 |---|---|---|---|---|
 | academic | model | KEEP | 45 lines, 5 refs; owns scholarly/IMRaD lane fenced off `research` and `smartdoc` | — |
-| adhd | model | KEEP | Host-brand leak fixed this pass; remaining bulk is calibration numerics + upstream MIT attribution | — |
+| adhd | model | UPDATE (applied) | Body named `Claude Code`/`GrokBuild` as if either were this runtime; remaining bulk is calibration numerics + upstream MIT attribution | `writing-for-agents` |
 | agent-architecture-audit | model | KEEP | 59 lines, NOTICE present; agent-loop lane distinct from `diagnosing-bugs` | — |
 | api-design | model | KEEP | 37 lines; REST contract lane fenced off `contract-first` | — |
 | ask-matt | model | UPDATE (applied) | Description said "GrokBuild skill or flow"; loaded every session | `writing-for-agents` |
@@ -79,9 +79,9 @@ License column is authoritative from `vendor/license-audit.json`, not frontmatte
 
 | Verdict | Count |
 |---|---|
-| KEEP | 57 |
+| KEEP | 56 |
 | COMPRESS (applied) | 2 |
-| UPDATE (applied) | 3 |
+| UPDATE (applied) | 4 |
 | MERGE | 0 |
 | RETIRE | 0 |
 | **Total** | **62** |
@@ -132,5 +132,5 @@ A baseline cannot be produced from inside a single session that already has the 
 
 1. Run the A/B gate on the five candidates above before proposing any RETIRE.
 2. Decide whether the `GrokBuild image_gen` tool-family name should be renamed catalog-wide, or documented as the intended tool contract.
-3. `impeccable` frontmatter declares `Apache 2.0` while `vendor/license-audit.json` records `Apache-2.0`; the test normalizes this, but aligning the string would remove the special case.
+3. ~~`impeccable` frontmatter declares `Apache 2.0` while `vendor/license-audit.json` records `Apache-2.0`.~~ Resolved: frontmatter now reads `Apache-2.0`, and the audit evidence string dropped the parenthetical that only existed to flag the mismatch.
 4. 28 of 62 skills omit a frontmatter `license` key by design. If that ever becomes confusing, document it in the skill authoring guide rather than adding keys.
