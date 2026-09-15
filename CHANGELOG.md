@@ -2,8 +2,13 @@
 
 ## Unreleased
 
-Catalog hygiene patch. No new skills, no new MCP, no foreign harness runtime. Totals stay **62** (46 model-invoked, 16 manual slash commands).
+Catalog update for AI LABS 8-repo wave adaptation and hygiene patch. Totals become **63** (47 model-invoked, 16 manual slash commands).
 
+- Add first-party model-invoked specialist `img2threejs` for code-only procedural Three.js TypeScript model reconstruction from reference object images (editable Group factory, visible vs. inferred geometry spec, screenshot loop gate; no mesh blob downloads).
+- Add optional `reticle` MCP (`opencode-bf reticle enable` / `disable`) registering local perception server (`npx -y @reticlehq/server mcp`). `FOREIGN_ON_DEMAND`, server is FSL-1.1-ALv2, perception only, never an auto-implementer; default verification remains `playwright-qa` / `chrome-devtools-axi`.
+- Add optional `ui-skills` remote MCP (`opencode-bf ui-skills enable` / `disable`) registering `https://www.ui-skills.com/mcp` for design-skill lookup only. Product UI remains Design Bank + Impeccable + Design V2 atoms + shadcn; `BANK_MISS` never generates from random ui-skills documents.
+- Anti-slop selective merge: incorporate visual and copy anti-patterns (no default purple-gradient hero, glowing mesh, Inter-on-white-card slop, fake testimonials, or "Let's dive in" clichés) into `skills/impeccable/reference/taste-guard.md` and `rules/03-prose-discipline.md` with attribution to `miqdadbadjuber/anti-slop` MIT in `skills/install-anti-slop/NOTICE.md`. Zero extra catalog skills added.
+- Document warehouse dispositions for AI LABS 8 wave: `img2threejs` (NEW), `reticle` (FOREIGN_ON_DEMAND), `ui-skills` (FOREIGN_ON_DEMAND), `chisel` hooks (REJECT), `ouroboros`/Q00 (REJECT), `swiftui-skills` (DEFER), `caliper` (FOREIGN_ON_DEMAND maintainer CLI), and `anti-slop` (MERGE).
 - Sync stale user-facing catalog copy (`59` / `43 model-invoked`) to the measured tree in `README.md`, `docs/skills.md`, and `docs/architecture.md`. Historical release entries keep their original numbers.
 - `skill-stocktake`: replace the schema-only sweep with a verdict protocol. Every catalog item resolves to exactly one of `KEEP`, `COMPRESS`, `UPDATE`, `MERGE → <target>`, or `RETIRE`, backed by an existence pass, a currency pass, and cited evidence. The skill never rewrites or deletes another skill; `COMPRESS`/`UPDATE` hand off to `writing-for-agents` or `prompt-optimizer`.
 - `eval-harness`: add `references/skill-utility.md`, an A/B utility gate that scores a task with the skill (Run B) against the same task without it (Run A). Quality parity with lower token or latency passes; `A ≈ B` on the skill's own claimed task is evidence for `RETIRE` or `COMPRESS`. Deterministic assertions first, no external harness, no API key.

@@ -299,6 +299,86 @@ class DoctorDeepTests(IsolatedHome):
         self.assertEqual(rc, 0, buf.getvalue())
         self.assertIn("CONFIGURED             mcp:stitch", buf.getvalue())
 
+    def test_doctor_reticle_missing_does_not_fail(self):
+        self._install()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("OPTIONAL_ABSENT        mcp:reticle", buf.getvalue())
+
+    def test_doctor_reticle_invalid_schema_fails(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["reticle"] = {
+            "type": "remote",
+            "url": "https://example.invalid",
+            "enabled": True,
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 1, buf.getvalue())
+        self.assertIn("FAIL                   mcp:reticle", buf.getvalue())
+
+    def test_doctor_reticle_valid_configured_passes(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["reticle"] = {
+            "type": "local",
+            "command": ["npx", "-y", "@reticlehq/server", "mcp"],
+            "enabled": True,
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("CONFIGURED             mcp:reticle", buf.getvalue())
+
+    def test_doctor_ui_skills_missing_does_not_fail(self):
+        self._install()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("OPTIONAL_ABSENT        mcp:ui-skills", buf.getvalue())
+
+    def test_doctor_ui_skills_invalid_schema_fails(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["ui-skills"] = {
+            "type": "local",
+            "command": ["ui-skills-bin"],
+            "enabled": True,
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 1, buf.getvalue())
+        self.assertIn("FAIL                   mcp:ui-skills", buf.getvalue())
+
+    def test_doctor_ui_skills_valid_configured_passes(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["ui-skills"] = {
+            "type": "remote",
+            "url": "https://www.ui-skills.com/mcp",
+            "enabled": True,
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("CONFIGURED             mcp:ui-skills", buf.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

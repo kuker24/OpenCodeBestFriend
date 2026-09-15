@@ -15,6 +15,8 @@ This is not a skill. It does not auto-apply. It does not rewrite code.
 - Preserve legitimate technical terms (`interface`, `vector`, `primitive`, `surface`, `modality`) when they are the real word.
 - Preserve facts: names, dates, numbers, URLs, citations, code, commands, flags, API ids, quotes, negations, security and legal wording.
 - Cut words that do no work.
+- Cut kickoff slop and AI promotional clichés (“Let’s dive in”, “Supercharge your workflow”, “In this fast-paced world”, “Unleash the power of”).
+- Cut fake social proof: never author synthetic testimonials, fabricated reviews, or unverified star ratings.
 - Never “polish” source code, tests, or command output as if they were marketing copy.
 
 For full prose rewrites and systematic AI-tell removal, use the `humanizer` specialist (manual slash alias: `/unslop`).

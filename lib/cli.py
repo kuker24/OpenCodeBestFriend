@@ -24,9 +24,13 @@ from lib.install import (  # noqa: E402
     cmd_install,
     cmd_restore,
     cmd_restore_list,
+    cmd_reticle_disable,
+    cmd_reticle_enable,
     cmd_serena_enable,
     cmd_stitch_disable,
     cmd_stitch_enable,
+    cmd_ui_skills_disable,
+    cmd_ui_skills_enable,
     cmd_uninstall,
 )
 from lib.integrity import cmd_verify  # noqa: E402
@@ -104,6 +108,12 @@ def build_parser() -> argparse.ArgumentParser:
     st.add_argument("action", choices=["enable", "disable"])
     st.add_argument("--oauth", action="store_true", help="use OAuth/Bearer auth instead of STITCH_API_KEY header")
 
+    ret = sub.add_parser("reticle", help="optional Reticle local perception MCP")
+    ret.add_argument("action", choices=["enable", "disable"])
+
+    uis = sub.add_parser("ui-skills", help="optional UI Skills remote MCP")
+    uis.add_argument("action", choices=["enable", "disable"])
+
     sd = sub.add_parser("smartdoc", help="document profiles, extract, status")
     add_smartdoc_cli(sd)
     sb = sub.add_parser("smartbook", help="reusable SmartBook lifecycle")
@@ -163,6 +173,14 @@ def main(argv: list[str] | None = None) -> int:
         if args.action == "enable":
             return cmd_stitch_enable(oauth=args.oauth)
         return cmd_stitch_disable()
+    if cmd == "reticle":
+        if args.action == "enable":
+            return cmd_reticle_enable()
+        return cmd_reticle_disable()
+    if cmd == "ui-skills":
+        if args.action == "enable":
+            return cmd_ui_skills_enable()
+        return cmd_ui_skills_disable()
     if cmd == "smartdoc":
         return dispatch_smartdoc(args)
     if cmd == "smartbook":
