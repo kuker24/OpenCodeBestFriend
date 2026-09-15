@@ -99,6 +99,11 @@
       "evidence": "mattpocock/skills engineering/implement renamed; MIT LICENSE",
       "redistribution": "mit"
     },
+    "markitdown": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter + skills/markitdown/NOTICE.md (method inspiration from microsoft/markitdown MIT; zero verbatim dump)",
+      "redistribution": "mit"
+    },
     "blast-radius": {
       "license": "MIT",
       "evidence": "cursor/plugins pstack 60c641e + vendor/licenses/PSTACK-MIT.txt",

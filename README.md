@@ -1,14 +1,14 @@
 # OpenCodeBestFriend
 
 Production-ready capability layer for OpenCode:
-63 routed skills (core + Wave 2/3 warehouse specialists), MCP, Codebase Memory,
+64 routed skills (core + Wave 2/3 warehouse specialists), MCP, Codebase Memory,
 Design Bank, Design Intelligence, SmartDoc, browser and verification tooling.
 
 OpenCodeBestFriend is an installer and runtime overlay for [OpenCode](https://opencode.ai). It is **not** Claude Code, **not** a model provider, and **not** a dump of a developer home directory.
 
 ## What it is
 
-- 63 skills: 47 model-invoked, 16 manual slash commands
+- 64 skills: 48 model-invoked, 16 manual slash commands
 - A thin `AGENTS.md` router (lazy, one primary specialist)
 - Core MCP: Codebase Memory, Context7, shadcn
 - Design Bank discovery or download (media is **not** in git)
@@ -61,7 +61,7 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-      47 automatic       Codebase Memory        Verification
+      48 automatic       Codebase Memory        Verification
      16 manual          Context7              Engineering
                        shadcn
         │
@@ -100,6 +100,7 @@ Default: repository evidence first. Then at most one specialist.
 | Procedural Three.js object from image | `img2threejs` |
 | Deterministic HTML composition video | `hyperframes` |
 | Documents (PDF/DOCX/answer/extract/review) | `smartdoc` |
+| File to Markdown ingest | `markitdown` |
 | Reusable book/module knowledge | `smartbook-ingest` |
 | Scholarly literature & manuscripts | `academic` |
 | Prose AI-tell removal & humanizing | `humanizer` (`/unslop`) |
@@ -129,6 +130,7 @@ Optional:
 - `stitch` — `opencode-bf stitch enable` registers Google Stitch as a remote comp/mock source. Not an owned core server and not a production UI implementer: hand screens to `found-this-design` or `impeccable` before shipping. Keys are never written into config, only referenced as `{env:STITCH_API_KEY}`, or omitted with `--oauth`. `opencode-bf stitch disable` removes only that server key. Absent is not a `doctor` failure; a malformed entry fails closed.
 - `reticle` — `opencode-bf reticle enable` registers Reticle as a local perception server (`npx -y @reticlehq/server mcp`). `FOREIGN_ON_DEMAND`. Server package is FSL-1.1-ALv2 (competing-use clause); SDK packages (Apache-2.0) are not vendored. Never an auto-implementer; default verification remains `playwright-qa` / `chrome-devtools-axi`. `opencode-bf reticle disable` removes only that server key. Absent is not a `doctor` failure; a malformed entry fails closed.
 - `ui-skills` — `opencode-bf ui-skills enable` registers UI Skills (`https://www.ui-skills.com/mcp`) as an optional remote MCP server. `FOREIGN_ON_DEMAND` for design-skill lookup only. Product UI remains Design Bank + Impeccable + Design V2 atoms + shadcn; `BANK_MISS` never generates from a random ui-skills document. `opencode-bf ui-skills disable` removes only that server key. Absent is not a `doctor` failure; a malformed entry fails closed.
+- `markitdown` — `opencode-bf markitdown enable` registers MarkItDown as a local stdio ingest converter (`uvx --from markitdown-mcp markitdown-mcp`). `FOREIGN_ON_DEMAND`. Local trusted agents only; never `--http` / `0.0.0.0` / docker bind-all. Output is Markdown data; SmartDoc keeps contract/QA/render. `opencode-bf markitdown disable` removes only that server key. Absent is not a `doctor` failure; a malformed entry fails closed.
 - `exa` — `FOREIGN_ON_DEMAND`; installer never adds, removes, or overwrites it
 
 NVIDIA SkillEvaluator is `FOREIGN_ON_DEMAND` in the same sense: a maintainer may run it externally for embedding-based overlap scoring or live catalog evaluation. Caliper is `FOREIGN_ON_DEMAND` similarly: a maintainer may `pipx install caliper-eval` off-tree for prompt/agent benchmark evaluation. Neither is vendored into `lib/`, the installer never adds them, `doctor` does not fail when they are absent, and a malformed MCP entry fails closed like any other schema violation.

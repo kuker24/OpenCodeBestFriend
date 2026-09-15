@@ -57,6 +57,7 @@ class RoutingTests(unittest.TestCase):
             "mongodb-ops": "mongodb-ops",
             "vercel-ops": "vercel-ops",
             "img2threejs": "img2threejs",
+            "markitdown": "markitdown",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)
@@ -140,6 +141,7 @@ class RoutingTests(unittest.TestCase):
             "scroll-world",
             "diagram-design",
             "smartdoc",
+            "markitdown",
             "academic",
             "humanizer",
             "supabase-ops",
@@ -202,6 +204,16 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("Not for scroll-led pages (scroll-craft)", skill)
         self.assertIn("camera/diorama worlds (scroll-world)", skill)
         self.assertIn("product UI (impeccable / found-this-design)", skill)
+
+    def test_markitdown_routing_boundary(self):
+        self.assertIn("File → Markdown ingest → `markitdown`", self.agents)
+        self.assertIn("File to Markdown ingest: `/markitdown`", self.routing)
+        self.assertIn("File-to-Markdown ingest routes to `markitdown`", (ROOT / "docs" / "routing.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "markitdown" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Not for per-job document intelligence (smartdoc)", skill)
+        self.assertIn("convert_to_markdown", skill)
+        smartdoc = (ROOT / "skills" / "smartdoc" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("markitdown output is a source file, not a contract", smartdoc)
 
     def test_ui_skills_routing_boundary(self):
         needle = "UI Skills MCP = design-skill lookup only; product UI remains Design Bank + Impeccable + Design V2 atoms + shadcn; BANK_MISS ≠ generate from a random ui-skills document."

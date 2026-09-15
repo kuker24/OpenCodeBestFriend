@@ -872,7 +872,7 @@ def apply(meta: dict, cbm_bin: Path, bank: tuple[str | None, str, str]) -> list[
         "modelInvokedSkills": meta["model"],
         "manualSkills": meta["manual"],
         "ownedMcp": list(OWNED_MCP),
-        "optionalMcp": ["serena", "stitch", "reticle", "ui-skills", "exa"],
+        "optionalMcp": ["serena", "stitch", "reticle", "ui-skills", "markitdown", "exa"],
         "designBank": {
             "root": bank_root,
             "source": bank_source,
@@ -1400,6 +1400,19 @@ def cmd_reticle_enable() -> int:
 
 def cmd_reticle_disable() -> int:
     return _optional_mcp_disable("reticle")
+
+
+def cmd_markitdown_enable() -> int:
+    spec: dict[str, object] = {
+        "type": "local",
+        "command": ["uvx", "--from", "markitdown-mcp", "markitdown-mcp"],
+        "enabled": True,
+    }
+    return _optional_mcp_enable("markitdown", spec)
+
+
+def cmd_markitdown_disable() -> int:
+    return _optional_mcp_disable("markitdown")
 
 
 def cmd_ui_skills_enable() -> int:

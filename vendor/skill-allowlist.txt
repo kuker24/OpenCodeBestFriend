@@ -36,6 +36,7 @@ improve-codebase-architecture
 install-anti-slop
 interrogate
 maintain-verification-skill
+markitdown
 matt-code-review
 matt-implement
 mongodb-ops

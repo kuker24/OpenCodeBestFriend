@@ -367,3 +367,19 @@ Evaluation and disposition contract for the AI LABS 8-repo wave (procedural 3D, 
 | `swiftui-skills` | **DEFER** | `-` | Apple platform / Xcode 26 ecosystem deferred. Target platform gate remains Linux x86_64 and OpenCode 1.18.x. |
 | `caliper` | **FOREIGN_ON_DEMAND** | `-` | Benchmark CLI runner (`caliper-eval`). Maintainer may run off-tree via pipx; zero `lib/` vendor coupling. |
 | `anti-slop` | **MERGE** | `install-anti-slop`, `impeccable`, `rules/03-prose-discipline.md` | Anti-pattern guardrails merged into existing taste, prose, and linting references; zero extra catalog skills. |
+
+---
+
+## Wave MarkItDown
+
+Microsoft MarkItDown as an ingest converter, not a second document OS. SmartDoc keeps contract/QA/render.
+
+| Candidate / Repo | Decision | BestFriend Target | Reason |
+| :--- | :---: | :--- | :--- |
+| `microsoft/markitdown` CLI/lib | **NEW** | `skills/markitdown` | Thin first-party skill: convert Office/PDF/HTML/CSV/XLSX/PPTX/EPUB/ZIP to Markdown, then hand off. |
+| `markitdown-mcp` official | **FOREIGN_ON_DEMAND** | `mcp.markitdown` | Optional local stdio (`uvx --from markitdown-mcp markitdown-mcp`). Local trusted agents only. |
+| `opencode-markitdown` npm plugin | **REJECT** | `-` | Config-hook mutation forbidden. |
+| community `trsdn-markitdown-mcp` | **REJECT** | `-` | Not Microsoft. |
+| Azure Document Intelligence / Content Understanding | **DEFER** | `-` | No keys in config. |
+| youtube / audio extras | **DEFER** | `-` | Out of document lane. |
+| Duplicate SmartDoc modes | **REJECT** | `-` | SmartDoc keeps contract/QA/render. |

@@ -37,7 +37,7 @@ UI direction → skill `found-this-design` then `impeccable`. UI atoms (button, 
 
 Browser QA → skill `playwright-qa`. Explicit/session BrowserAct → `browser-act`. Observed cause → `chrome-devtools-axi` after `opencode-chromium-cdp` (`127.0.0.1:9223`). Never Google Chrome. Project E2E suites (Playwright Test/Cypress) stay authoritative for regressions.
 
-Auth/secret/payment/upload/webhook/privileged/public API → `full-audit-keamanan`. Measured LCP/INP/CLS/latency/bundle → `full-performance-audit`. GitHub → `gh-axi`. Hard unknown bug → `diagnosing-bugs`. Documents (PDF/DOCX/extract/review) → `smartdoc`. Reusable local knowledge → `smartbook-ingest`.
+Auth/secret/payment/upload/webhook/privileged/public API → `full-audit-keamanan`. Measured LCP/INP/CLS/latency/bundle → `full-performance-audit`. GitHub → `gh-axi`. Hard unknown bug → `diagnosing-bugs`. Documents (PDF/DOCX/extract/review) → `smartdoc`. File → Markdown ingest → `markitdown`. Reusable local knowledge → `smartbook-ingest`.
 
 Prose AI-tells / humanize → skill `humanizer`. Slash `/unslop` is the same specialist, manual only. Technical writing structure → suggest `/technical-writing`. Academic literature / manuscript / peer-critique → skill `academic` (not `research`, not `smartdoc` unless file extract/render). Facts library/API → Context7; `research` only if repo lacking. Deterministic HTML video / render HTML to MP4 → skill `hyperframes` (not `visual-studio`, not `emil-design-eng`). Editorial diagram HTML/SVG → skill `diagram-design` (not `impeccable`).
 

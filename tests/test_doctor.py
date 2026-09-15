@@ -379,6 +379,62 @@ class DoctorDeepTests(IsolatedHome):
         self.assertEqual(rc, 0, buf.getvalue())
         self.assertIn("CONFIGURED             mcp:ui-skills", buf.getvalue())
 
+    def test_doctor_markitdown_missing_does_not_fail(self):
+        self._install()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("OPTIONAL_ABSENT        mcp:markitdown", buf.getvalue())
+
+    def test_doctor_markitdown_invalid_schema_fails(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["markitdown"] = {
+            "type": "local",
+            "command": ["docker", "run", "--rm", "-i", "-p", "0.0.0.0:3001:3001", "markitdown-mcp"],
+            "enabled": True,
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 1, buf.getvalue())
+        self.assertIn("FAIL                   mcp:markitdown", buf.getvalue())
+
+    def test_doctor_markitdown_http_bind_fails(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["markitdown"] = {
+            "type": "local",
+            "command": ["uvx", "--from", "markitdown-mcp", "markitdown-mcp", "--http", "0.0.0.0"],
+            "enabled": True,
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 1, buf.getvalue())
+        self.assertIn("FAIL                   mcp:markitdown", buf.getvalue())
+
+    def test_doctor_markitdown_valid_configured_passes(self):
+        self._install()
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        data = jsonc.loads(cfg.read_text(encoding="utf-8"))
+        data["mcp"]["markitdown"] = {
+            "type": "local",
+            "command": ["uvx", "--from", "markitdown-mcp", "markitdown-mcp"],
+            "enabled": True,
+        }
+        cfg.write_text(jsonc.dumps(data), encoding="utf-8")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = cmd_doctor()
+        self.assertEqual(rc, 0, buf.getvalue())
+        self.assertIn("CONFIGURED             mcp:markitdown", buf.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

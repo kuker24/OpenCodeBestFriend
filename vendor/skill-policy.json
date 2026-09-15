@@ -116,6 +116,9 @@
     "maintain-verification-skill": {
       "invocation": "manual"
     },
+    "markitdown": {
+      "invocation": "model"
+    },
     "matt-code-review": {
       "invocation": "model"
     },

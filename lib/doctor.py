@@ -118,11 +118,11 @@ def mcp_status_map() -> dict[str, str]:
         try:
             data = jsonc.load_path(cfg)
         except (OSError, json.JSONDecodeError, ValueError):
-            return {k: "FAIL" for k in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "reticle", "ui-skills", "exa")}
+            return {k: "FAIL" for k in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "reticle", "ui-skills", "markitdown", "exa")}
     mcp = data.get("mcp") or {}
     owned = {"codebase-memory-mcp", "context7", "shadcn"}
-    optional = {"serena", "stitch", "reticle", "ui-skills", "exa"}
-    for name in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "reticle", "ui-skills", "exa"):
+    optional = {"serena", "stitch", "reticle", "ui-skills", "markitdown", "exa"}
+    for name in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "reticle", "ui-skills", "markitdown", "exa"):
         spec = mcp.get(name)
         if spec is None:
             out[name] = "OPTIONAL_ABSENT" if name in optional else "FAIL"
@@ -161,6 +161,21 @@ def mcp_status_map() -> dict[str, str]:
                 continue
             headers = spec.get("headers")
             if headers is not None and not isinstance(headers, dict):
+                out[name] = "FAIL"
+                continue
+            out[name] = "CONFIGURED"
+            continue
+        if name == "markitdown":
+            typ = spec.get("type")
+            cmd = spec.get("command")
+            if typ != "local" or not isinstance(cmd, list) or not cmd:
+                out[name] = "FAIL"
+                continue
+            joined = " ".join(str(part) for part in cmd)
+            if "--http" in joined or "0.0.0.0" in joined:
+                out[name] = "FAIL"
+                continue
+            if cmd[0] != "uvx" or "markitdown-mcp" not in cmd:
                 out[name] = "FAIL"
                 continue
             out[name] = "CONFIGURED"
