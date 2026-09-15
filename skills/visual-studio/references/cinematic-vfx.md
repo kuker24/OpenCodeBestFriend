@@ -1,10 +1,10 @@
 # Cinematic VFX
 
 Recreate or invent a photoreal shot as a planned sequence of stills, then
-short videos. GrokBuild has no video-to-video. Do not pretend it does.
+short videos. Native tools have no video-to-video. Do not pretend they do.
 
 Identity, face-lock, size-ref, and prompt blocks: [pipeline.md](pipeline.md).
-Tool contract: OpenCode native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED.
+Tool contract: native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED.
 
 ## Order
 

@@ -1,10 +1,10 @@
 # Pipeline
 
-Grok tools + ffmpeg. Shot length (6s default, 10s only if asked) lives
-in OpenCode native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED. Do not invent end-image, video-to-video, or extra
+Native tools + ffmpeg. Shot length (6s default, 10s only if asked) lives
+in native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED. Do not invent end-image, video-to-video, or extra
 durations.
 
-Project pack: `.grok/scroll-world/<slug>/`
+Project pack: `.scratch/scroll-world/<slug>/`
 
 Site assets: `./assets` (stills as webp) and `./assets/vid` (mp4).
 

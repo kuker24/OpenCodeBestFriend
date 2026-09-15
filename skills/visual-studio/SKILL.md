@@ -1,6 +1,6 @@
 ---
 name: visual-studio
-description: "Produce photoreal product stills, reusable identity packs, UGC/ad videos, cinematic VFX shots, and video thumbnails with GrokBuild image_gen, image_edit, image_to_video, and reference_to_video. Use when: product photo, studio shot, lifestyle, Pinterest pin, hero banner, carousel, ad pack, virtual try-on, UGC, unboxing, product review, TV spot, cinematic video, VFX, character sheet, size-ref, face-lock, YouTube thumbnail, Shorts cover, or the user runs /visual-studio. Load OpenCode native image tools if present, else DEGRADED before any generate/edit/video call. Not for UI/frontend (use impeccable), game sprites or tiles (use game-asset-core), or UI motion (use emil-design-eng)."
+description: "Produce photoreal product stills, reusable identity packs, UGC/ad videos, cinematic VFX shots, and video thumbnails with native image_gen, image_edit, image_to_video, and reference_to_video. Use when: product photo, studio shot, lifestyle, Pinterest pin, hero banner, carousel, ad pack, virtual try-on, UGC, unboxing, product review, TV spot, cinematic video, VFX, character sheet, size-ref, face-lock, YouTube thumbnail, Shorts cover, or the user runs /visual-studio. Load native image tools if present, else DEGRADED before any generate/edit/video call. Not for UI/frontend (use impeccable), game sprites or tiles (use game-asset-core), or UI motion (use emil-design-eng)."
 compatibility: opencode
 license: MIT
 ---
@@ -14,13 +14,13 @@ identity, modes, and VFX method.
 ## Load first
 
 Before any `image_gen`, `image_edit`, `image_to_video`, or
-`reference_to_video` call, load OpenCode native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED. Tool choice, prompt
+`reference_to_video` call, load native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED. Tool choice, prompt
 length, real-people references, exact text, shot length, and ffmpeg concat
 live there. Do not restate them here.
 
 ## Hard rules
 
-- Use only GrokBuild image/video tools. Do not call an external image/video
+- Use only native image/video tools. Do not call an external image/video
   API, CLI, or MCP.
 - Do not invent tool parameters. If a capability is missing (video-to-video,
   15s one-take, trained identity models), use the fallback in the matching

@@ -132,7 +132,7 @@ A baseline cannot be produced from inside a single session that already has the 
 ## Follow-ups
 
 1. Run the A/B gate on the five candidates above before proposing any RETIRE.
-2. Decide whether the `GrokBuild image_gen` tool-family name should be renamed catalog-wide, or documented as the intended tool contract.
+2. ~~Decide whether the `GrokBuild image_gen` tool-family name should be renamed catalog-wide, or documented as the intended tool contract.~~ Resolved: neutralized host names across `visual-studio` and `scroll-world` to native image/video tools (`image_gen`, `image_edit`, `image_to_video`, `reference_to_video`) while retaining the DEGRADED fallback gate, with scratch paths aligned to `.scratch/`.
 3. ~~`impeccable` frontmatter declares `Apache 2.0` while `vendor/license-audit.json` records `Apache-2.0`.~~ Resolved: frontmatter now reads `Apache-2.0`, and the audit evidence string dropped the parenthetical that only existed to flag the mismatch.
 4. 28 of 62 skills omit a frontmatter `license` key by design. If that ever becomes confusing, document it in the skill authoring guide rather than adding keys.
 5. `img2threejs` added post-#21; not part of the original 1.8.3 execution pass.

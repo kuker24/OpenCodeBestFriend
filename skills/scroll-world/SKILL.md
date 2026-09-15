@@ -1,6 +1,6 @@
 ---
 name: scroll-world
-description: "Build a scroll-scrubbed fly-through landing: as the visitor scrolls, a pre-rendered camera flies into each scene and on to the next with no cuts. Use when: 3D world landing, diorama site, Emons-style isometric world, scroll cinematic, browse-through-the-industry hero, camera-scrub page, or the user runs /scroll-world. Uses GrokBuild image_gen, image_edit, and image_to_video plus a portable vanilla-JS scrub engine. Load OpenCode native image tools if present, else DEGRADED before any generate/edit/video call. Not for scroll-led storytelling without a camera world (use scroll-craft), an ordinary landing (use impeccable), photoreal ads/identity with no world page (use visual-studio), or UI chrome motion (use emil-design-eng after Impeccable)."
+description: "Build a scroll-scrubbed fly-through landing: as the visitor scrolls, a pre-rendered camera flies into each scene and on to the next with no cuts. Use when: 3D world landing, diorama site, Emons-style isometric world, scroll cinematic, browse-through-the-industry hero, camera-scrub page, or the user runs /scroll-world. Uses native image_gen, image_edit, and image_to_video plus a portable vanilla-JS scrub engine. Load native image tools if present, else DEGRADED before any generate/edit/video call. Not for scroll-led storytelling without a camera world (use scroll-craft), an ordinary landing (use impeccable), photoreal ads/identity with no world page (use visual-studio), or UI chrome motion (use emil-design-eng after Impeccable)."
 compatibility: opencode
 license: MIT
 ---
@@ -9,19 +9,19 @@ license: MIT
 
 A landing where **scroll drives a camera**. The camera flies into a scene,
 then on to the next, as one connected flight. Stills and clips come from
-GrokBuild tools. The page only scrubs pre-rendered video by scroll
+native image/video tools. The page only scrubs pre-rendered video by scroll
 position.
 
 ## Load first
 
 Before any `image_gen`, `image_edit`, `image_to_video`, or
-`reference_to_video` call, load OpenCode native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED. Tool choice, prompt
+`reference_to_video` call, load native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED. Tool choice, prompt
 length, real-people references, shot length, and ffmpeg live there. Do
 not restate them here.
 
 ## Hard rules
 
-- Use only GrokBuild image/video tools. Do not call an external
+- Use only native image/video tools. Do not call an external
   image/video API, CLI, or MCP.
 - Do not invent tool parameters. There is no end-image lock and no
   video-to-video. Missing capability uses the fallback in
@@ -54,7 +54,7 @@ chain. Do not load visual-studio for an ordinary landing.
 ## Run
 
 1. Interview only what is missing. Write the pack at
-   `.grok/scroll-world/<slug>/`. Templates:
+   `.scratch/scroll-world/<slug>/`. Templates:
    [prompts.md](references/prompts.md).
 2. Generate stills. One style preamble, byte-for-byte, on every still.
    Review cohesion before any video.
@@ -95,7 +95,7 @@ across a seam. Locked-iso is A plus the locked-iso clause in every leg.
 
 **B — dive + aerial hop (diorama only).** One dive per scene from that
 scene's still. A connector starts on dive *i*'s actual last frame and
-flies toward scene *i+1*. Grok cannot lock the connector's last frame to
+flies toward scene *i+1*. Native tools cannot lock the connector's last frame to
 the next dive. The engine crossfade covers the near-miss. If a hop is
 unusable, set that connector to `null` (direct crossfade). Do not use B
 on a grounded photoreal walkthrough without saying it will read as a
