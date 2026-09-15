@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-Catalog update for AI LABS 8-repo wave adaptation, hygiene patch, and MarkItDown ingest. Totals become **64** (48 model-invoked, 16 manual slash commands).
+None.
+
+## 1.8.3 — 2026-09-15
+
+Catalog and overlay release. Totals **64** (48 model-invoked, 16 manual slash commands).
 
 - Add model-invoked specialist `markitdown` as a Markdown ingest converter (Office/PDF/HTML/CSV/XLSX/PPTX/EPUB/ZIP). Optional MCP `opencode-bf markitdown enable` registers local stdio (`uvx --from markitdown-mcp markitdown-mcp`). `FOREIGN_ON_DEMAND`. SmartDoc keeps contract/QA/render. No npm plugin, no Azure keys, no docker bind-all.
 - Add first-party model-invoked specialist `img2threejs` for code-only procedural Three.js TypeScript model reconstruction from reference object images (editable Group factory, visible vs. inferred geometry spec, screenshot loop gate; no mesh blob downloads).

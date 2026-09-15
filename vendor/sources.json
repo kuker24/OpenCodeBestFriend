@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.8.2",
+  "productVersion": "1.8.3",
   "adaptedFrom": {
     "product": "ClaudeBestFriend",
     "version": "1.4.2-claude.1",
@@ -64,6 +64,15 @@
       "transport": "http",
       "status": "foreign-on-demand",
       "note": "Optional remote MCP for design skill lookup only. Enabled via opencode-bf ui-skills enable."
+    },
+    "markitdown": {
+      "repository": "https://github.com/microsoft/markitdown",
+      "license": "MIT",
+      "package": "markitdown-mcp",
+      "via": "uvx",
+      "transport": "stdio",
+      "status": "foreign-on-demand",
+      "note": "Optional MCP via uvx --from markitdown-mcp. Not vendored. No Azure keys. Enabled via opencode-bf markitdown enable."
     },
     "browser-act": {
       "repository": "https://github.com/browser-act/skills",
