@@ -38,6 +38,17 @@
       "enabled": false,
       "transport": "http",
       "url": "https://stitch.googleapis.com/mcp"
+    },
+    "reticle": {
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@reticlehq/server", "mcp"]
+    },
+    "ui-skills": {
+      "enabled": false,
+      "transport": "http",
+      "url": "https://www.ui-skills.com/mcp"
     }
   }
 }

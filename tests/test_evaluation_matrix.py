@@ -88,6 +88,24 @@ class EvaluationMatrixTests(unittest.TestCase):
         self.assertIn("Explicit multi-account or persistent browser sessions: `/browser-act`", self.routing)
         self.assertIn("Use only when the user explicitly requests BrowserAct, specifies a browser-act CLI command, or requires pre-configured persistent/multi-account sessions", self.browser_act)
 
+    def test_case_13_image_to_threejs_procedural_model(self):
+        # Scenario 13: Procedural Three.js object from image -> img2threejs
+        self.assertIn("Object image to procedural Three.js → `img2threejs`", self.agents)
+        self.assertIn("Procedural Three.js object from image: `/img2threejs`", self.routing)
+        img2threejs = (ROOT / "skills" / "img2threejs" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Reconstruct isolated object as procedural Three.js code", img2threejs)
+
+    def test_case_14_scroll_factory_world_not_img2threejs(self):
+        # Scenario 14: Scroll factory world -> scroll-world NOT img2threejs
+        self.assertIn("Continuous camera fly-through, diorama, or 3D-world landing: `/scroll-world`", self.routing)
+        img2threejs = (ROOT / "skills" / "img2threejs" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("camera/diorama worlds (scroll-world)", img2threejs)
+
+    def test_case_15_dashboard_ui_impeccable_not_img2threejs(self):
+        # Scenario 15: Dashboard UI -> impeccable NOT img2threejs
+        img2threejs = (ROOT / "skills" / "img2threejs" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("product UI (impeccable / found-this-design)", img2threejs)
+
 
 if __name__ == "__main__":
     unittest.main()

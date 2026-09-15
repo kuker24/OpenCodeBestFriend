@@ -56,6 +56,7 @@ class RoutingTests(unittest.TestCase):
             "supabase-ops": "supabase-ops",
             "mongodb-ops": "mongodb-ops",
             "vercel-ops": "vercel-ops",
+            "img2threejs": "img2threejs",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)
@@ -192,6 +193,21 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("Words like `premium`, `cinematic`,", skill)
         self.assertIn("alone are not enough", skill)
         self.assertIn("Do not implement worldflight here.", skill)
+
+    def test_img2threejs_routing_boundary(self):
+        self.assertIn("Object image to procedural Three.js → `img2threejs`", self.agents)
+        self.assertIn("Procedural Three.js object from image: `/img2threejs`", self.routing)
+        self.assertIn("Procedural Three.js object models from reference images route to `img2threejs`", (ROOT / "docs" / "routing.md").read_text(encoding="utf-8"))
+        skill = (ROOT / "skills" / "img2threejs" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Not for scroll-led pages (scroll-craft)", skill)
+        self.assertIn("camera/diorama worlds (scroll-world)", skill)
+        self.assertIn("product UI (impeccable / found-this-design)", skill)
+
+    def test_ui_skills_routing_boundary(self):
+        needle = "UI Skills MCP = design-skill lookup only; product UI remains Design Bank + Impeccable + Design V2 atoms + shadcn; BANK_MISS ≠ generate from a random ui-skills document."
+        self.assertIn(needle, self.agents)
+        self.assertIn("UI Skills MCP: design-skill lookup only", self.routing)
+        self.assertIn("BANK_MISS ≠ generate from a random ui-skills document", (ROOT / "docs" / "routing.md").read_text(encoding="utf-8"))
 
     def test_no_context_guard_rule(self):
         self.assertFalse((ROOT / "rules" / "04-context-guard.md").exists())

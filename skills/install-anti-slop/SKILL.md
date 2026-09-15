@@ -13,7 +13,7 @@ Vendored from [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop) (MIT, 
 ## Core Boundaries
 
 1. **Opt-In Only**: Load this skill ONLY when the user explicitly requests Anti-Slop (e.g. "pasang anti-slop", "audit anti-slop", "hapus anti-slop"). Never auto-load during ordinary coding or non-TS/JS tasks.
-2. **Distinct from `/unslop`**: `/unslop` is for user-facing prose cleanup. `install-anti-slop` is for static Oxlint linting of TypeScript/JavaScript code.
+2. **Distinct from `/unslop` and UI Craft**: `/unslop` and `rules/03-prose-discipline.md` handle prose cleanup. UI template anti-patterns (e.g. default purple gradient mesh, Inter-on-white-card slop, fake testimonials) live in `skills/impeccable/reference/taste-guard.md`. `install-anti-slop` is strictly for static Oxlint linting of TypeScript/JavaScript code.
 3. **No OCBF Core Coupling**: Never add Oxlint or Anti-Slop to OCBF's core Python codebase or dependencies.
 4. **Exact Version Coupling**: Keep `oxlint` and `@oxlint/plugins` on the exact same version.
 5. **No Blind Global Rewrites**: Linter findings identify patterns; resolve root causes with inference, `satisfies`, and boundary validation rather than casts or fake comments.

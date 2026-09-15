@@ -118,13 +118,14 @@ def mcp_status_map() -> dict[str, str]:
         try:
             data = jsonc.load_path(cfg)
         except (OSError, json.JSONDecodeError, ValueError):
-            return {k: "FAIL" for k in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "exa")}
+            return {k: "FAIL" for k in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "reticle", "ui-skills", "exa")}
     mcp = data.get("mcp") or {}
     owned = {"codebase-memory-mcp", "context7", "shadcn"}
-    for name in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "exa"):
+    optional = {"serena", "stitch", "reticle", "ui-skills", "exa"}
+    for name in ("codebase-memory-mcp", "context7", "shadcn", "serena", "stitch", "reticle", "ui-skills", "exa"):
         spec = mcp.get(name)
         if spec is None:
-            out[name] = "OPTIONAL_ABSENT" if name in {"serena", "stitch", "exa"} else "FAIL"
+            out[name] = "OPTIONAL_ABSENT" if name in optional else "FAIL"
             continue
         if not isinstance(spec, dict):
             out[name] = "FAIL"
@@ -136,6 +137,26 @@ def mcp_status_map() -> dict[str, str]:
             typ = spec.get("type")
             url = spec.get("url")
             if typ != "remote" or url != "https://stitch.googleapis.com/mcp":
+                out[name] = "FAIL"
+                continue
+            headers = spec.get("headers")
+            if headers is not None and not isinstance(headers, dict):
+                out[name] = "FAIL"
+                continue
+            out[name] = "CONFIGURED"
+            continue
+        if name == "reticle":
+            typ = spec.get("type")
+            cmd = spec.get("command")
+            if typ != "local" or not isinstance(cmd, list) or not cmd:
+                out[name] = "FAIL"
+                continue
+            out[name] = "CONFIGURED"
+            continue
+        if name == "ui-skills":
+            typ = spec.get("type")
+            url = spec.get("url")
+            if typ != "remote" or url != "https://www.ui-skills.com/mcp":
                 out[name] = "FAIL"
                 continue
             headers = spec.get("headers")

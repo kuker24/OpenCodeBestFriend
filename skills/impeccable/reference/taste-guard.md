@@ -38,9 +38,11 @@ When guidelines diverge, resolve in strict order:
 - Single palette lock: choose neutral base + one primary accent role; maintain accent consistency throughout the page.
 - Corner radius consistency: uniform scale across cards, inputs, and buttons unless a distinct token hierarchy is documented.
 - Inherit existing design system tokens and component libraries where present.
+- **Anti-Slop Visual Fences**: Reject unexamined category templates: no default dark purple-gradient hero, glowing cyan/purple mesh backgrounds, or ungrounded Inter-on-white-card layouts unless explicitly requested.
 
 ### 5. Product Truth & Factual Content
 - **Zero Hallucinated Precision**: Never invent precise statistics (`94.2%`, `4.8x`), fake customer logos, fake review quotes, or fake partner endorsements.
+- **Anti-Slop Copy & Proof Fences**: Never generate artificial testimonials, fake review carousels, or empty AI kickoff clichés ("Let's dive in", "Supercharge your workflow").
 - If demonstration data is needed in greenfield work, label it clearly as synthetic demonstration data.
 - Refinement preserves existing copy and claims; redesign replaces presentation while preserving factual truths.
 

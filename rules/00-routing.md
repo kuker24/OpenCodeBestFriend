@@ -60,10 +60,12 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Visual UI once a world is chosen, the brief is already visual, or creating UI atoms (buttons, inputs, cards, nav): UI atoms → impeccable after Design V2 shortlist; BANK_MISS ≠ generate. Design V2 shortlist `kind=component` is an internal stage, never a separate specialist route. Do not run `/found-this-design` for atomic components.
 - Design Intelligence is an internal, lazy retrieval stage of Impeccable `new-work`, never a primary route or specialist. Design V2 is the same: an offline user bank, never a specialist.
 - Stitch MCP: screen/comp generation only; then found-this-design or impeccable + Design V2 atoms. Never implement production UI from Stitch alone. Treat existing Stitch screens as approved comps; local atom shortlist remains mandatory.
+- UI Skills MCP: design-skill lookup only. Product UI remains Design Bank + Impeccable + Design V2 atoms + shadcn. BANK_MISS ≠ generate from a random ui-skills document.
 - Installable UI components: MCP `shadcn` only. Do not add Magic UI, Kibo, 21st.dev, or community UI MCP servers.
 - Use the hub only when cwd has `components.json`. Never silent `shadcn init` on this adapter, a backend or Python tree, or a non-UI cwd.
 - Scroll-led storytelling (scroll is the timeline, scrollytelling, signature interaction): `/scroll-craft`. Ordinary scrollable UI stays `/impeccable`. `/scroll-craft` plus Continuous World: Scroll Craft writes the brief, then `/scroll-world`.
 - Continuous camera fly-through, diorama, or 3D-world landing: `/scroll-world` even if the request says scroll.
+- Procedural Three.js object from image: `/img2threejs` (factory Group, editable primitives, visible vs inferred spec). Not `scroll-world` (camera fly-through), not `hyperframes` (HTML-to-MP4), not `visual-studio` (photoreal stills/media), and not `impeccable` (product UI).
 - Deterministic HTML composition rendered to video: `/hyperframes` (headless Chrome + FFmpeg). Not `visual-studio`, not `emil-design-eng`. Ordinary scrollable UI stays `/impeccable`.
 - Photoreal stills / ads / identity with no UI surface: `/visual-studio`.
 - Motion after Impeccable: `/emil-design-eng`.
@@ -104,7 +106,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 ## Plugins and extra MCP
 
 - No extra marketplace plugins. Foundation = skills + MCP + thin AGENTS.md + runtime helpers.
-- User MCP: `codebase-memory-mcp`, `context7`, and `shadcn` on; `serena` and `stitch` absent until a human enables them; `exa` foreign.
+- User MCP: `codebase-memory-mcp`, `context7`, and `shadcn` on; `serena`, `stitch`, `reticle`, and `ui-skills` absent until a human enables them; `exa` foreign.
 - ECC / other harness overlays: `FOREIGN_ON_DEMAND`. Never add, remove, or merge foreign harness control planes or continuous-learning runtimes. Individual warehouse procedures ported in Wave 2 (agent-architecture-audit, cost-aware-llm-pipeline, eval-harness, prompt-optimizer, skill-stocktake) and Wave 3 (api-design, contract-first, automation-audit-ops, code-tour, click-path-audit) are first-party MIT skills. If external ECC is already present in user environment, do not merge and do not shadow.
 - FOREIGN vendor packs (e.g. `mongodb/agent-skills`, `supabase/agent-skills`, `vercel-labs/agent-skills`) stay off the overlay; user may `npx skills add mongodb/agent-skills|supabase/agent-skills` locally; never `frontend-design` for product UI.
 - Never auto-edit rules or skills from a learning log (no `/learn`, `/evolve`, or session-end skill writers).

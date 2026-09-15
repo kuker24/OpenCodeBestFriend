@@ -51,6 +51,20 @@
       "status": "optional-on-demand",
       "note": "Remote MCP. Screen and mock comp generation only. No secrets stored in git; configured via STITCH_API_KEY environment variable or OAuth."
     },
+    "reticle": {
+      "package": "@reticlehq/server",
+      "transport": "stdio",
+      "via": "npx",
+      "license": "FSL-1.1-ALv2",
+      "status": "foreign-on-demand",
+      "note": "Optional visual perception MCP. Server licensed under FSL-1.1-ALv2; not vendored. Enabled via opencode-bf reticle enable."
+    },
+    "ui-skills": {
+      "url": "https://www.ui-skills.com/mcp",
+      "transport": "http",
+      "status": "foreign-on-demand",
+      "note": "Optional remote MCP for design skill lookup only. Enabled via opencode-bf ui-skills enable."
+    },
     "browser-act": {
       "repository": "https://github.com/browser-act/skills",
       "version": "1.3.0",

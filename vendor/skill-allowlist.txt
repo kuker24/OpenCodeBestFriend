@@ -30,6 +30,7 @@ grill-with-docs
 grilling
 humanizer
 hyperframes
+img2threejs
 impeccable
 improve-codebase-architecture
 install-anti-slop

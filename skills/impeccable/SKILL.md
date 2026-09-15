@@ -22,7 +22,8 @@ Core principles:
    - If empty: report `BANK_MISS`; fall back to shadcn MCP only if cwd contains `components.json`. Never invent arbitrary hex, radius, or typography.
    - If hits exist: pick or take the top role-exact card, record `id`, `provider`, `role`, and `local_path` into `.impeccable/atoms.json` in user project cwd.
    - Implementation must mimic the structure and tokens of that atom + the visual world pack if pinned by `found-this-design`.
-   - If the user provides an existing Stitch screen / mock, treat it as an approved comp (comp-first build path); do not generate code directly from Stitch without shortlisting local Design V2 atoms for components.
+    - If the user provides an existing Stitch screen / mock, treat it as an approved comp (comp-first build path); do not generate code directly from Stitch without shortlisting local Design V2 atoms for components.
+    - If UI Skills MCP is present, use it for design-skill lookup only; do not generate code directly from ui-skills documents without Design V2 atom shortlisting.
    - Forbidden: `image_gen`, vendor `frontend-design`, or ungrounded model taste.
    - World or page-level layout still routes to `found-this-design` first when no world is pinned.
 

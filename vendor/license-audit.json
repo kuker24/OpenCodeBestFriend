@@ -313,6 +313,11 @@
       "license": "MIT",
       "evidence": "SKILL.md frontmatter (first-party MIT adapter)",
       "redistribution": "mit"
+    },
+    "img2threejs": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter (first-party MIT rewrite; NOTICE.md)",
+      "redistribution": "mit"
     }
   }
 }

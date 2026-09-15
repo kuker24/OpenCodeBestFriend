@@ -19,9 +19,13 @@ from lib.install import (  # noqa: E402
     backup_relevant,
     cmd_install,
     cmd_restore,
+    cmd_reticle_disable,
+    cmd_reticle_enable,
     cmd_serena_enable,
     cmd_stitch_disable,
     cmd_stitch_enable,
+    cmd_ui_skills_disable,
+    cmd_ui_skills_enable,
     cmd_uninstall,
 )
 from lib.doctor import cmd_doctor, cmd_skills_verify, isolation_check  # noqa: E402
@@ -115,7 +119,7 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(sha256(self.sentinel), self.sentinel_hash)
         self.assertEqual({p.name for p in (self.tmp / ".claude").iterdir()}, {"sentinel.txt"})
         skills = list((self.tmp / ".config" / "opencode" / "skills").iterdir())
-        self.assertEqual(len([p for p in skills if p.is_dir()]), 46)
+        self.assertEqual(len([p for p in skills if p.is_dir()]), 47)
         cmds = list((self.tmp / ".config" / "opencode" / "commands").glob("*.md"))
         self.assertEqual(len(cmds), 16)
         self.assertEqual(cmd_skills_verify(), 0)
@@ -130,7 +134,7 @@ class InstallTests(unittest.TestCase):
 
         rc2 = cmd_install()
         self.assertEqual(rc2, 0)
-        self.assertEqual(len([p for p in (self.tmp / ".config" / "opencode" / "skills").iterdir() if p.is_dir()]), 46)
+        self.assertEqual(len([p for p in (self.tmp / ".config" / "opencode" / "skills").iterdir() if p.is_dir()]), 47)
         self.assertEqual(len(list((self.tmp / ".config" / "opencode" / "commands").glob("*.md"))), 16)
         bashrc = (self.tmp / ".bashrc").read_text(encoding="utf-8")
         self.assertEqual(bashrc.count("OPENCODEBESTFRIEND:BEGIN"), 1)
@@ -437,6 +441,104 @@ class InstallTests(unittest.TestCase):
         cfg.write_text("{ not valid json", encoding="utf-8")
         with self.assertRaises(SystemExit):
             cmd_stitch_disable()
+        self.assertEqual(cfg.read_text(encoding="utf-8"), "{ not valid json")
+
+    def test_reticle_enable_and_disable(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text(
+            """{
+  // keep this comment
+  "model": "keep-me-model",
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    }
+  }
+}
+""",
+            encoding="utf-8",
+        )
+        self.assertEqual(cmd_reticle_enable(), 0)
+        text = cfg.read_text(encoding="utf-8")
+        self.assertIn("// keep this comment", text)
+        data = jsonc.loads(text)
+        self.assertIn("reticle", data["mcp"])
+        ret_spec = data["mcp"]["reticle"]
+        self.assertEqual(ret_spec["type"], "local")
+        self.assertEqual(ret_spec["command"], ["npx", "-y", "@reticlehq/server", "mcp"])
+        self.assertTrue(ret_spec["enabled"])
+
+        # Idempotent enable
+        self.assertEqual(cmd_reticle_enable(), 0)
+
+        # Disable removes only reticle
+        self.assertEqual(cmd_reticle_disable(), 0)
+        text2 = cfg.read_text(encoding="utf-8")
+        self.assertIn("// keep this comment", text2)
+        data2 = jsonc.loads(text2)
+        self.assertIn("foreign-weather", data2["mcp"])
+        self.assertNotIn("reticle", data2["mcp"])
+
+    def test_ui_skills_enable_and_disable(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text(
+            """{
+  // keep this comment
+  "model": "keep-me-model",
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    }
+  }
+}
+""",
+            encoding="utf-8",
+        )
+        self.assertEqual(cmd_ui_skills_enable(), 0)
+        text = cfg.read_text(encoding="utf-8")
+        self.assertIn("// keep this comment", text)
+        data = jsonc.loads(text)
+        self.assertIn("ui-skills", data["mcp"])
+        ui_spec = data["mcp"]["ui-skills"]
+        self.assertEqual(ui_spec["type"], "remote")
+        self.assertEqual(ui_spec["url"], "https://www.ui-skills.com/mcp")
+        self.assertTrue(ui_spec["enabled"])
+
+        # Idempotent enable
+        self.assertEqual(cmd_ui_skills_enable(), 0)
+
+        # Disable removes only ui-skills
+        self.assertEqual(cmd_ui_skills_disable(), 0)
+        text2 = cfg.read_text(encoding="utf-8")
+        self.assertIn("// keep this comment", text2)
+        data2 = jsonc.loads(text2)
+        self.assertIn("foreign-weather", data2["mcp"])
+        self.assertNotIn("ui-skills", data2["mcp"])
+
+    def test_reticle_invalid_config_fail_closed(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text("{ not valid json", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            cmd_reticle_enable()
+        with self.assertRaises(SystemExit):
+            cmd_reticle_disable()
+        self.assertEqual(cfg.read_text(encoding="utf-8"), "{ not valid json")
+
+    def test_ui_skills_invalid_config_fail_closed(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text("{ not valid json", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            cmd_ui_skills_enable()
+        with self.assertRaises(SystemExit):
+            cmd_ui_skills_disable()
         self.assertEqual(cfg.read_text(encoding="utf-8"), "{ not valid json")
 
     def test_restore_prior_product_tree(self):
