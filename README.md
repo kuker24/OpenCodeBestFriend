@@ -61,7 +61,7 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-     46 automatic       Codebase Memory        Verification
+      47 automatic       Codebase Memory        Verification
      16 manual          Context7              Engineering
                        shadcn
         │

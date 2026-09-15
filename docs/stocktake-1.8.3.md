@@ -1,8 +1,8 @@
 # Catalog Stocktake — 1.8.3
 
-Executed per [skills/skill-stocktake/SKILL.md](../skills/skill-stocktake/SKILL.md) against `main` at `4b1fd7f2` (tree `bc3d12c6`).
+Executed per [skills/skill-stocktake/SKILL.md](../skills/skill-stocktake/SKILL.md). Earlier rows were taken against `main` at `4b1fd7f2` (tree `bc3d12c6`) under the #18 protocol; `img2threejs` was added post-PR #21 at `66eebe9`.
 
-Measured tree: **46 model-invoked** (`skills/*/SKILL.md`) + **16 manual** (`manual-skills/*/SKILL.md`, each with a matching `commands/<name>.md`) = **62**. Matches `vendor/skill-policy.json` and `vendor/skill-allowlist.txt`.
+Measured tree: **47 model-invoked** (`skills/*/SKILL.md`) + **16 manual** (`manual-skills/*/SKILL.md`, each with a matching `commands/<name>.md`) = **63**. Matches `vendor/skill-policy.json` and `vendor/skill-allowlist.txt`.
 
 License column is authoritative from `vendor/license-audit.json`, not frontmatter. A missing frontmatter `license` key is not a gap: 28 of 62 deliberately defer to the audit file.
 
@@ -38,6 +38,7 @@ License column is authoritative from `vendor/license-audit.json`, not frontmatte
 | grilling | model | KEEP | 23 lines; non-default primitive, explicitly named-only | — |
 | humanizer | model | KEEP | 64 lines, NOTICE present; paired with manual `/unslop` | — |
 | hyperframes | model | KEEP | 48 lines, Apache-2.0 with NOTICE; HTML→MP4 lane | — |
+| img2threejs | model | KEEP | 50-line first-party MIT factory; image→procedural Three.js Group; fenced off scroll-world / scroll-craft / hyperframes / visual-studio / impeccable; shipped #21 | — |
 | impeccable | model | KEEP | 89-line body against 38 refs + 44 scripts — progressive disclosure working as designed | — |
 | install-anti-slop | model | KEEP | 56 lines; pinned upstream commit `e8c4880` verified in body | — |
 | matt-code-review | model | KEEP | 88 lines; two-axis review, opt-in only | — |
@@ -79,12 +80,12 @@ License column is authoritative from `vendor/license-audit.json`, not frontmatte
 
 | Verdict | Count |
 |---|---|
-| KEEP | 56 |
+| KEEP | 57 |
 | COMPRESS (applied) | 2 |
 | UPDATE (applied) | 4 |
 | MERGE | 0 |
 | RETIRE | 0 |
-| **Total** | **62** |
+| **Total** | **63** |
 
 `MERGE` is zero on evidence, not on sentiment. The highest lexical description overlap in the catalog is `matt-code-review ~ interrogate` at 0.359 Jaccard, below the 0.50 warn line in `tests/test_skills.py`. Top pairs: `humanizer ~ unslop` 0.357 (intentional model/manual twin), `supabase-ops ~ vercel-ops` 0.349, `grill-with-docs ~ grilling` 0.341 (documented composition), `scroll-craft ~ scroll-world` 0.327, `to-spec ~ to-tickets` 0.326. Each is a fenced sibling, not a duplicate.
 
@@ -134,3 +135,4 @@ A baseline cannot be produced from inside a single session that already has the 
 2. Decide whether the `GrokBuild image_gen` tool-family name should be renamed catalog-wide, or documented as the intended tool contract.
 3. ~~`impeccable` frontmatter declares `Apache 2.0` while `vendor/license-audit.json` records `Apache-2.0`.~~ Resolved: frontmatter now reads `Apache-2.0`, and the audit evidence string dropped the parenthetical that only existed to flag the mismatch.
 4. 28 of 62 skills omit a frontmatter `license` key by design. If that ever becomes confusing, document it in the skill authoring guide rather than adding keys.
+5. `img2threejs` added post-#21; not part of the original 1.8.3 execution pass.
