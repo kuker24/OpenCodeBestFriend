@@ -4,12 +4,12 @@ Fill-in-the-slots. Keep the **style preamble** byte-for-byte identical
 across every scene still — that identical text is what makes the world
 one place.
 
-Shot length, prompt length, and tool choice live in OpenCode native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED.
+Shot length, prompt length, and tool choice live in native image tools if the session exposes them; otherwise write prompt files and mark DEGRADED.
 Do not restate them here.
 
 ## Intake
 
-Write into `.grok/scroll-world/<slug>/lock.txt`:
+Write into `.scratch/scroll-world/<slug>/lock.txt`:
 
 - `SUBJECT` — business + one-line pitch.
 - `BRAND_NAME` — display name.

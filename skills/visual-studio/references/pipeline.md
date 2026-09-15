@@ -4,7 +4,7 @@ Build identity once. Derive every later still and shot from it.
 
 ## Identity pack
 
-Project path: `.grok/visual-studio/<slug>/`
+Project path: `.scratch/visual-studio/<slug>/`
 
 | File | What it is |
 |---|---|
