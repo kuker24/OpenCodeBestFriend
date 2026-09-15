@@ -19,6 +19,8 @@ from lib.install import (  # noqa: E402
     backup_relevant,
     cmd_install,
     cmd_restore,
+    cmd_markitdown_disable,
+    cmd_markitdown_enable,
     cmd_reticle_disable,
     cmd_reticle_enable,
     cmd_serena_enable,
@@ -119,7 +121,7 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(sha256(self.sentinel), self.sentinel_hash)
         self.assertEqual({p.name for p in (self.tmp / ".claude").iterdir()}, {"sentinel.txt"})
         skills = list((self.tmp / ".config" / "opencode" / "skills").iterdir())
-        self.assertEqual(len([p for p in skills if p.is_dir()]), 47)
+        self.assertEqual(len([p for p in skills if p.is_dir()]), 48)
         cmds = list((self.tmp / ".config" / "opencode" / "commands").glob("*.md"))
         self.assertEqual(len(cmds), 16)
         self.assertEqual(cmd_skills_verify(), 0)
@@ -134,7 +136,7 @@ class InstallTests(unittest.TestCase):
 
         rc2 = cmd_install()
         self.assertEqual(rc2, 0)
-        self.assertEqual(len([p for p in (self.tmp / ".config" / "opencode" / "skills").iterdir() if p.is_dir()]), 47)
+        self.assertEqual(len([p for p in (self.tmp / ".config" / "opencode" / "skills").iterdir() if p.is_dir()]), 48)
         self.assertEqual(len(list((self.tmp / ".config" / "opencode" / "commands").glob("*.md"))), 16)
         bashrc = (self.tmp / ".bashrc").read_text(encoding="utf-8")
         self.assertEqual(bashrc.count("OPENCODEBESTFRIEND:BEGIN"), 1)
@@ -539,6 +541,53 @@ class InstallTests(unittest.TestCase):
             cmd_ui_skills_enable()
         with self.assertRaises(SystemExit):
             cmd_ui_skills_disable()
+        self.assertEqual(cfg.read_text(encoding="utf-8"), "{ not valid json")
+
+    def test_markitdown_enable_and_disable(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text(
+            """{
+  // keep this comment
+  "model": "keep-me-model",
+  "mcp": {
+    "foreign-weather": {
+      "type": "remote",
+      "url": "https://example.invalid/mcp",
+      "enabled": true
+    }
+  }
+}
+""",
+            encoding="utf-8",
+        )
+        self.assertEqual(cmd_markitdown_enable(), 0)
+        text = cfg.read_text(encoding="utf-8")
+        self.assertIn("// keep this comment", text)
+        data = jsonc.loads(text)
+        self.assertIn("markitdown", data["mcp"])
+        md_spec = data["mcp"]["markitdown"]
+        self.assertEqual(md_spec["type"], "local")
+        self.assertEqual(md_spec["command"], ["uvx", "--from", "markitdown-mcp", "markitdown-mcp"])
+        self.assertTrue(md_spec["enabled"])
+
+        self.assertEqual(cmd_markitdown_enable(), 0)
+
+        self.assertEqual(cmd_markitdown_disable(), 0)
+        text2 = cfg.read_text(encoding="utf-8")
+        self.assertIn("// keep this comment", text2)
+        data2 = jsonc.loads(text2)
+        self.assertIn("foreign-weather", data2["mcp"])
+        self.assertNotIn("markitdown", data2["mcp"])
+
+    def test_markitdown_invalid_config_fail_closed(self):
+        cfg = self.tmp / ".config" / "opencode" / "opencode.jsonc"
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text("{ not valid json", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            cmd_markitdown_enable()
+        with self.assertRaises(SystemExit):
+            cmd_markitdown_disable()
         self.assertEqual(cfg.read_text(encoding="utf-8"), "{ not valid json")
 
     def test_restore_prior_product_tree(self):

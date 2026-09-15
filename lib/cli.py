@@ -24,6 +24,8 @@ from lib.install import (  # noqa: E402
     cmd_install,
     cmd_restore,
     cmd_restore_list,
+    cmd_markitdown_disable,
+    cmd_markitdown_enable,
     cmd_reticle_disable,
     cmd_reticle_enable,
     cmd_serena_enable,
@@ -111,6 +113,9 @@ def build_parser() -> argparse.ArgumentParser:
     ret = sub.add_parser("reticle", help="optional Reticle local perception MCP")
     ret.add_argument("action", choices=["enable", "disable"])
 
+    md = sub.add_parser("markitdown", help="optional MarkItDown local ingest MCP")
+    md.add_argument("action", choices=["enable", "disable"])
+
     uis = sub.add_parser("ui-skills", help="optional UI Skills remote MCP")
     uis.add_argument("action", choices=["enable", "disable"])
 
@@ -177,6 +182,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.action == "enable":
             return cmd_reticle_enable()
         return cmd_reticle_disable()
+    if cmd == "markitdown":
+        if args.action == "enable":
+            return cmd_markitdown_enable()
+        return cmd_markitdown_disable()
     if cmd == "ui-skills":
         if args.action == "enable":
             return cmd_ui_skills_enable()

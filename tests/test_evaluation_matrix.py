@@ -101,6 +101,25 @@ class EvaluationMatrixTests(unittest.TestCase):
         img2threejs = (ROOT / "skills" / "img2threejs" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("camera/diorama worlds (scroll-world)", img2threejs)
 
+    def test_case_16_convert_pptx_to_markdown(self):
+        self.assertIn("File → Markdown ingest → `markitdown`", self.agents)
+        self.assertIn("File to Markdown ingest: `/markitdown`", self.routing)
+        markitdown = (ROOT / "skills" / "markitdown" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Convert-only", markitdown)
+        self.assertIn("**markitdown**", markitdown)
+
+    def test_case_17_answer_soal_in_pdf_smartdoc(self):
+        self.assertIn("Documents (PDF/DOCX/extract/review) → `smartdoc`", self.agents)
+        smartdoc = (ROOT / "skills" / "smartdoc" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Understand / soal / contract / render PDF", (ROOT / "skills" / "markitdown" / "SKILL.md").read_text(encoding="utf-8"))
+        self.assertIn("soal", smartdoc)
+
+    def test_case_18_ingest_into_smartbook(self):
+        self.assertIn("Reusable local knowledge → `smartbook-ingest`", self.agents)
+        markitdown = (ROOT / "skills" / "markitdown" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("Reusable book", markitdown)
+        self.assertIn("smartbook-ingest", markitdown)
+
     def test_case_15_dashboard_ui_impeccable_not_img2threejs(self):
         # Scenario 15: Dashboard UI -> impeccable NOT img2threejs
         img2threejs = (ROOT / "skills" / "img2threejs" / "SKILL.md").read_text(encoding="utf-8")

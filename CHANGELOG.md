@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-Catalog update for AI LABS 8-repo wave adaptation and hygiene patch. Totals become **63** (47 model-invoked, 16 manual slash commands).
+Catalog update for AI LABS 8-repo wave adaptation, hygiene patch, and MarkItDown ingest. Totals become **64** (48 model-invoked, 16 manual slash commands).
 
+- Add model-invoked specialist `markitdown` as a Markdown ingest converter (Office/PDF/HTML/CSV/XLSX/PPTX/EPUB/ZIP). Optional MCP `opencode-bf markitdown enable` registers local stdio (`uvx --from markitdown-mcp markitdown-mcp`). `FOREIGN_ON_DEMAND`. SmartDoc keeps contract/QA/render. No npm plugin, no Azure keys, no docker bind-all.
 - Add first-party model-invoked specialist `img2threejs` for code-only procedural Three.js TypeScript model reconstruction from reference object images (editable Group factory, visible vs. inferred geometry spec, screenshot loop gate; no mesh blob downloads).
 - Add optional `reticle` MCP (`opencode-bf reticle enable` / `disable`) registering local perception server (`npx -y @reticlehq/server mcp`). `FOREIGN_ON_DEMAND`, server is FSL-1.1-ALv2, perception only, never an auto-implementer; default verification remains `playwright-qa` / `chrome-devtools-axi`.
 - Add optional `ui-skills` remote MCP (`opencode-bf ui-skills enable` / `disable`) registering `https://www.ui-skills.com/mcp` for design-skill lookup only. Product UI remains Design Bank + Impeccable + Design V2 atoms + shadcn; `BANK_MISS` never generates from random ui-skills documents.
