@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-None.
+- Selective merge of net-new anti-slop patterns from `miqdadbadjuber/anti-slop` v3.2.x into existing surfaces (`taste-guard.md`, `03-prose-discipline.md`, `writing-for-agents`, `install-anti-slop/NOTICE.md`, and `docs/warehouse-inventory.md`): Two-State Layout, Decorative Status Dot, Over-Explained Comment, and DESIGN.md conflict resolution. Zero new skills added; catalog totals stay 64 (48 model-invoked, 16 manual slash commands).
 
 ## 1.8.3 — 2026-09-15
 

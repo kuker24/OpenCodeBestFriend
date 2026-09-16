@@ -20,4 +20,4 @@ This skill vendors and adapts the Anti-Slop Oxlint plugin originally authored by
 - Strictly segregated from core OCBF Python dependencies (no Oxlint forced onto OCBF itself).
 
 ## Additional Attribution
-Prose and UI anti-slop guidelines in `rules/03-prose-discipline.md` and `skills/impeccable/reference/taste-guard.md` incorporate concepts and patterns adapted from [miqdadbadjuber/anti-slop](https://github.com/miqdadbadjuber/anti-slop) (MIT License, Copyright (c) 2024 Miqdad Badjuber). Zero extra catalog skills or external runtime dependencies added.
+UI and copy named patterns in `rules/03-prose-discipline.md`, `skills/impeccable/reference/taste-guard.md`, and `skills/writing-for-agents/SKILL.md` also draw on [miqdadbadjuber/anti-slop](https://github.com/miqdadbadjuber/anti-slop) MIT (v3.2.x patterns; no verbatim dump, zero extra catalog skills or external runtime dependencies added).
