@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Selective merge of net-new anti-slop patterns from `miqdadbadjuber/anti-slop` v3.2.x into existing surfaces (`taste-guard.md`, `03-prose-discipline.md`, `writing-for-agents`, `install-anti-slop/NOTICE.md`, and `docs/warehouse-inventory.md`): Two-State Layout, Decorative Status Dot, Over-Explained Comment, and DESIGN.md conflict resolution. Zero new skills added; catalog totals stay 64 (48 model-invoked, 16 manual slash commands).
+None.
+
+## 1.8.4 — 2026-09-16
+
+Patch. Totals remain **64** (48 model-invoked, 16 manual). Selective MERGE of named slop patterns from miqdadbadjuber/anti-slop v3.2.x into taste-guard, impeccable, prose-discipline, and writing-for-agents (Two-State Layout, Decorative Status Dot, DESIGN.md conflict, Over-Explained Comment). Zero catalog twins. Oxlint install-anti-slop unchanged.
 
 ## 1.8.3 — 2026-09-15
 

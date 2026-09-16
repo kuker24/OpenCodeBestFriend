@@ -136,3 +136,4 @@ A baseline cannot be produced from inside a single session that already has the 
 3. ~~`impeccable` frontmatter declares `Apache 2.0` while `vendor/license-audit.json` records `Apache-2.0`.~~ Resolved: frontmatter now reads `Apache-2.0`, and the audit evidence string dropped the parenthetical that only existed to flag the mismatch.
 4. 28 of 62 skills omit a frontmatter `license` key by design. If that ever becomes confusing, document it in the skill authoring guide rather than adding keys.
 5. `img2threejs` added post-#21; not part of the original 1.8.3 execution pass.
+6. Live catalog at 1.8.4 is 64 (48 model-invoked, 16 manual) including `markitdown` KEEP.
