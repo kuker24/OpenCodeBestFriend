@@ -40,6 +40,9 @@ class TasteIntegrationTests(unittest.TestCase):
         self.assertIn("Explicit brief, pinned aesthetic, brand guidelines, and user constraints always win", text)
         self.assertIn("Anti-Dogma Rule", text)
         self.assertIn("Purple accents, Inter font, SVG icons", text)
+        self.assertIn("DESIGN.md Conflict", text)
+        self.assertIn("Two-State Layout", text)
+        self.assertIn("Decorative Status Dot", text)
 
     def test_provenance_and_sources_inventory(self):
         sources = json.loads((ROOT / "vendor" / "sources.json").read_text(encoding="utf-8"))

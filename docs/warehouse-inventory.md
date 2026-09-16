@@ -383,3 +383,21 @@ Microsoft MarkItDown as an ingest converter, not a second document OS. SmartDoc 
 | Azure Document Intelligence / Content Understanding | **DEFER** | `-` | No keys in config. |
 | youtube / audio extras | **DEFER** | `-` | Out of document lane. |
 | Duplicate SmartDoc modes | **REJECT** | `-` | SmartDoc keeps contract/QA/render. |
+
+---
+
+## Wave Anti-Slop (miqdad)
+
+Selective merge of net-new anti-slop patterns (`miqdadbadjuber/anti-slop` v3.2.7+) into existing OCBF surfaces. Filter, not a second style system.
+
+| Candidate | Decision | BestFriend Target | Reason |
+| :--- | :---: | :--- | :--- |
+| 6 skills (`antislop`, `antislop-ui`, `copywriting`, `human`, `layoutmobile`, `code`) | **REJECT** | `-` | No catalog twins; filter folded into existing specialists. |
+| `npx antislop-ai`, Claude/Cursor plugins, AGENTS.md pointer they write | **REJECT** | `-` | Foreign installer scripts and host config mutators rejected. |
+| Delivery Gate 4-block report every turn | **REJECT** | `-` | Rigid per-turn ceremony rejected; verification profiles stay authoritative. |
+| dmmulroy Oxlint `install-anti-slop` | **KEEP** | `skills/install-anti-slop` | TypeScript/JavaScript static linter; do not mix UI rules into it. |
+| Existing taste-guard + `03-prose-discipline` slop lines from #21 | **KEEP** | `taste-guard.md`, `rules/03-prose-discipline.md` | Core fences preserved intact. |
+| Two-State Layout | **MERGE** | `skills/impeccable/reference/taste-guard.md` | §7 Responsiveness: phone stack + desktop grid with nothing between is slop. |
+| Decorative Status Dot | **MERGE** | `skills/impeccable/reference/taste-guard.md` | §9 Motivated Visual Effects: glowing/pulsing dot must mark a real state. |
+| Over-Explained Comment | **MERGE** | `skills/writing-for-agents/SKILL.md` | Comment discipline: multi-line around one-line fact is slop; no `// ====` banners. |
+| DESIGN.md conflict (R-37) | **MERGE** | `skills/impeccable/reference/taste-guard.md` | Precedence: ask keep-or-drop when brief asks for slop; identity palette/type is not slop. |

@@ -17,6 +17,8 @@ This is not a skill. It does not auto-apply. It does not rewrite code.
 - Cut words that do no work.
 - Cut kickoff slop and AI promotional clichés (“Let’s dive in”, “Supercharge your workflow”, “In this fast-paced world”, “Unleash the power of”).
 - Cut fake social proof: never author synthetic testimonials, fabricated reviews, or unverified star ratings.
+- Cut fabricated metrics and uncited statistics: never invent precise percentages, multipliers, or benchmark numbers.
+- Cut beta-pill voice and sparkle-CTA fluff: do not decorate action buttons with sparkles, emoji flair, or artificial status pills.
 - Never “polish” source code, tests, or command output as if they were marketing copy.
 
 For full prose rewrites and systematic AI-tell removal, use the `humanizer` specialist (manual slash alias: `/unslop`).

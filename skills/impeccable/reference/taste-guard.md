@@ -16,6 +16,8 @@ When guidelines diverge, resolve in strict order:
 
 *Anti-Dogma Rule*: Taste guidelines discourage unexamined category defaults, but they are NOT absolute bans. Purple accents, Inter font, SVG icons, symmetrical grids, eyebrows, or cards are fully permitted when the brand, project, or user requests them.
 
+- **DESIGN.md Conflict**: If an explicit pin or `DESIGN.md` asks for a named slop pattern, name the element and the conflict, then ask keep-or-drop. Never silently follow and never silently override. Palette and typography that constitute brand identity are never slop.
+
 ---
 
 ## The 11 Core Quality Guardrails
@@ -52,6 +54,7 @@ When guidelines diverge, resolve in strict order:
 
 ### 7. Responsiveness & Breakpoint Defense
 - Explicit mobile collapse (`< 768px`) for every multi-column layout or bento grid; verify no horizontal overflow.
+- **Two-State Layout**: A phone stack plus desktop grid with nothing defined between is slop. Need at least one mid breakpoint or an explicit single-canvas choice.
 - Viewport stability: use `min-h-[100dvh]` rather than `h-screen` to prevent iOS address-bar layout jumping.
 - Test with real copy at actual target viewports, not placeholder words that never wrap.
 
@@ -62,6 +65,7 @@ When guidelines diverge, resolve in strict order:
 
 ### 9. Motivated Visual Effects
 - Every animation must have a clear purpose: hierarchy, feedback, narrative pacing, or state change. If an effect cannot be justified in one sentence, omit it.
+- **Decorative Status Dot**: A glowing or pulsing dot must mark a real state (online, error, recording). If it marks nothing, remove it.
 - Avoid unmotivated glassmorphism, glowing borders, or arbitrary parallax loops.
 - Horizontal marquees: at most one per page where content genuinely benefits from continuous stream.
 
