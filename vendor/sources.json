@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.8.4",
+  "productVersion": "1.8.5",
   "adaptedFrom": {
     "product": "ClaudeBestFriend",
     "version": "1.4.2-claude.1",
@@ -114,10 +114,12 @@
     "pstack": {
       "repository": "https://github.com/cursor/plugins",
       "commit": "60c641e4fad674784b30abcf9f8915dea39df38d",
+      "inventoryTree": "e31650eea443aaea1e84cc15d88c13f40080b275",
       "subdir": "pstack",
       "license": "MIT",
       "copyright": "Copyright (c) 2026 Lauren Tan",
-      "licenseFile": "vendor/licenses/PSTACK-MIT.txt"
+      "licenseFile": "vendor/licenses/PSTACK-MIT.txt",
+      "note": "Vendored skill pin 60c641e. 1.8.5 inventory studied e31650e. principle-* and poteto-mode MERGE into rules/routing. Full plugin not installed."
     },
     "playwright-cli": {
       "repository": "https://github.com/microsoft/playwright-cli",

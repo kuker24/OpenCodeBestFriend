@@ -57,7 +57,9 @@ Read `~/.config/opencode/bestfriend/rules/01-verification.md`. Profiles: FAST, S
 
 If you need operational principles or prose discipline, Read `~/.config/opencode/bestfriend/rules/02-engineering-principles.md` or `03-prose-discipline.md`. Do not `@`-import them.
 
-There is no user `/implement`, `/code-review`, `/design`, or `/imagine` skill.
+There is no user `/implement`, `/code-review`, `/design`, `/imagine`, `/how`, or `/poteto-mode` skill.
+
+How this repo works / where it lives → Codebase Memory first; durable tour → `code-tour`; rationale → `/why`. What this change could break → suggest `/blast-radius`. No narrower playbook → suggest `/figure-it-out`. Decision trail → `/decision-log`. pstack playbooks map onto the specialists above; do not load `principle-*` or Cursor mode skills.
 
 Manual-only specialists are OpenCode commands, not auto-discovered skills: `/architect` `/arena` `/blast-radius` `/create-verification-skill` `/decision-log` `/figure-it-out` `/improve-codebase-architecture` `/interrogate` `/maintain-verification-skill` `/matt-implement` `/reflect` `/technical-writing` `/unslop` `/wait-what` `/why` `/wizard`. Suggest them when the user names the job; do not load them as the default path.
 <!-- OPENCODEBESTFRIEND:END -->
