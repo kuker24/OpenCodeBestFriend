@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.8.4",
+  "productVersion": "1.8.6",
   "upstreamProduct": "GrokBestFriend",
   "upstreamVersion": "1.3.1",
   "firstPartyLicense": "MIT",
@@ -23,17 +23,6 @@
       "license": "Apache-2.0",
       "modified": true,
       "redistribution": "apache-2.0"
-    },
-    {
-      "component": "ask-matt",
-      "path": "skills/ask-matt",
-      "upstream": "https://github.com/mattpocock/skills",
-      "originalPath": "skills/engineering/ask-matt",
-      "license": "MIT",
-      "copyright": "Copyright (c) 2026 Matt Pocock",
-      "modified": true,
-      "redistribution": "mit",
-      "notes": "OpenCode overlay. MIT via mattpocock/skills LICENSE."
     },
     {
       "component": "grill-with-docs",
@@ -86,17 +75,6 @@
       "modified": true,
       "redistribution": "mit",
       "notes": "Renamed to avoid OpenCode/Grok /review collision."
-    },
-    {
-      "component": "matt-implement",
-      "path": "manual-skills/matt-implement",
-      "upstream": "https://github.com/mattpocock/skills",
-      "originalPath": "skills/engineering/implement",
-      "license": "MIT",
-      "copyright": "Copyright (c) 2026 Matt Pocock",
-      "modified": true,
-      "redistribution": "mit",
-      "notes": "Renamed to avoid OpenCode/Grok /implement collision."
     },
     {
       "component": "browser-act",
@@ -271,19 +249,6 @@
       "notes": "LOGIC.md and UI.md kept. agents/openai.yaml not vendored."
     },
     {
-      "component": "grilling",
-      "path": "vendor/skills/grilling",
-      "upstream": "https://github.com/mattpocock/skills",
-      "commit": "9c9f36ccd3995266cd675468af71639c8dde1ec5",
-      "originalPath": "skills/productivity/grilling",
-      "upstreamSkillMdSha256": "d2498125dd20a0d3a27f03e0ebcc8e681cf42be468e2d3e3c9e8f5dadcae8d47",
-      "license": "MIT",
-      "copyright": "Copyright (c) 2026 Matt Pocock",
-      "modified": true,
-      "redistribution": "mit",
-      "notes": "Primitive only. Full interviews stay on grill-with-docs. agents/openai.yaml not vendored."
-    },
-    {
       "component": "improve-codebase-architecture",
       "path": "vendor/skills/improve-codebase-architecture",
       "upstream": "https://github.com/mattpocock/skills",
@@ -308,19 +273,6 @@
       "modified": true,
       "redistribution": "mit",
       "notes": "Forced manual. template.sh kept (gh secret via stdin). agents/openai.yaml not vendored."
-    },
-    {
-      "component": "wait-what",
-      "path": "vendor/skills/wait-what",
-      "upstream": "https://github.com/mattpocock/skills",
-      "commit": "9c9f36ccd3995266cd675468af71639c8dde1ec5",
-      "originalPath": "skills/productivity/wait-what",
-      "upstreamSkillMdSha256": "8923f7df1a0d1b138281658e134caa4bf1c618d2876a2323b19acdfdffebc024",
-      "license": "MIT",
-      "copyright": "Copyright (c) 2026 Matt Pocock",
-      "modified": true,
-      "redistribution": "mit",
-      "notes": "Manual convenience. Does not install /bro. agents/openai.yaml not vendored."
     },
     {
       "component": "blast-radius",
@@ -562,6 +514,26 @@
       "modified": true,
       "redistribution": "apache-2.0",
       "notes": "Deterministic HTML-to-MP4 video composition specialist with local Chromium and FFmpeg execution boundaries."
+    },
+    {
+      "component": "id-demo-video",
+      "path": "skills/id-demo-video",
+      "upstream": "first-party",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 OpenCodeBestFriend contributors",
+      "modified": false,
+      "redistribution": "mit",
+      "notes": "Original first-party specialist for Indonesian narrated application walkthroughs, Edge TTS synthesis, Playwright capture, and FFmpeg composition."
+    },
+    {
+      "component": "demo-video",
+      "path": "manual-skills/demo-video",
+      "upstream": "first-party",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 OpenCodeBestFriend contributors",
+      "modified": false,
+      "redistribution": "mit",
+      "notes": "Manual slash command alias for id-demo-video."
     },
     {
       "component": "diagram-design",

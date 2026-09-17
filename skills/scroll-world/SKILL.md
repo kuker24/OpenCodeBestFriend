@@ -19,10 +19,13 @@ Before any `image_gen`, `image_edit`, `image_to_video`, or
 length, real-people references, shot length, and ffmpeg live there. Do
 not restate them here.
 
+Paid video generation backends (Monid, Higgsfield, Kling) are not vendored into OpenCodeBestFriend. If native image/video session tools are absent and external video CLIs are not configured, report `NOT_CONFIGURED` and degrade gracefully: generate prompt packs (`.scratch/scroll-world/<slug>/prompts.md`) and static scene posters without failing.
+
 ## Hard rules
 
-- Use only native image/video tools. Do not call an external
-  image/video API, CLI, or MCP.
+- Boundary: `scroll-craft` owns 2D timeline/scrollytelling; `scroll-world` owns continuous 3D camera flight landings. Do not cross the seam.
+- Use only native image/video tools or local scripts. Do not call arbitrary external
+  image/video APIs or unconfigured cloud services.
 - Do not invent tool parameters. There is no end-image lock and no
   video-to-video. Missing capability uses the fallback in
   [pipeline.md](references/pipeline.md).

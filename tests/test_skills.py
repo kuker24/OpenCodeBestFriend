@@ -56,13 +56,14 @@ def jaccard(left: set[str], right: set[str]) -> float:
 class SkillPolicyTests(unittest.TestCase):
     def test_counts(self):
         allow, skills, model, manual = load_policy(ROOT)
-        self.assertEqual(len(allow), 64)
-        self.assertEqual(len(model), 48)
-        self.assertEqual(len(manual), 16)
+        self.assertEqual(len(allow), 62)
+        self.assertEqual(len(model), 47)
+        self.assertEqual(len(manual), 15)
         self.assertEqual(set(allow), set(skills))
-        for name in ("supabase-ops", "mongodb-ops", "vercel-ops", "img2threejs", "markitdown"):
+        for name in ("supabase-ops", "mongodb-ops", "vercel-ops", "img2threejs", "markitdown", "id-demo-video"):
             self.assertIn(name, allow)
             self.assertIn(name, model)
+        self.assertIn("demo-video", manual)
 
     def test_model_skills_exist(self):
         _, _, model, manual = load_policy(ROOT)

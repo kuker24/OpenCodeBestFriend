@@ -11,10 +11,10 @@ Availability is not a reason to use a tool. One primary specialist. At most one 
 
 1. Repo evidence is enough → do the work. No specialist.
 2. User typed a slash command → load that command's specialist. Do not substitute.
-3. Choosing a workflow → load skill `ask-matt`.
+3. Choosing a workflow → read `~/.config/opencode/AGENTS.md` or `00-routing.md`. No specialist.
 4. Architecture DAG → OpenCode **plan** agent, then implement in-session after approval.
-5. Interview / glossary / ADR → skill `grill-with-docs` (`grilling` is not default; load `grilling` only if user names it) → `to-spec` → `to-tickets` only if asked or multi-session.
-6. Ordinary implementation → this session. Skill `tdd` when test-first. Never auto `/matt-implement`.
+5. Interview / glossary / ADR → skill `grill-with-docs` → `to-spec` → `to-tickets` only if asked or multi-session.
+6. Ordinary implementation → this session. Skill `tdd` when test-first.
 7. Review → in-session. Skill `matt-code-review` only if two-axis asked.
 
 ## Report
@@ -39,13 +39,18 @@ Browser QA → skill `playwright-qa`. Explicit/session BrowserAct → `browser-a
 
 Auth/secret/payment/upload/webhook/privileged/public API → `full-audit-keamanan`. Measured LCP/INP/CLS/latency/bundle → `full-performance-audit`. GitHub → `gh-axi`. Hard unknown bug → `diagnosing-bugs`. Documents (PDF/DOCX/extract/review) → `smartdoc`. File → Markdown ingest → `markitdown`. Reusable local knowledge → `smartbook-ingest`.
 
-Prose AI-tells / humanize → skill `humanizer`. Slash `/unslop` is the same specialist, manual only. Technical writing structure → suggest `/technical-writing`. Academic literature / manuscript / peer-critique → skill `academic` (not `research`, not `smartdoc` unless file extract/render). Facts library/API → Context7; `research` only if repo lacking. Deterministic HTML video / render HTML to MP4 → skill `hyperframes` (not `visual-studio`, not `emil-design-eng`). Editorial diagram HTML/SVG → skill `diagram-design` (not `impeccable`).
+Prose AI-tells / humanize → skill `humanizer`. Slash `/unslop` is the same specialist, manual only. Technical writing structure → suggest `/technical-writing`. Academic literature / manuscript / peer-critique → skill `academic` (not `research`, not `smartdoc` unless file extract/render). Facts library/API → Context7; `research` only if repo lacking. Deterministic HTML video / render HTML to MP4 → skill `hyperframes` (not `visual-studio`, not `emil-design-eng`). Editorial diagram HTML/SVG → skill `diagram-design` (not `impeccable`). Demo video aplikasi / walkthrough layar / narasi Indonesia / demo lomba → skill `id-demo-video` (bukan `hyperframes` untuk durasi panjang utuh, bukan `playwright-qa`, bukan `visual-studio`). Kartu judul HTML→MP4 tetap `hyperframes`.
 
 REST resource/status/pagination/versioning → skill `api-design`. Consumer/provider OpenAPI/AsyncAPI/Protobuf → skill `contract-first`. Live cron/CI/hook/MCP inventory keep-merge-cut → skill `automation-audit-ops`. CodeTour .tour + anchor file → skill `code-tour`. Handler vs shared-store sequential-undo → skill `click-path-audit` (not `playwright-qa`).
 
 Agent stack diagnostics / context leak / wrapper regression → skill `agent-architecture-audit`. Benchmark agent / pass@k → skill `eval-harness` (project unit tests stay `tdd`). Token budget / model tier / prompt cache → skill `cost-aware-llm-pipeline` (not `full-performance-audit`). Structural prompt critique → skill `prompt-optimizer` (not `humanizer`). Skill catalog hygiene → skill `skill-stocktake`.
 
 Supabase Auth/RLS/migrations/Edge → skill `supabase-ops` (Context7; not impeccable). Mongo schema/index/aggregation → skill `mongodb-ops`. Vercel/Next hosting/deploy config → skill `vercel-ops` (not visual UI). Library facts remain Context7. These three never replace found-this-design or impeccable.
+
+How it works / where it lives → Codebase Memory, then `code-tour`; rationale → `/why`; break risk → `/blast-radius`.
+Generic AI UI look → `impeccable` taste-guard (not `install-anti-slop`). Generic AI prose → `humanizer` `/unslop`.
+TS anti-pattern lint install → `install-anti-slop` (explicit only). DESIGN.md without bank → still filter slop; do not invent a brand.
+pstack playbooks → existing specialists (no `/poteto-mode`). ECC / orchestrate / ralph-loop / continual-learning that writes AGENTS.md → REJECT.
 
 ## When routing is non-obvious
 
@@ -59,5 +64,5 @@ If you need operational principles or prose discipline, Read `~/.config/opencode
 
 There is no user `/implement`, `/code-review`, `/design`, or `/imagine` skill.
 
-Manual-only specialists are OpenCode commands, not auto-discovered skills: `/architect` `/arena` `/blast-radius` `/create-verification-skill` `/decision-log` `/figure-it-out` `/improve-codebase-architecture` `/interrogate` `/maintain-verification-skill` `/matt-implement` `/reflect` `/technical-writing` `/unslop` `/wait-what` `/why` `/wizard`. Suggest them when the user names the job; do not load them as the default path.
+Manual-only specialists are OpenCode commands, not auto-discovered skills: `/architect` `/arena` `/blast-radius` `/create-verification-skill` `/decision-log` `/demo-video` `/figure-it-out` `/improve-codebase-architecture` `/interrogate` `/maintain-verification-skill` `/reflect` `/technical-writing` `/unslop` `/why` `/wizard`. Suggest them when the user names the job; do not load them as the default path.
 <!-- OPENCODEBESTFRIEND:END -->

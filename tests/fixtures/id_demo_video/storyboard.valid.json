@@ -1,0 +1,107 @@
+{
+  "slug": "demo-app",
+  "target_duration_s": 600,
+  "voice": "id-ID-GadisNeural",
+  "lang": "id",
+  "scenes": [
+    {
+      "id": "scene-01",
+      "title": "Hook & Ringkasan Solusi",
+      "duration_s": 50,
+      "narration": "Selamat datang di demonstrasi sistem. Hari ini kita akan melihat bagaimana alur kerja diselesaikan secara efisien.",
+      "actions": [
+        {"type": "goto", "value": "http://localhost:3000"},
+        {"type": "wait", "duration_ms": 1000}
+      ]
+    },
+    {
+      "id": "scene-02",
+      "title": "Tampilan Dashboard Utama",
+      "duration_s": 55,
+      "narration": "Pada dashboard utama terlihat ringkasan metrik performa dan status sinkronisasi data yang aktif.",
+      "actions": [
+        {"type": "click", "selector": "#dashboard-summary"},
+        {"type": "wait", "duration_ms": 1500}
+      ]
+    },
+    {
+      "id": "scene-03",
+      "title": "Manajemen Data Transaksi",
+      "duration_s": 65,
+      "narration": "Kita masuk ke modul transaksi. Di sini seluruh daftar rekaman disajikan dengan pemilahan kategori yang jelas.",
+      "actions": [
+        {"type": "click", "selector": "nav a[href='/transactions']"},
+        {"type": "wait", "duration_ms": 1000}
+      ]
+    },
+    {
+      "id": "scene-04",
+      "title": "Pencarian dan Penyaringan Cepat",
+      "duration_s": 70,
+      "narration": "Pengguna dapat menyaring data berdasarkan rentang waktu atau kata kunci dengan respons instan tanpa jeda panjang.",
+      "actions": [
+        {"type": "type", "selector": "input#search-input", "value": "pembayaran"},
+        {"type": "click", "selector": "button#btn-filter"}
+      ]
+    },
+    {
+      "id": "scene-05",
+      "title": "Pembuatan Entri Baru",
+      "duration_s": 65,
+      "narration": "Sekarang kita coba menambahkan entri baru. Formulir menyediakan validasi otomatis sebelum data disimpan ke sistem.",
+      "actions": [
+        {"type": "click", "selector": "button#new-entry"},
+        {"type": "type", "selector": "input#entry-name", "value": "Batch Uji Coba"},
+        {"type": "click", "selector": "button#submit-entry"}
+      ]
+    },
+    {
+      "id": "scene-06",
+      "title": "Pemeriksaan Validasi dan Feedback",
+      "duration_s": 65,
+      "narration": "Sistem memberikan umpan balik langsung bahwa data telah tercatat dengan aman di penyimpanan lokal.",
+      "actions": [
+        {"type": "wait", "duration_ms": 2000}
+      ]
+    },
+    {
+      "id": "scene-07",
+      "title": "Visualisasi Laporan dan Metrik",
+      "duration_s": 70,
+      "narration": "Bagian laporan menyajikan grafik ringkas yang memetakan tren penggunaan secara transparan untuk evaluasi berkala.",
+      "actions": [
+        {"type": "click", "selector": "nav a[href='/reports']"},
+        {"type": "wait", "duration_ms": 1500}
+      ]
+    },
+    {
+      "id": "scene-08",
+      "title": "Konfigurasi dan Preferensi Sistem",
+      "duration_s": 60,
+      "narration": "Pengaturan sistem memungkinkan penyesuaian aturan notifikasi dan opsi integrasi sesuai kebutuhan operasional tim.",
+      "actions": [
+        {"type": "click", "selector": "nav a[href='/settings']"},
+        {"type": "wait", "duration_ms": 1000}
+      ]
+    },
+    {
+      "id": "scene-09",
+      "title": "Audit Integritas dan Log",
+      "duration_s": 55,
+      "narration": "Setiap aktivitas tercatat rapi pada log audit sehingga penelusuran riwayat operasional tetap akuntabel.",
+      "actions": [
+        {"type": "click", "selector": "nav a[href='/audit']"},
+        {"type": "wait", "duration_ms": 1000}
+      ]
+    },
+    {
+      "id": "scene-10",
+      "title": "Ringkasan dan Penutup",
+      "duration_s": 45,
+      "narration": "Demikian alur utama aplikasi ini. Seluruh proses berjalan terpadu, stabil, dan siap digunakan di lingkungan produksi.",
+      "actions": [
+        {"type": "wait", "duration_ms": 2000}
+      ]
+    }
+  ]
+}

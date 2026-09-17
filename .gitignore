@@ -29,3 +29,6 @@ __pycache__/
 # local install/test debris
 .home-fixture/
 .scratch/
+demos/
+*.mp4
+*.webm

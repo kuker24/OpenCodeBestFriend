@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "note": "allowlist = WHAT is owned. This file = HOW each owned skill may be invoked. provenance = WHERE it came from.",
+  "note": "allowlist = WHAT is owned. This file = HOW each owned skill may be invoked. provenance = WHERE it came from. Catalog frozen at 1.8.6 (62 names: 47 model, 15 manual; see docs/CATALOG-FREEZE.md).",
   "skills": {
     "academic": {
       "invocation": "model"
@@ -19,9 +19,6 @@
     },
     "arena": {
       "invocation": "manual"
-    },
-    "ask-matt": {
-      "invocation": "model"
     },
     "automation-audit-ops": {
       "invocation": "model"
@@ -54,6 +51,9 @@
       "invocation": "manual"
     },
     "decision-log": {
+      "invocation": "manual"
+    },
+    "demo-video": {
       "invocation": "manual"
     },
     "diagnosing-bugs": {
@@ -89,13 +89,13 @@
     "grill-with-docs": {
       "invocation": "model"
     },
-    "grilling": {
-      "invocation": "model"
-    },
     "humanizer": {
       "invocation": "model"
     },
     "hyperframes": {
+      "invocation": "model"
+    },
+    "id-demo-video": {
       "invocation": "model"
     },
     "img2threejs": {
@@ -121,9 +121,6 @@
     },
     "matt-code-review": {
       "invocation": "model"
-    },
-    "matt-implement": {
-      "invocation": "manual"
     },
     "mongodb-ops": {
       "invocation": "model"
@@ -181,9 +178,6 @@
     },
     "visual-studio": {
       "invocation": "model"
-    },
-    "wait-what": {
-      "invocation": "manual"
     },
     "why": {
       "invocation": "manual"

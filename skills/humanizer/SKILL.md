@@ -14,6 +14,8 @@ Remove artificial patterns, synthetic cadence, and formulaic tells from user-fac
 - **Never** auto-humanize ordinary coding output, diffs, PR summaries, or CLI tool output.
 - **Never** rewrite source code, tests, CLI commands, YAML frontmatter, citations, or locked SmartDoc content.
 - **Never** invent facts, quotes, statistics, or sources to make text feel more colorful.
+- **Refuse UI implementation**: this skill polishes copy and prose; UI styling, atoms, and layouts route to `impeccable`.
+- **Refuse linter installation**: this skill does not configure Oxlint or static code linters; TypeScript/JavaScript lint rules route strictly to `/install-anti-slop`.
 - Voice sample provided by the user overrides default pattern recommendations.
 - Academic manuscripts after GOAL_LOCK route to `academic` first; humanizer is an optional final prose polish only when requested.
 - Technical documentation structure (Diátaxis / STE) routes to `/technical-writing`.
@@ -41,6 +43,17 @@ Audit text against the five families of AI writing tells (detailed catalog in [r
 3. **Inflation:** Hyperbolic puffery, superlatives, and buzzword padding ("pivotal", "testament to", "game-changing", "seamlessly", "foster", "garner", "tapestry"). Use grounded, factual vocabulary.
 4. **Formatting:** Obsessive bullet lists where prose fits better, excessive bolding on lead-in words, and overused em dashes (—). Convert mechanical lists to flowing paragraphs; replace em dashes with commas or separate sentences.
 5. **Leftovers:** Chatbot residue and formulaic conclusions ("Certainly!", "I hope this helps!", "In conclusion, the future looks bright"). Remove conversational fluff and generic wrap-ups.
+
+## Usage Modes: During vs After
+
+- **During Generation (Proactive Guidance)**:
+  - Lead with the substance immediately; cut kickoff throat-clearing ("Let's dive in", "In today's fast-paced world").
+  - Reject invented numbers, fabricated benchmarks, and synthetic testimonials.
+  - Ban sparkle fluff, emoji bullet clutter, and beta-pill hype in headlines and action buttons.
+  - Keep claims verifiable and grounded in product truth.
+- **After Audit (Retrospective Polish)**:
+  - Scan existing prose against the five pattern families.
+  - Report a brief numbered findings list of AI tells, present the tightened rewrite, and verify with the user before committing destructive edits.
 
 ## Workflow
 

@@ -14,13 +14,12 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 
 1. **Repo evidence is enough** → do the work. No specialist. Verification: FAST or STANDARD.
 2. **User typed a slash skill** → load that skill. Do not substitute.
-3. **User is choosing a workflow** (`which skill`, `alur apa`, `ask matt`) → load `/ask-matt`.
+3. **User is choosing a workflow** (`which skill`, `alur apa`) → read `~/.config/opencode/AGENTS.md` or this file. No specialist.
 4. **Architecture / PR-plan DAG** → the OpenCode plan agent. After approval → implement in this session. There is no bundled `/design` or `/execute-plan`.
-5. **Feature still needs a plan** (interview, glossary, ADR) → `/grill-with-docs`. `/grilling` is not default; load `/grilling` only if the user explicitly names grilling. Then `/to-spec` → `/to-tickets` only if the user asked for tickets or the work is multi-session.
-6. **Ordinary implementation** → write in this session. Use `/tdd` when test-first. Do **not** auto-start `/matt-implement`. There is no user `/implement` skill.
-7. **User asked for the Matt ticket loop** → `/matt-implement` only for a `/to-tickets` ticket.
-8. **Review** → in-session review. `/matt-code-review` only if the user asked for two-axis Standards + Spec. There is no user `/code-review` skill.
-9. **Verification** → pick a profile, then Read `~/.config/opencode/bestfriend/rules/01-verification.md`. Required configured failures block a completion claim.
+5. **Feature still needs a plan** (interview, glossary, ADR) → `/grill-with-docs` (includes frontier rounds). Then `/to-spec` → `/to-tickets` only if the user asked for tickets or the work is multi-session.
+6. **Ordinary implementation** → write in this session. Use `/tdd` when test-first. Spec and `/to-tickets` implementations stay in this session with `/tdd`. There is no user `/implement` skill.
+7. **Review** → in-session review. `/matt-code-review` only if the user asked for two-axis Standards + Spec. There is no user `/code-review` skill.
+8. **Verification** → pick a profile, then Read `~/.config/opencode/bestfriend/rules/01-verification.md`. Required configured failures block a completion claim.
 
 ## Knowledge
 
@@ -36,7 +35,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Module, interface, seam, testability, abstraction: `/codebase-design` (distinct from `/api-design` for REST and `/contract-first` for machine schemas). Multi-sketch bake-off: suggest `/architect` (manual). Do not auto-start `/architect`.
 - Throwaway evidence for one design question: `/prototype`. Not for production UI; skip ordinary implementation, ADHD, and `/arena`.
 - Unknown / hard bugs, regressions, measured slowdown: `/diagnosing-bugs`. Skip typos, known-cause, and test-first known fixes (`/tdd`).
-- Authoring SKILL.md / AGENTS.md / skill descriptions / context pointers: `/writing-for-agents` (distinct from `/skill-stocktake` which audits catalog hygiene). Workflow choice stays `/ask-matt`.
+- Authoring SKILL.md / AGENTS.md / skill descriptions / context pointers: `/writing-for-agents` (distinct from `/skill-stocktake` which audits catalog hygiene). Workflow choice is handled directly by the router without a specialist.
 - Documents (answer, create, transform, extract, review, PDF/DOCX): `/smartdoc`. File to Markdown ingest: `/markitdown`. Reusable book/module knowledge: `/smartbook-ingest`. SmartDoc may read an existing SmartBook; that is not a second implementation specialist. Impeccable `document` stays DESIGN.md.
 - Prose AI-tell removal and natural tone polishing: `/humanizer`. Manual `/unslop` is an alias to the same specialist body. Do not auto-apply on ordinary code or diffs. Technical documentation structure stays `/technical-writing`. Code linting stays `/install-anti-slop`. Prompt structure stays `/prompt-optimizer`.
 - Editorial HTML and inline SVG diagrams (architecture, sequence, ER, flowcharts, Wardley): `/diagram-design`. Mermaid/draw.io are inputs to redraw, not final output. Frontend UI implementation stays `/impeccable`. Code-level seams stay `/codebase-design`.
@@ -53,6 +52,12 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Supabase Auth, RLS policies, migrations, Edge Functions: `/supabase-ops` (Context7; not `/impeccable`). Defensive security review of public tables stays `/full-audit-keamanan`.
 - MongoDB schemas, indexing, aggregation pipelines: `/mongodb-ops`. Connection strings must never be printed. Official syntax stays Context7.
 - Vercel deployment, `vercel.json`, preview URLs, hosting config: `/vercel-ops`. Deploy PR workflow stays `/gh-axi`. Never run `vercel --prod` automatically. Never replace `/found-this-design` or `/impeccable`.
+- How it works / where it lives: Codebase Memory first, then `/code-tour`. Why this repo made a choice: suggest `/why`. Break risk: suggest `/blast-radius`.
+- Generic AI UI look: `impeccable` taste-guard (not `install-anti-slop`). Generic AI prose: `humanizer` (`/unslop`).
+- TypeScript anti-pattern lint install: `/install-anti-slop` (explicit user request only).
+- DESIGN.md without bank: still filter slop; do not invent brand facts.
+- pstack playbooks: route to existing specialists; no `/poteto-mode`.
+- Foreign harness control planes (ECC, Ralph loop, orchestrate, continual-learning) that write AGENTS.md or rules: REJECT.
 
 ## UI and browser
 
@@ -67,6 +72,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Continuous camera fly-through, diorama, or 3D-world landing: `/scroll-world` even if the request says scroll.
 - Procedural Three.js object from image: `/img2threejs` (factory Group, editable primitives, visible vs inferred spec). Not `scroll-world` (camera fly-through), not `hyperframes` (HTML-to-MP4), not `visual-studio` (photoreal stills/media), and not `impeccable` (product UI).
 - Deterministic HTML composition rendered to video: `/hyperframes` (headless Chrome + FFmpeg). Not `visual-studio`, not `emil-design-eng`. Ordinary scrollable UI stays `/impeccable`.
+- Demo video aplikasi, walkthrough layar, narasi Indonesia, demo lomba: skill `id-demo-video` (bukan `hyperframes` untuk durasi panjang utuh, bukan `playwright-qa`, bukan `visual-studio`). Kartu judul HTML→MP4 tetap `hyperframes`.
 - Photoreal stills / ads / identity with no UI surface: `/visual-studio`.
 - Motion after Impeccable: `/emil-design-eng`.
 - Image/video generation: use OpenCode native image tools if the session exposes them. Otherwise write prompt files and mark DEGRADED. Do not invent `image_gen`.
@@ -86,9 +92,9 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 
 - Planning and tickets stay on Matt skills: `/grill-with-docs`, `/to-spec`, `/to-tickets`, `/tdd`.
 - Architecture DAG: the OpenCode plan agent, not a skill.
-- Ordinary writes stay in this session. `/matt-implement` is only for a ticket that `/to-tickets` produced.
+- Ordinary writes stay in this session. Spec and ticket implementations stay in this session with `/tdd`.
 - Default review is in-session. Two-axis: `/matt-code-review`.
-- Manual / slash-only (do not auto-start): `/blast-radius`, `/create-verification-skill`, `/maintain-verification-skill`, `/unslop`, `/technical-writing`, `/arena`, `/interrogate`, `/architect`, `/why`, `/reflect`, `/figure-it-out`, `/decision-log`, `/wizard`, `/wait-what`, `/improve-codebase-architecture`. Suggest them when the user names the job; do not load them as the default path.
+- Manual / slash-only (do not auto-start): `/architect`, `/arena`, `/blast-radius`, `/create-verification-skill`, `/decision-log`, `/demo-video`, `/figure-it-out`, `/improve-codebase-architecture`, `/interrogate`, `/maintain-verification-skill`, `/reflect`, `/technical-writing`, `/unslop`, `/why`, `/wizard`. Suggest them when the user names the job; do not load them as the default path.
 
 ## Grok bundled names (do not fake)
 
@@ -120,7 +126,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Do not print database connection strings, JWTs, or secret keys in Supabase, MongoDB, or Vercel ops.
 - Do not use Stitch as an automatic UI implementer or let it replace Design V2 atom shortlist.
 - Do not run `/found-this-design` for atomic components (button, input, card, nav); stay in `/impeccable`.
-- Do not auto-start `/grilling` for product interviews or planning; `/grill-with-docs` is the primary route.
+- Do not auto-start planning interviews for ordinary implementation; `/grill-with-docs` handles planning interviews when requested.
 - Do not `@`-import the full routing or verification files into CLAUDE.md.
 - Do not register 21st.dev, Magic UI MCP, Kibo MCP, or unofficial React Bits / Aceternity MCP.
 - Do not run `shadcn init` on this adapter, backend, or Python repositories.

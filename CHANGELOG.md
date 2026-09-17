@@ -2,7 +2,37 @@
 
 ## Unreleased
 
-None.
+## 1.8.6 — 2026-09-18
+
+Catalog modernization (Wave A): retire obsolete twins, compress primitives, and tighten routing. Totals reduced to **62** (47 model-invoked, 15 manual slash commands).
+
+- **Catalog Retirement & Compression**:
+  - Retire model specialist `ask-matt`; workflow selection is handled directly by `AGENTS.md` and `rules/00-routing.md` without an extra specialist. Category checklist and phase boundary decision trees preserved in `skills/writing-for-agents/references/`.
+  - Compress `grilling` primitive into `grill-with-docs`; delete model skill `grilling`.
+  - Retire manual skill `/wait-what`; fold re-pitch instruction into `rules/03-prose-discipline.md`.
+  - Retire manual skill `/matt-implement`; spec-driven implementation and tracer-bullet tickets from `/to-tickets` execute directly in-session with `tdd`.
+  - Retain `wizard` for interactive human-only bash procedures (OAuth, secrets, cutover).
+  - Clarify mutual boundaries between `codebase-design` (single-module depth/seam design) and `/improve-codebase-architecture` (codebase scan and visual zero-network HTML report).
+- **Survivor Upgrades**:
+  - `impeccable`: add 4-tier Taste Gate checklist (Hard Gate, Purpose-Gate, Quality Locks, Delivery Gate) into `reference/taste-guard.md`. Explicitly note that filter ≠ style guide, `BANK_MISS ≠ generate`, and dials in `taste/direction.md` apply after direction exists.
+  - `humanizer`: add During-Generation vs After-Audit copy check modes adapted from anti-slop copy rules; add explicit refusal boundaries for UI implementation and Oxlint installation.
+  - `scroll-world`: clarify user-chosen camera styles, seam QA (composition/continuity over raw PSNR), and graceful `NOT_CONFIGURED` degradation when paid video backends are absent.
+  - `markitdown`: update Microsoft markitdown pin to v0.1.7 (`945314a`); reaffirm output is Markdown data while SmartDoc retains QA/contract/render.
+  - `gh-axi` & `chrome-devtools-axi`: update command surfaces from upstream `kunchenguid/axi` (`fb75216`); enforce 4-door browser hierarchy.
+  - `browser-act`: document supported modes (`chrome`, `stealth-fresh`, `stealth-fixed`); reiterate `--type chrome-direct` ban and that `playwright-qa` remains the default verifier.
+  - `found-this-design`: allow referencing external DESIGN.md patterns (e.g. `awesome-design-md`) without cloning or vendoring; product UI direction stays Design Bank → Impeccable.
+  - `code-tour` & `why`: add "How it works" and "Where it lives" tour scaffolding to `code-tour`; add optional critique step to `/why`.
+- **Policy & Boundary Integrity**:
+  - Reconcile `vendor/skill-allowlist.txt`, `vendor/skill-policy.json`, `vendor/license-audit.json`, and `vendor/provenance.json` to exactly 62 skills.
+  - Reject foreign control planes (ECC), standalone 3D anatomy apps (`human-atlas`), and auto-mutator loops (`ralph-loop`, `orchestrate`, `continual-learning`).
+
+## 1.8.5 — 2026-09-16
+
+Feature release. Totals now **66** (49 model-invoked, 17 manual slash commands).
+
+- Add model-invoked specialist `id-demo-video` and manual slash command `/demo-video` (`manual-skills/demo-video`).
+- Orchestrate end-to-end Indonesian application walkthrough videos, beat sheet timing (target duration ±15s), spoken oral Indonesian narration (130–150 wpm, anti-slop jargon ban), Edge TTS synthesis (`id-ID-GadisNeural` / `id-ID-ArdiNeural`) with SHA-256 caching and 429 backoff, Playwright/Chromium per-scene capture (1920x1080, human typing cadence), and FFmpeg composition/concat with 90s executive preview.
+- Boundary enforcement: `id-demo-video` acts as demo pipeline director; `hyperframes` handles short title/end HTML cards only; `playwright-qa` remains functional browser QA; `visual-studio` remains photoreal non-UI media.
 
 ## 1.8.4 — 2026-09-16
 

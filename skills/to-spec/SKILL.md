@@ -1,6 +1,6 @@
 ---
 name: to-spec
-description: Turn the current conversation into a spec and publish it locally under .scratch — no interview, just synthesis of what you already discussed. Use after grilling, or when the user asks for a spec or /to-spec.
+description: Turn the current conversation into a spec and publish it locally under .scratch — no interview, just synthesis of what you already discussed. Use after grill-with-docs, or when the user asks for a spec or /to-spec.
 compatibility: opencode
 ---
 
