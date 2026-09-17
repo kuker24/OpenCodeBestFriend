@@ -10,3 +10,5 @@ Policy: `vendor/skill-policy.json` plus `vendor/skill-allowlist.txt`.
 OpenCode 1.18.x has no `disable-model-invocation` field. Manual skills must not be copied into the discovered skills directory.
 
 `opencode-bf skills verify` checks counts, missing files, and duplicates.
+
+pstack / poteto-mode is not a 65th skill. Playbooks route through `docs/routing.md` and `docs/pstack-inventory.md`.

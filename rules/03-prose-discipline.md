@@ -20,5 +20,6 @@ This is not a skill. It does not auto-apply. It does not rewrite code.
 - Cut fabricated metrics and uncited statistics: never invent precise percentages, multipliers, or benchmark numbers.
 - Cut beta-pill voice and sparkle-CTA fluff: do not decorate action buttons with sparkles, emoji flair, or artificial status pills.
 - Never “polish” source code, tests, or command output as if they were marketing copy.
+- Do not add comments that narrate what the next line does. Delete dead comments. A constraint that must survive the next editor belongs in a type, a test, a lint rule, or CI — not in `IMPORTANT` / `do not remove` prose. Intentional comments that record a non-obvious external constraint may stay; offer to encode them when the user asks.
 
 For full prose rewrites and systematic AI-tell removal, use the `humanizer` specialist (manual slash alias: `/unslop`).
