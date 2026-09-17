@@ -30,7 +30,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Installable React/shadcn registry items: MCP `shadcn` (pinned CLI `shadcn@4.18.0`). Search, inspect, then install. Context7 stays documentation.
 - Broader web research: built-in `WebSearch` and `WebFetch`. MCP `exa` is foreign/pre-existing and ON_DEMAND. Use it only if already connected and research needs it. Never add or remove `exa`.
 - Hard, high-impact, divergent decisions, fuzzy debugging, API or schema alternatives, trap detection: `/adhd` on demand only. Skip ADHD for typos, ordinary CRUD, or bugs with a known cause.
-- Official library, spec, or first-party API facts: `/research` (Context7 when repo evidence is not enough). Why *this repo* chose an approach: suggest `/why` (manual). Do not mix the two.
+- Official library, spec, or first-party API facts: `/research` (Context7 when repo evidence is not enough). How *this repo* currently works, or where a symbol lives: Codebase Memory first; durable `.tour` → `/code-tour`; motivation and rejected alternatives → suggest `/why` (manual). There is no `/how` skill. Do not mix library facts with repo rationale.
 - Scholarly literature surveys, academic manuscripts (IMRaD/thesis/proposal), and structured peer critique: `/academic` (not `research`, not `smartdoc` unless file extract/render).
 - Fuzzy or conflicting domain terms, glossary, CONTEXT.md / ADR writing: `/domain-modeling`. Full product interviews that should leave CONTEXT.md/ADRs: `/grill-with-docs`.
 - Module, interface, seam, testability, abstraction: `/codebase-design` (distinct from `/api-design` for REST and `/contract-first` for machine schemas). Multi-sketch bake-off: suggest `/architect` (manual). Do not auto-start `/architect`.
@@ -89,6 +89,7 @@ Do not infer a model provider from a logical model name. Treat custom-gateway al
 - Ordinary writes stay in this session. `/matt-implement` is only for a ticket that `/to-tickets` produced.
 - Default review is in-session. Two-axis: `/matt-code-review`.
 - Manual / slash-only (do not auto-start): `/blast-radius`, `/create-verification-skill`, `/maintain-verification-skill`, `/unslop`, `/technical-writing`, `/arena`, `/interrogate`, `/architect`, `/why`, `/reflect`, `/figure-it-out`, `/decision-log`, `/wizard`, `/wait-what`, `/improve-codebase-architecture`. Suggest them when the user names the job; do not load them as the default path.
+- pstack / poteto-mode names are not catalog skills. Map the job and stop: investigation → Codebase Memory then `/why` or `/code-tour`; bug → `diagnosing-bugs`; measured slowness → `full-performance-audit`; feature interview → `grill-with-docs`; refactor seams → `codebase-design`; throwaway spike → `prototype`; visual parity → `playwright-qa`; skill authoring → `writing-for-agents`; eval loop → `eval-harness`; PR land / babysit → `gh-axi`; unattended audit trail → `/decision-log`; no narrower playbook → `/figure-it-out`. Reject `/poteto-mode`, `/setup-pstack`, `/swarm`, `/how`, and `principle-*` as loadable specialists. Principles live in `02-engineering-principles.md`.
 
 ## Grok bundled names (do not fake)
 
