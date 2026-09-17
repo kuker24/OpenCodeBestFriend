@@ -3,6 +3,13 @@
 # Part of OpenCodeBestFriend id-demo-video specialist.
 set -euo pipefail
 
+DEMO_DIR="${1:-.}"
+
+if [ ! -d "$DEMO_DIR" ]; then
+  echo "ERROR: Demo directory does not exist: $DEMO_DIR" >&2
+  exit 1
+fi
+
 if ! command -v ffmpeg >/dev/null 2>&1; then
   echo "ERROR: ffmpeg is required but not installed or not in PATH." >&2
   exit 1
@@ -10,13 +17,6 @@ fi
 
 if ! command -v ffprobe >/dev/null 2>&1; then
   echo "ERROR: ffprobe is required but not installed or not in PATH." >&2
-  exit 1
-fi
-
-DEMO_DIR="${1:-.}"
-
-if [ ! -d "$DEMO_DIR" ]; then
-  echo "ERROR: Demo directory does not exist: $DEMO_DIR" >&2
   exit 1
 fi
 
