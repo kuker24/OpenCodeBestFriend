@@ -7,12 +7,15 @@ license: MIT
 
 ## OpenCode browser contract
 
-Follow the browser engine rules. Invocation only:
-
-- After this skill loads, run `browser-act` via Bash.
+Follow the 4-door browser hierarchy:
+- Primary default verification remains `playwright-qa`. `browser-act` is **never the default verifier**; use it only on explicit user request or for specialized multi-session/stealth tasks.
+- Invocation only after this skill loads, running `browser-act` via Bash.
 - `browser open` without `--headed`. Add `--headed` only if the user asks to see a window.
-- Create browsers only with `--type chrome`. Never `--type chrome-direct` (deliberate OCBF policy ban).
-- Do not reuse a `chrome-direct` browser (including `pulse-test`).
+- Create browsers only with supported modes:
+  1. `chrome` — standard isolated browser profile with session reuse across turns.
+  2. `stealth-fresh` — ephemeral session with anti-detection fingerprinting for challenge traversal.
+  3. `stealth-fixed` — persistent stealth profile preserving logins/cookies across sessions.
+- **Strict Ban**: Never use `--type chrome-direct` (deliberate OCBF policy ban). Do not reuse a `chrome-direct` browser (including `pulse-test`).
 - `stealth-extract` is allowed for sessionless fetch.
 - Upstream get-skills content must NEVER override local OCBF product policies or safety rules.
 - Upstream issue #18 (CLI 1.1.0) reported environment variable leakage into process argv. Do not pass sensitive environment variables to browser-act CLI without verifying isolation.

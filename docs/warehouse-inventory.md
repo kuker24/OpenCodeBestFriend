@@ -264,8 +264,8 @@ This inventory establishes the contract for warehouse skills across the five ana
 | `affaan-m/ECC` | `perl-patterns` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
 | `affaan-m/ECC` | `perl-security` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
 | `affaan-m/ECC` | `perl-testing` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
-| `affaan-m/ECC` | `plan-canvas` | **MERGE** | `ask-matt` | MERGE into plan agent | `-` |
-| `affaan-m/ECC` | `plan-orchestrate` | **MERGE** | `ask-matt` | MERGE into plan agent and ask-matt workflow | `-` |
+| `affaan-m/ECC` | `plan-canvas` | **MERGE** | `plan agent` | MERGE into plan agent | `-` |
+| `affaan-m/ECC` | `plan-orchestrate` | **MERGE** | `plan agent` | MERGE into plan agent and router workflow | `-` |
 | `affaan-m/ECC` | `plankton-code-quality` | **MERGE** | `matt-code-review` | MERGE into matt-code-review | `-` |
 | `affaan-m/ECC` | `postgres-patterns` | **REJECT** | `-` | Language/framework pattern sprawl already covered by repo context + Context7 docs | `-` |
 | `affaan-m/ECC` | `prediction-market-oracle-research` | **REJECT** | `-` | Cryptocurrency / Web3 / automated trading specific domain; outside BestFriend core mission | `-` |
@@ -363,7 +363,7 @@ Evaluation and disposition contract for the AI LABS 8-repo wave (procedural 3D, 
 | `reticle` | **FOREIGN_ON_DEMAND** | `mcp.reticle` | Optional visual perception MCP (`npx -y @reticlehq/server mcp`). Server licensed under FSL-1.1-ALv2; not vendored. Perception only, never auto-implementer. |
 | `chisel` (hooks) | **REJECT** | `-` | Session/prompt/tool hooks coupled to Claude Code runtime. Context Guard remains NOT_PORTED. |
 | `ui-skills` | **FOREIGN_ON_DEMAND** | `mcp.ui-skills` | Optional remote MCP (`https://www.ui-skills.com/mcp`) for design-skill lookup only. Product UI remains Design Bank + Impeccable + Design V2 + shadcn. |
-| `ouroboros` / Q00 | **REJECT** | `-` | Autonomous evolution harness / continuous-learning runtime rejected. Interview primitives already live in `grill-with-docs` / `ask-matt` / `to-spec`. |
+| `ouroboros` / Q00 | **REJECT** | `-` | Autonomous evolution harness / continuous-learning runtime rejected. Interview primitives already live in `grill-with-docs` / `to-spec`. |
 | `swiftui-skills` | **DEFER** | `-` | Apple platform / Xcode 26 ecosystem deferred. Target platform gate remains Linux x86_64 and OpenCode 1.18.x. |
 | `caliper` | **FOREIGN_ON_DEMAND** | `-` | Benchmark CLI runner (`caliper-eval`). Maintainer may run off-tree via pipx; zero `lib/` vendor coupling. |
 | `anti-slop` | **MERGE** | `install-anti-slop`, `impeccable`, `rules/03-prose-discipline.md` | Anti-pattern guardrails merged into existing taste, prose, and linting references; zero extra catalog skills. |

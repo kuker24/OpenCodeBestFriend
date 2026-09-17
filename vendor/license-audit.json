@@ -1,9 +1,19 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.8.4",
+  "productVersion": "1.8.6",
   "note": "Evidence-based. A missing frontmatter license is not a grant. Adapted \u2260 first-party.",
   "skills": {
+    "demo-video": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter",
+      "redistribution": "mit"
+    },
+    "id-demo-video": {
+      "license": "MIT",
+      "evidence": "SKILL.md frontmatter",
+      "redistribution": "mit"
+    },
     "adhd": {
       "license": "MIT",
       "evidence": "SKILL.md frontmatter",
@@ -44,11 +54,6 @@
       "evidence": "mattpocock/skills 9c9f36c",
       "redistribution": "mit"
     },
-    "grilling": {
-      "license": "MIT",
-      "evidence": "mattpocock/skills 9c9f36c",
-      "redistribution": "mit"
-    },
     "improve-codebase-architecture": {
       "license": "MIT",
       "evidence": "mattpocock/skills 9c9f36c",
@@ -57,16 +62,6 @@
     "wizard": {
       "license": "MIT",
       "evidence": "mattpocock/skills 9c9f36c",
-      "redistribution": "mit"
-    },
-    "wait-what": {
-      "license": "MIT",
-      "evidence": "mattpocock/skills 9c9f36c",
-      "redistribution": "mit"
-    },
-    "ask-matt": {
-      "license": "MIT",
-      "evidence": "mattpocock/skills (engineering/ask-matt) MIT LICENSE; overlay in this tree",
       "redistribution": "mit"
     },
     "grill-with-docs": {
@@ -92,11 +87,6 @@
     "matt-code-review": {
       "license": "MIT",
       "evidence": "mattpocock/skills engineering/code-review renamed; MIT LICENSE",
-      "redistribution": "mit"
-    },
-    "matt-implement": {
-      "license": "MIT",
-      "evidence": "mattpocock/skills engineering/implement renamed; MIT LICENSE",
       "redistribution": "mit"
     },
     "markitdown": {

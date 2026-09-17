@@ -1,12 +1,12 @@
 ---
 name: writing-for-agents
-description: Author or edit SKILL.md, CLAUDE.md, AGENTS.md, skill descriptions, or context pointers. Skip choosing which existing workflow to run (/ask-matt).
+description: Author or edit SKILL.md, CLAUDE.md, AGENTS.md, skill descriptions, or context pointers. Workflow choice is handled directly by the router without a specialist.
 compatibility: opencode
 ---
 
 Reference for writing any document an agent consumes — a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable — the agent taking the same _process_ every run, not producing the same output.
 
-When the document you're writing is a skill, read [`SKILL-MECHANICS.md`](SKILL-MECHANICS.md) for frontmatter, invocation choice, and router skills.
+When the document you're writing is a skill, read [`SKILL-MECHANICS.md`](SKILL-MECHANICS.md) for frontmatter, invocation choice, and router skills. See [`references/route-checklist.md`](references/route-checklist.md) for category mappings and [`references/phase-boundaries.md`](references/phase-boundaries.md) for session transitions.
 
 ## Context pointers
 

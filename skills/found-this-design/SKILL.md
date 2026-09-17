@@ -25,6 +25,7 @@ component atoms; atoms are impeccable + Design V2.
 
 - Stop before component atoms; atoms are impeccable + Design V2.
 - Search with the scripts. Never read either `catalog.json` into context.
+- External brand pattern corpora (e.g. `awesome-design-md`) may be referenced by humans as styling ideas, but never fetched, cloned, or vendored into the project. Product UI direction flows strictly from the local Design Bank → `impeccable`.
 - Do not implement UI, copy a Motion prompt into code, or overwrite the
   project's `DESIGN.md` unless the user asked to pin files.
 - Do not crawl Refero or Motionsites. Do not open `npm run bank` unless

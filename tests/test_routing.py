@@ -58,6 +58,7 @@ class RoutingTests(unittest.TestCase):
             "vercel-ops": "vercel-ops",
             "img2threejs": "img2threejs",
             "markitdown": "markitdown",
+            "id-demo-video": "id-demo-video",
         }
         for label, needle in expected.items():
             self.assertIn(needle, blob, label)
@@ -72,6 +73,10 @@ class RoutingTests(unittest.TestCase):
         self.assertIn("Deterministic HTML video / render HTML to MP4 → skill `hyperframes`", self.agents)
         self.assertIn("Deterministic HTML composition rendered to video: `/hyperframes`", self.routing)
         self.assertIn("Ordinary scrollable UI stays `/impeccable`.", self.routing)
+
+        # id-demo-video vs hyperframes vs playwright-qa vs visual-studio
+        self.assertIn("Demo video aplikasi / walkthrough layar / narasi Indonesia / demo lomba → skill `id-demo-video`", self.agents)
+        self.assertIn("Demo video aplikasi, walkthrough layar, narasi Indonesia, demo lomba: skill `id-demo-video`", self.routing)
         
         # Diagram design vs impeccable vs codebase-design
         self.assertIn("Editorial diagram HTML/SVG → skill `diagram-design`", self.agents)
@@ -147,6 +152,7 @@ class RoutingTests(unittest.TestCase):
             "supabase-ops",
             "mongodb-ops",
             "vercel-ops",
+            "id-demo-video",
         ]
         for spec in required_specialists:
             self.assertIn(spec, self.agents, f"Expected {spec} in AGENTS.md")

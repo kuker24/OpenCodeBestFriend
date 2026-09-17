@@ -7,7 +7,13 @@ license: MIT
 
 ## OpenCode browser contract
 
-Follow the browser engine rules in `00-routing.md`. Invocation only:
+Follow the 4-door browser hierarchy:
+1. `playwright-qa` — primary default for exploratory application UI QA.
+2. `browser-act` — specialized persistent / multi-account / stealth browser sessions.
+3. `chrome-devtools-axi` — deep diagnostics for observed Chromium failures (console, network, heap).
+4. `click-path-audit` — handler vs shared-store sequential-undo side effects.
+
+Invocation only:
 
 1. Start background Chromium: `opencode-chromium-cdp start` (or `$HOME/.local/bin/opencode-chromium-cdp start`).
 2. Every command: `CHROME_DEVTOOLS_AXI_BROWSER_URL=http://127.0.0.1:9223 npx -y chrome-devtools-axi <command>`.

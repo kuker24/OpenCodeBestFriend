@@ -27,7 +27,8 @@ Deliberately step beyond default training-data tropes:
 
 ## 3. The Three Dials (Recorded in Surface Brief)
 
-Record visual dial choices in the project's surface brief (`.impeccable/briefs/` or memory):
+Record visual dial choices in the project's surface brief (`.impeccable/briefs/` or memory).
+These dials are optional tuning controls applied **after** a visual direction exists (from a Design Bank shortlist or project `DESIGN.md`); they do not invent a direction on their own:
 - **`DESIGN_VARIANCE` (1–10)**:
   - 1–3: Symmetrical, predictable grid, uniform padding.
   - 4–7: Offset rhythms, varied aspect ratios, intentional asymmetric whitespace.
@@ -41,4 +42,4 @@ Record visual dial choices in the project's surface brief (`.impeccable/briefs/`
   - 4–7: Standard web application density (`py-12` to `py-20`).
   - 8–10: High-density data presentation, minimal padding, structured tables/lists.
 
-*Note*: These dials are recorded as qualitative guidance within the surface brief, never as global hard gates that alter non-UI or dashboard code.
+*Note*: These dials are recorded as qualitative guidance within the surface brief, never as global hard gates that alter non-UI or dashboard code. Filter discipline rejects category defaults; direction and dials refine the chosen world.

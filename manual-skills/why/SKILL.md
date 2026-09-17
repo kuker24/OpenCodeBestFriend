@@ -74,6 +74,8 @@ Keep this structure. Do not collapse confidence.
 
 **COMPETING HYPOTHESES.** If the record fits more than one story, list them with evidence for and against.
 
+**OPTIONAL CRITIQUE.** If the user asks whether the rationale still holds or if the approach should be revisited: evaluate whether underlying constraints (scale, framework limitations, external APIs) have changed since the original commit/ADR.
+
 **UNKNOWN.** Explicit gaps. Searches that returned empty.
 
 **SOURCES CONSULTED.** One line per source, including the ones that returned nothing or were `NOT_CONFIGURED`.

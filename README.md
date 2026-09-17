@@ -1,14 +1,14 @@
 # OpenCodeBestFriend
 
 Production-ready capability layer for OpenCode:
-64 routed skills (core + Wave 2/3 warehouse specialists), MCP, Codebase Memory,
+62 routed skills (core + Wave 2/3 warehouse specialists), MCP, Codebase Memory,
 Design Bank, Design Intelligence, SmartDoc, browser and verification tooling.
 
 OpenCodeBestFriend is an installer and runtime overlay for [OpenCode](https://opencode.ai). It is **not** Claude Code, **not** a model provider, and **not** a dump of a developer home directory.
 
 ## What it is
 
-- 64 skills: 48 model-invoked, 16 manual slash commands
+- 62 skills: 47 model-invoked, 15 manual slash commands (frozen; see [docs/CATALOG-FREEZE.md](docs/CATALOG-FREEZE.md))
 - A thin `AGENTS.md` router (lazy, one primary specialist)
 - Core MCP: Codebase Memory, Context7, shadcn
 - Design Bank discovery or download (media is **not** in git)
@@ -61,8 +61,8 @@ Restart OpenCode after install. Config is not hot-reloaded.
         ┌───────────────────┼────────────────────┐
         ▼                   ▼                    ▼
       Skills               MCP                 Rules
-      48 automatic       Codebase Memory        Verification
-     16 manual          Context7              Engineering
+      47 automatic       Codebase Memory        Verification
+      15 manual          Context7              Engineering
                        shadcn
         │
         ▼
@@ -86,6 +86,8 @@ Default: repository evidence first. Then at most one specialist.
 | Intent | Route |
 | --- | --- |
 | Repo understanding | Codebase Memory MCP |
+| How it works / where it lives | Codebase Memory then `code-tour` |
+| Repo rationale | `/why` (manual) |
 | Hard unknown bug | `diagnosing-bugs` |
 | Security-sensitive work | `full-audit-keamanan` |
 | Measured performance regression | `full-performance-audit` |
@@ -93,20 +95,23 @@ Default: repository evidence first. Then at most one specialist.
 | UI registry | shadcn MCP |
 | Visual direction | `found-this-design` |
 | UI implementation after a direction | `impeccable` |
+| Generic AI UI look | `impeccable` taste-gate (not `install-anti-slop`) |
 | Motion | `emil-design-eng` |
 | Photoreal / media | `visual-studio` |
 | Scroll-led storytelling | `scroll-craft` |
 | Scroll-driven 3D / camera world | `scroll-world` |
 | Procedural Three.js object from image | `img2threejs` |
 | Deterministic HTML composition video | `hyperframes` |
+| Demo video aplikasi & narasi ID | `id-demo-video` (`/demo-video`) |
+| Browser | `playwright-qa` → `browser-act` → `chrome-devtools-axi` → `click-path-audit` |
 | Documents (PDF/DOCX/answer/extract/review) | `smartdoc` |
 | File to Markdown ingest | `markitdown` |
 | Reusable book/module knowledge | `smartbook-ingest` |
 | Scholarly literature & manuscripts | `academic` |
-| Prose AI-tell removal & humanizing | `humanizer` (`/unslop`) |
+| Generic AI prose | `humanizer` / `/unslop` |
 | Editorial HTML/SVG diagrams | `diagram-design` |
+| TS Oxlint install | `install-anti-slop` (explicit only) |
 | Architecture bake-off | `/architect` (manual) |
-| Repo rationale | `/why` (manual) |
 
 Warehouse: `api-design`, `contract-first`, `automation-audit-ops`, `code-tour`, `click-path-audit` (plus Wave 2 diagnostics).
 

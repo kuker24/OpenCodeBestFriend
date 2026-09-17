@@ -4,7 +4,6 @@ agent-architecture-audit
 api-design
 architect
 arena
-ask-matt
 automation-audit-ops
 blast-radius
 browser-act
@@ -16,6 +15,7 @@ contract-first
 cost-aware-llm-pipeline
 create-verification-skill
 decision-log
+demo-video
 diagnosing-bugs
 diagram-design
 domain-modeling
@@ -27,9 +27,9 @@ full-audit-keamanan
 full-performance-audit
 gh-axi
 grill-with-docs
-grilling
 humanizer
 hyperframes
+id-demo-video
 img2threejs
 impeccable
 improve-codebase-architecture
@@ -38,7 +38,6 @@ interrogate
 maintain-verification-skill
 markitdown
 matt-code-review
-matt-implement
 mongodb-ops
 playwright-qa
 prompt-optimizer
@@ -58,7 +57,6 @@ to-tickets
 unslop
 vercel-ops
 visual-studio
-wait-what
 why
 wizard
 writing-for-agents

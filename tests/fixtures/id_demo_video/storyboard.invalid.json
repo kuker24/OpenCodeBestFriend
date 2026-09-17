@@ -1,0 +1,22 @@
+{
+  "slug": "demo-app",
+  "target_duration_s": 600,
+  "voice": "id-ID-GadisNeural",
+  "lang": "id",
+  "scenes": [
+    {
+      "id": "scene-01",
+      "title": "Hook Cepat",
+      "duration_s": 40,
+      "narration": "Pengenalan singkat.",
+      "actions": []
+    },
+    {
+      "id": "scene-02",
+      "title": "Fitur",
+      "duration_s": 50,
+      "narration": "Fitur utama.",
+      "actions": []
+    }
+  ]
+}

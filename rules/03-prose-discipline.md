@@ -20,5 +20,6 @@ This is not a skill. It does not auto-apply. It does not rewrite code.
 - Cut fabricated metrics and uncited statistics: never invent precise percentages, multipliers, or benchmark numbers.
 - Cut beta-pill voice and sparkle-CTA fluff: do not decorate action buttons with sparkles, emoji flair, or artificial status pills.
 - Never “polish” source code, tests, or command output as if they were marketing copy.
+- If the user says "wait what" or asks to re-pitch: stop, provide concise context, speak in ASD-STE100 Simplified Technical English, and use the ubiquitous domain language from `CONTEXT.md`.
 
 For full prose rewrites and systematic AI-tell removal, use the `humanizer` specialist (manual slash alias: `/unslop`).

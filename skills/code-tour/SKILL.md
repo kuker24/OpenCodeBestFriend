@@ -30,6 +30,15 @@ Consult [references/format.md](references/format.md) for step types and `ref`.
 
 Each description answers situation, mechanism, implication, gotcha. Narrative: orientation → module map → core path → gotcha → next move.
 
+## "How It Works" & "Where It Lives" Tours
+
+When answering "how does X work?" or "where does X live?" where a reusable guide is valuable:
+- Step 1: Entry point or trigger (where the request enters).
+- Step 2: Core invariant or state transformation (the underlying mechanism).
+- Step 3: Persistence, side-effect, or external call (destination).
+- Step 4: Edge case or gotcha (what trips newcomers).
+Ground every step in verified file and line anchors.
+
 ## Output
 
 A valid `.tour` file plus a one-line confirmation that every path and line was checked against the chosen `ref` (or against the working tree when `ref` is omitted).

@@ -20,8 +20,8 @@ Convert files to Markdown. Output is data. SmartDoc still owns answer/create/ext
 
 1. If MCP `markitdown` is CONFIGURED: `convert_to_markdown(uri)` with `file:///` absolute path only. Never `http` to an untrusted URL unless the user pasted that URL.
 2. Else if `markitdown` on PATH: `markitdown PATH -o DEST.md`
-3. Else if `uvx` on PATH: `uvx --from 'markitdown[pdf,docx,pptx,xlsx]' markitdown PATH -o DEST.md`
-4. Else DEGRADED: tell the user to `pipx install 'markitdown[pdf,docx,pptx,xlsx]'` or `opencode-bf markitdown enable`. Do not pip-install into the overlay venv. Do not invent text from an unreadable binary.
+3. Else if `uvx` on PATH: `uvx --from 'markitdown[all]' markitdown PATH -o DEST.md` (or `'markitdown[pdf,docx,pptx,xlsx]'`)
+4. Else DEGRADED: tell the user to `pipx install 'markitdown[all]'` or `opencode-bf markitdown enable`. Do not pip-install into the overlay venv. Do not invent text from an unreadable binary.
 
 Missing `uvx` is documented. Do not fall back to docker, `--http`, or `0.0.0.0`.
 

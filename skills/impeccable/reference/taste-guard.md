@@ -1,7 +1,7 @@
 # Taste Quality Guard
 
 Canonical lightweight quality guard for UI implementation and review.
-Adapted from [taste-skill](https://github.com/Leonxlnx/taste-skill) (MIT, Leonxlnx) to integrate with OpenCodeBestFriend craft standards.
+Adapted from [taste-skill](https://github.com/Leonxlnx/taste-skill) (MIT, Leonxlnx) and [anti-slop](https://github.com/miqdadbadjuber/anti-slop) (MIT, Miqdad Badjuber) to integrate with OpenCodeBestFriend craft standards.
 
 Load this once before UI editing and verify against it during final review. This reference is not a separate specialist; it operates within the phase owner (`impeccable`, `scroll-craft`, `emil-design-eng`).
 
@@ -16,7 +16,43 @@ When guidelines diverge, resolve in strict order:
 
 *Anti-Dogma Rule*: Taste guidelines discourage unexamined category defaults, but they are NOT absolute bans. Purple accents, Inter font, SVG icons, symmetrical grids, eyebrows, or cards are fully permitted when the brand, project, or user requests them.
 
+## Filter Discipline (Filter ≠ Style Guide)
+
+This guard is a **filter, not a style guide**. It prescribes no specific colors, fonts, or layouts. It rejects unmotivated category defaults and fake content; visual direction, beauty, and brand voice come from your `DESIGN.md` or a shortlist from the Design Bank.
+- **BANK_MISS ≠ generate**: When an atomic component (button, input, card, nav) misses the bank, do not invent arbitrary hex or radius; fall back to project shadcn components or ask.
+- **Stitch / UI Skills Boundary**: Stitch MCP is for comps/screens only; UI Skills is for design-skill lookup only. Neither implements production UI alone.
 - **DESIGN.md Conflict**: If an explicit pin or `DESIGN.md` asks for a named slop pattern, name the element and the conflict, then ask keep-or-drop. Never silently follow and never silently override. Palette and typography that constitute brand identity are never slop.
+
+---
+
+## The Four Taste Gates (Checklist)
+
+Before shipping UI, verify against the four gates:
+
+1. **Hard Gate (Absolute)**:
+   - Zero hallucinated precision (no fake stats like `99.4%`, fake logos, or fake review quotes).
+   - Zero synthetic social proof or fake testimonial carousels.
+   - No decorative status dots (glowing/pulsing dots must mark real operational state).
+   - No two-state layouts (phone stack + desktop grid with nothing between is slop; define mid breakpoints or unified canvas).
+   - No unexamined category defaults (purple gradient hero, cyan mesh, Inter-on-white cards) unless requested.
+
+2. **Purpose-Gate (Technique Allowed, Reason Required)**:
+   - Every visual effect, parallax, or animation must serve an explicit purpose (hierarchy, state transition, narrative pacing). If unjustified in one sentence, cut it.
+   - At most one marquee per page, and only when content genuinely benefits from continuous streaming.
+   - No unmotivated glassmorphism or glowing borders.
+
+3. **Quality Locks (Consistency & Soundness)**:
+   - Surface mode respected: **Persuade** (marketing/landing), **Operate** (dashboard/admin/tools), **Read** (docs/articles), or **Experience** (showcase/portfolio). Operate demands scanability, high utility, and native conventions.
+   - Single palette role lock: neutral base + primary accent.
+   - Token & corner radius consistency across inputs, cards, and buttons.
+   - Complete interactive states (default, hover, focus-visible, active feedback, disabled, loading, empty, error).
+   - WCAG AA contrast (≥4.5:1 body, ≥3:1 large) and visible `:focus-visible` rings.
+   - `prefers-reduced-motion` collapses ambient/scroll motion to static presentation.
+
+4. **Delivery Gate (Pre-Ship Audit)**:
+   - Review desktop and mobile renders together under observed browser inspection.
+   - Confirm layout stability (e.g. `min-h-[100dvh]` to prevent viewport jumping).
+   - Verify all packages exist in `package.json` before importing; no unrequested heavy dependencies.
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "product": "OpenCodeBestFriend",
-  "productVersion": "1.8.4",
+  "productVersion": "1.8.6",
   "adaptedFrom": {
     "product": "ClaudeBestFriend",
     "version": "1.4.2-claude.1",
@@ -67,6 +67,8 @@
     },
     "markitdown": {
       "repository": "https://github.com/microsoft/markitdown",
+      "version": "0.1.7",
+      "commit": "945314a45ddbe02935f2fd287b797dc0ba4a01e4",
       "license": "MIT",
       "package": "markitdown-mcp",
       "via": "uvx",

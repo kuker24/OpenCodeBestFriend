@@ -47,7 +47,7 @@ For each candidate, render a card with:
 - **Solution** — plain English description of what would change
 - **Benefits** — explained in terms of locality and leverage, and how tests would improve
 - **Before / After diagram** — side-by-side, custom-drawn, illustrating the shallowness and the deepening
-- **Recommendation strength** — one of `Strong`, `Worth exploring`, `Speculative`, rendered as a badge
+- **Recommendation strength** — one of `Strong`, `Worth exploring`, `Speculative`, rulative`, rendered as a badge
 
 End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
 
@@ -59,9 +59,9 @@ See [HTML-REPORT.md](HTML-REPORT.md) for the full HTML scaffold, diagram pattern
 
 Do NOT propose interfaces yet. After the file is written, ask the user: "Which of these would you like to explore?"
 
-### 3. Grilling loop
+### 3. Frontier decision loop
 
-Once the user picks a candidate, walk the decision tree with them using the grilling discipline (frontier rounds) inline — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive. Do not invoke `/grilling` unless the user asked.
+Once the user picks a candidate, walk the decision tree with them using frontier rounds inline — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive. Use `grill-with-docs` if creating or updating CONTEXT.md and ADRs.
 
 Side effects happen inline as decisions crystallize — keep the domain model current using domain-modeling discipline (glossary/ADR), without invoking `/domain-modeling` unless the user asked:
 

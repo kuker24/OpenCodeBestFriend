@@ -1,6 +1,6 @@
 ---
 name: codebase-design
-description: Design or deepen a module interface, seam, test surface, or abstraction. Skip ordinary implementation, product interviews, and multi-sketch architecture bake-offs (/architect).
+description: Design or deepen a module interface, seam, test surface, or abstraction. Skip ordinary implementation, product interviews, multi-sketch architecture bake-offs (/architect), and whole-repo scans (/improve-codebase-architecture).
 compatibility: opencode
 ---
 
